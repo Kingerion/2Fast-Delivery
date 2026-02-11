@@ -217,55 +217,64 @@ function sendOrder() {
             return;
         }
 
-        // 1. Αλλαγή κουμπιού για να φαίνεται ότι δουλεύει
+        // 1. Κλείδωμα κουμπιού και ένδειξη φόρτωσης
         submitBtn.innerHTML = "⏳ Αποστολή...";
         submitBtn.disabled = true;
 
         // 2. Ετοιμασία δεδομένων
         const orderData = {
             phone: phone,
-            floor: floor,
-            comments: comments,
             start: start,
             end: end,
+            floor: floor,
+            comments: comments,
             distance: currentDistance.toFixed(2),
             price: currentPrice.toFixed(2)
         };
 
-        // 3. Η ΓΕΦΥΡΑ ΣΟΥ (Το Link που μόλις έφτιαξες)
-        const scriptURL = "https://script.google.com/macros/s/AKfycbz764rZyP5YUw4CZJy3x8S0GTtmpUzqi22SqW24n2LFjNHhOpStBPNhbCHbbPxcbRQO/exec";
+        // --------------------------------------------------------------------
+        // ΠΡΟΣΟΧΗ: Βάλε εδώ το Link από το Google Script που έφτιαξες για το Shipday
+        const scriptURL = "https://script.google.com/macros/s/AKfycbz764rZyP5YUw4CZJy3x8S0GTtmpUzqi22SqW24n2LFjNHhOpStBPNhbCHbbPxcbRQO/exec"; 
+        // --------------------------------------------------------------------
 
-        // 4. Αποστολή στο Shipday (μέσω της γέφυρας)
+        // 3. Αποστολή στο Shipday (και αναμονή)
         fetch(scriptURL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
         })
         .then(() => {
-            // 5. Ετοιμασία μηνύματος WhatsApp
-            const text = `🚀 *ΝΕΑ ΠΑΡΑΓΓΕΛΙΑ* 🚀%0A%0A` +
-                         `📍 *Από:* ${encodeURIComponent(start)}%0A` +
-                         `🏁 *Προς:* ${encodeURIComponent(end)}%0A` +
-                         `💰 *Κόστος:* ${currentPrice.toFixed(2)}€%0A` +
-                         `-----------------------%0A` +
-                         `📞 *Τηλ:* ${phone}%0A` +
-                         `🏢 *Όροφος:* ${encodeURIComponent(floor)}%0A` +
-                         `📝 *Σχόλια:* ${encodeURIComponent(comments)}`;
-            
-            // 6. Άνοιγμα WhatsApp (ΠΡΟΣΟΧΗ: Βάλε το νούμερό σου εδώ!)
-            window.location.href = `https://wa.me/306934021792?text=${text}`; 
-            
+            console.log("Η παραγγελία στάλθηκε στο Shipday!");
+            // 4. ΜΟΝΟ ΑΦΟΥ τελειώσει η αποστολή, ανοίγουμε το WhatsApp
+            openWhatsApp(phone, start, end, floor, comments);
+        })
+        .catch(error => {
+            console.error('Σφάλμα:', error);
+            alert("Υπήρξε ένα θέμα με την αυτόματη καταχώρηση, αλλά ανοίγουμε το WhatsApp.");
+            // Ανοίγουμε το WhatsApp ακόμα και αν αποτύχει, για να μην χάσεις την παραγγελία
+            openWhatsApp(phone, start, end, floor, comments);
+        })
+        .finally(() => {
             // Επαναφορά κουμπιού
             submitBtn.innerHTML = "🚀 Αποστολή Παραγγελίας";
             submitBtn.disabled = false;
-        })
-        .catch(error => {
-            console.error('Error!', error.message);
-            // Αν αποτύχει η γέφυρα, στέλνουμε τουλάχιστον WhatsApp
-            const text = `🚀 *ΝΕΑ ΠΑΡΑΓΓΕΛΙΑ (WhatsApp Only)* 🚀%0A%0A...`; // (μπορείς να βάλεις το ίδιο κείμενο)
-            window.location.href = `https://wa.me/3069XXXXXXXX?text=${text}`;
         });
+    }
+
+    // Βοηθητική συνάρτηση για το άνοιγμα του WhatsApp
+    function openWhatsApp(phone, start, end, floor, comments) {
+        const text = `🚀 *ΝΕΑ ΠΑΡΑΓΓΕΛΙΑ* 🚀%0A%0A` +
+                     `📍 *Από:* ${encodeURIComponent(start)}%0A` +
+                     `🏁 *Προς:* ${encodeURIComponent(end)}%0A` +
+                     `📏 *Απόσταση:* ${currentDistance.toFixed(2)} χλμ%0A` +
+                     `💰 *Τιμή:* ${currentPrice.toFixed(2)}€%0A` +
+                     `-----------------------%0A` +
+                     `📞 *Πελάτης:* ${phone}%0A` +
+                     `🏢 *Όροφος:* ${encodeURIComponent(floor)}%0A` +
+                     `📝 *Σχόλια:* ${encodeURIComponent(comments)}`;
+        
+        window.location.href = `https://wa.me/${ADMIN_PHONE}?text=${text}`;
     }
 
 </script>
