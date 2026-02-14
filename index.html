@@ -7,13 +7,12 @@
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f4; }
         
-        #map { height: 55vh; width: 100%; z-index: 1; }
-        
-        /* Κρύβουμε το άσχημο κουτί οδηγιών του Leaflet */
+        #map { height: 50vh; width: 100%; z-index: 1; }
         .leaflet-routing-container { display: none !important; }
 
         .container { 
@@ -27,14 +26,17 @@
         }
 
         h2 { margin-top: 0; color: #333; text-align: center; font-size: 20px; }
-        .instructions { text-align: center; font-size: 14px; color: #666; margin-bottom: 15px; background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #ffe0b2; }
+        .instructions { text-align: center; font-size: 13px; color: #666; margin-bottom: 15px; background: #fff3e0; padding: 8px; border-radius: 8px; border: 1px solid #ffe0b2; }
         
-        .input-group { margin-bottom: 12px; }
+        .input-group { margin-bottom: 12px; position: relative; }
         label { font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; display: block; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fafafa; }
-        /* Τα readonly πεδία τα κάνουμε λίγο πιο γκρι για να φαίνεται ότι δεν γράφεις */
-        input[readonly] { background-color: #eee; color: #555; cursor: pointer; }
         
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; transition: border 0.3s; }
+        input:focus { border-color: #ff5722; outline: none; }
+        
+        /* Εικονίδιο αναζήτησης μέσα στο input */
+        .search-icon { position: absolute; right: 10px; top: 35px; color: #999; }
+
         textarea { resize: vertical; height: 70px; }
         
         .price-box { background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; border: 2px solid #2196f3; }
@@ -43,8 +45,7 @@
 
         button { width: 100%; padding: 16px; background: #ff5722; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         button:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
-        button:active { background: #e64a19; transform: scale(0.98); }
-
+        
         .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #ff5722; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -56,9 +57,7 @@
     <div class="container">
         <h2>Αποστολή Δέματος</h2>
         <div class="instructions">
-            📍 <strong>Οδηγίες:</strong><br>
-            1. Πάτα στο χάρτη για <b>Παραλαβή</b>.<br>
-            2. Πάτα ξανά για <b>Παράδοση</b>.
+            ✍️ <strong>Νέο:</strong> Γράψε διεύθυνση και πάτα "Enter" ή επίλεξε σημείο στο χάρτη.
         </div>
         
         <div class="input-group">
@@ -66,12 +65,14 @@
         </div>
         
         <div class="input-group">
-            <label>Αφετηρία (Πάτα στο χάρτη)</label>
-            <input type="text" id="start" placeholder="Επιλέξτε σημείο..." readonly>
+            <label>Αφετηρία</label>
+            <input type="text" id="start" placeholder="Πληκτρολογήστε διεύθυνση..." onchange="geocodeInput('start')">
+            <span class="search-icon">🔍</span>
         </div>
         <div class="input-group">
-            <label>Προορισμός (Πάτα στο χάρτη)</label>
-            <input type="text" id="end" placeholder="Επιλέξτε σημείο..." readonly>
+            <label>Προορισμός</label>
+            <input type="text" id="end" placeholder="Πληκτρολογήστε διεύθυνση..." onchange="geocodeInput('end')">
+            <span class="search-icon">🔍</span>
         </div>
 
         <div class="input-group">
@@ -92,10 +93,11 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
     <script>
         // --- ΡΥΘΜΙΣΕΙΣ ---
-        // ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ
+        // ΒΑΛΕ ΕΔΩ ΤΟ LINK ΑΠΟ ΤΟ GOOGLE SCRIPT (Που δούλεψε με το 200)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
         // -----------------
 
@@ -105,107 +107,135 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
+        // Υπηρεσία Geocoding (Μετατροπή διεύθυνσης σε συντεταγμένες)
+        var geocoder = L.Control.Geocoder.nominatim();
+
         var routingControl = L.Routing.control({
             waypoints: [],
             routeWhileDragging: false,
-            // Χρησιμοποιούμε το OSRM για δρόμους (όχι ευθεία γραμμή)
             router: L.Routing.osrmv1({
                 serviceUrl: 'https://router.project-osrm.org/route/v1'
             }),
-            show: false, // Κρύβει το πάνελ
-            addWaypoints: false, // Απαγορεύει να σέρνεις τη γραμμή (για απλότητα)
+            show: false,
+            addWaypoints: false,
             createMarker: function(i, wp, nWps) {
-                // Ειδικά εικονίδια για Αρχή (Πράσινο) και Τέλος (Κόκκινο)
                 var color = (i === 0) ? 'green' : 'red';
-                return L.marker(wp.latLng, {
-                    draggable: false
-                });
+                return L.marker(wp.latLng, { draggable: false }); // Οι markers δεν σέρνονται για απλότητα
             }
         }).addTo(map);
 
-        // Μεταβλητές για τα σημεία
         var startPoint = null;
         var endPoint = null;
         var calculatedPrice = 0;
 
-        // --- ΛΕΙΤΟΥΡΓΙΑ ΚΛΙΚ ΣΤΟ ΧΑΡΤΗ ---
+        // --- ΛΕΙΤΟΥΡΓΙΑ 1: ΚΛΙΚ ΣΤΟ ΧΑΡΤΗ ---
         map.on('click', function(e) {
-            // Περίπτωση 1: Δεν υπάρχει αφετηρία -> Βάλε Αφετηρία
+            handleMapClick(e.latlng);
+        });
+
+        function handleMapClick(latlng) {
             if (!startPoint) {
-                startPoint = e.latlng;
-                
-                // Ενημέρωση UI
-                document.getElementById('start').value = "Σημείο: " + startPoint.lat.toFixed(4) + ", " + startPoint.lng.toFixed(4);
-                
-                // Προσθήκη δείκτη (προσωρινά μέχρι να τρέξει το routing)
-                routingControl.setWaypoints([startPoint]);
-                
-            } 
-            // Περίπτωση 2: Υπάρχει αφετηρία, αλλά όχι προορισμός -> Βάλε Προορισμό & Υπολόγισε
-            else if (!endPoint) {
-                endPoint = e.latlng;
-                
-                // Ενημέρωση UI
-                document.getElementById('end').value = "Σημείο: " + endPoint.lat.toFixed(4) + ", " + endPoint.lng.toFixed(4);
-                
-                // ΕΚΤΕΛΕΣΗ ROUTING
+                startPoint = latlng;
+                // Reverse Geocoding (Προαιρετικό - για να δείξει διεύθυνση αντί για νούμερα)
+                geocoder.reverse(latlng, map.options.crs.scale(map.getZoom()), function(results) {
+                    var r = results[0];
+                    if (r) document.getElementById('start').value = r.name;
+                    else document.getElementById('start').value = latlng.lat.toFixed(4) + ", " + latlng.lng.toFixed(4);
+                });
+                updateRoute();
+            } else if (!endPoint) {
+                endPoint = latlng;
+                geocoder.reverse(latlng, map.options.crs.scale(map.getZoom()), function(results) {
+                    var r = results[0];
+                    if (r) document.getElementById('end').value = r.name;
+                    else document.getElementById('end').value = latlng.lat.toFixed(4) + ", " + latlng.lng.toFixed(4);
+                });
+                updateRoute();
+            } else {
+                // Reset αν υπάρχουν και τα δύο
+                resetMap();
+                handleMapClick(latlng); // Ξεκινάει νέα αφετηρία
+            }
+        }
+
+        // --- ΛΕΙΤΟΥΡΓΙΑ 2: ΠΛΗΚΤΡΟΛΟΓΗΣΗ ΔΙΕΥΘΥΝΣΗΣ ---
+        function geocodeInput(type) {
+            var inputId = type === 'start' ? 'start' : 'end';
+            var query = document.getElementById(inputId).value;
+
+            if (query.length < 3) return; // Μην ψάχνεις για μικρά κείμενα
+
+            // Προσθέτουμε "Athens, Greece" για να ψάχνει τοπικά αν ο χρήστης δεν το έγραψε
+            if (!query.toLowerCase().includes("greece")) {
+                query += ", Athens, Greece";
+            }
+
+            geocoder.geocode(query, function(results) {
+                if (results && results.length > 0) {
+                    var bestResult = results[0];
+                    var latlng = bestResult.center;
+                    
+                    if (type === 'start') {
+                        startPoint = latlng;
+                        map.panTo(latlng);
+                    } else {
+                        endPoint = latlng;
+                    }
+                    updateRoute();
+                } else {
+                    alert("Η διεύθυνση δεν βρέθηκε. Δοκιμάστε να πατήσετε στο χάρτη.");
+                }
+            });
+        }
+
+        function updateRoute() {
+            if (startPoint && endPoint) {
                 routingControl.setWaypoints([startPoint, endPoint]);
-            } 
-            // Περίπτωση 3: Υπάρχουν και τα δύο -> Κάνε Reset και ξεκίνα από την αρχή
-            else {
-                startPoint = e.latlng;
-                endPoint = null;
-                document.getElementById('start').value = "Σημείο: " + startPoint.lat.toFixed(4) + ", " + startPoint.lng.toFixed(4);
-                document.getElementById('end').value = "";
-                document.getElementById('priceDisplay').innerText = "0.00 €";
-                document.getElementById('distDisplay').innerText = "-";
-                document.getElementById('sendBtn').disabled = true;
-                
+            } else if (startPoint) {
                 routingControl.setWaypoints([startPoint]);
             }
-        });
+        }
+
+        function resetMap() {
+            startPoint = null;
+            endPoint = null;
+            document.getElementById('start').value = "";
+            document.getElementById('end').value = "";
+            document.getElementById('priceDisplay').innerText = "0.00 €";
+            document.getElementById('distDisplay').innerText = "-";
+            document.getElementById('sendBtn').disabled = true;
+            routingControl.setWaypoints([]);
+        }
 
         // Όταν βρεθεί διαδρομή
         routingControl.on('routesfound', function(e) {
             var routes = e.routes;
             var summary = routes[0].summary;
-            var distKm = summary.totalDistance / 1000; // Χιλιόμετρα
+            var distKm = summary.totalDistance / 1000;
             
-            // Υπολογισμός Τιμής
             calculatedPrice = calculateComplexPrice(distKm);
             
-            // Ενημέρωση Οθόνης
             document.getElementById('priceDisplay').innerText = calculatedPrice.toFixed(2) + " €";
             document.getElementById('distDisplay').innerText = distKm.toFixed(1) + " χλμ • ~" + Math.round(summary.totalTime / 60) + " λεπτά";
-            
-            // Ενεργοποίηση κουμπιού
             document.getElementById('sendBtn').disabled = false;
-            
-            // Κεντράρισμα χάρτη στη διαδρομή
-            // map.fitBounds(L.latLngBounds([startPoint, endPoint]));
         });
 
-        // --- Η ΣΥΝΑΡΤΗΣΗ ΤΗΣ ΧΡΕΩΣΗΣ (3€, μετά 0.50€, μετά +0.10€) ---
+        // --- Ο ΤΥΠΟΣ ΧΡΕΩΣΗΣ ΣΟΥ ---
         function calculateComplexPrice(km) {
             let price = 0;
-            
-            // 0-1 χλμ -> Σταθερά 3€
             if (km <= 1) return 3.00;
-
+            
             price = 3.00;
             let remaining = km - 1;
 
-            // 1-4 χλμ -> 0.50€
             if (remaining <= 3) {
                 price += remaining * 0.50;
                 return price;
             }
 
-            // Προσθέτουμε όλη τη ζώνη 1-4 (1.50€)
             price += 1.50;
             remaining -= 3;
-
-            // 4+ χλμ -> Κλιμακωτή αύξηση
+            
             let rate = 0.60;
             while (remaining > 0) {
                 let chunk = remaining >= 1 ? 1 : remaining;
@@ -230,8 +260,8 @@
 
             var orderData = {
                 phone: phone,
-                start: start + " (Lat/Lon)",
-                end: end + " (Lat/Lon)",
+                start: start,
+                end: end,
                 comments: comments,
                 price: calculatedPrice.toFixed(2),
                 dist: document.getElementById('distDisplay').innerText
