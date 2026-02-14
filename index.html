@@ -31,7 +31,7 @@
         .input-group { margin-bottom: 15px; }
         label { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 5px; display: block; }
         
-        .input-wrapper { display: flex; gap: 8px; }
+        .input-wrapper { display: flex; gap: 8px; position: relative; }
         
         input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
         input:focus { border-color: #2196f3; outline: none; }
@@ -49,8 +49,11 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.2s;
         }
         .search-btn:active { background: #1976d2; transform: scale(0.95); }
+        .search-btn.loading { background: #ccc; pointer-events: none; }
+        .search-btn.loading::after { content: "⌛"; font-size: 16px; animation: spin 1s infinite linear; }
 
         textarea { resize: vertical; height: 70px; }
         
@@ -72,7 +75,7 @@
     <div class="container">
         <h2>Αποστολή Δέματος</h2>
         <div class="instructions">
-            📍 Πάτα στο χάρτη για ακρίβεια <b>Ή</b><br>
+            📍 Πάτα στο χάρτη <b>Ή</b><br>
             ✍️ Γράψε διεύθυνση και <b>ΠΑΤΑ ΤΟΝ ΜΠΛΕ ΦΑΚΟ 🔍</b>
         </div>
         
@@ -85,7 +88,7 @@
             <label>Από Πού; (Παραλαβή)</label>
             <div class="input-wrapper">
                 <input type="text" id="start" placeholder="Οδός και Αριθμός..." >
-                <button class="search-btn" onclick="geocodeInput('start')">🔍</button>
+                <button class="search-btn" id="btn-start" onclick="smartSearch('start')">🔍</button>
             </div>
         </div>
 
@@ -93,7 +96,7 @@
             <label>Πού Πάει; (Παράδοση)</label>
             <div class="input-wrapper">
                 <input type="text" id="end" placeholder="Οδός και Αριθμός..." >
-                <button class="search-btn" onclick="geocodeInput('end')">🔍</button>
+                <button class="search-btn" id="btn-end" onclick="smartSearch('end')">🔍</button>
             </div>
         </div>
 
@@ -149,29 +152,28 @@
                 if (event.key === "Enter") {
                     event.preventDefault();
                     document.getElementById(id).blur();
-                    geocodeInput(type);
+                    smartSearch(type);
                 }
             });
         }
         setupEnterKey("start", "start");
         setupEnterKey("end", "end");
 
-        // 2. ΚΛΙΚ ΣΤΟ ΧΑΡΤΗ (Βελτιωμένο)
+        // 2. ΚΛΙΚ ΣΤΟ ΧΑΡΤΗ (Διορθωμένο για να δείχνει ονόματα)
         map.on('click', function(e) { handleMapClick(e.latlng); });
 
         function handleMapClick(latlng) {
-            // Βήμα 1: Βάζουμε ΑΜΕΣΩΣ τις συντεταγμένες για να μην κολλάει
+            // Βάζουμε προσωρινά τις συντεταγμένες για να μην κολλήσει ο υπολογισμός
             var coordsText = latlng.lat.toFixed(5) + ", " + latlng.lng.toFixed(5);
             
             if (!startPoint) {
                 startPoint = latlng;
-                document.getElementById('start').value = coordsText; 
-                // Βήμα 2: Ψάχνουμε το όνομα στο παρασκήνιο
-                reverseGeocode(latlng, 'start');
+                document.getElementById('start').value = "Εύρεση διεύθυνσης..."; 
+                reverseGeocode(latlng, 'start'); // Ψάχνει το όνομα
                 updateRoute();
             } else if (!endPoint) {
                 endPoint = latlng;
-                document.getElementById('end').value = coordsText; 
+                document.getElementById('end').value = "Εύρεση διεύθυνσης..."; 
                 reverseGeocode(latlng, 'end');
                 updateRoute();
             } else {
@@ -180,34 +182,54 @@
             }
         }
 
-        // 3. ΕΞΥΠΝΗ ΑΝΑΖΗΤΗΣΗ (Διορθώνει το "Βούλγαρη 163")
-        function geocodeInput(type) {
+        // 3. ΕΞΥΠΝΗ ΑΝΑΖΗΤΗΣΗ (Smart Search)
+        function smartSearch(type) {
             var inputId = type === 'start' ? 'start' : 'end';
+            var btnId = type === 'start' ? 'btn-start' : 'btn-end';
             var query = document.getElementById(inputId).value;
             
-            if (query.length < 2) return; 
-            
-            // Αν είναι συντεταγμένες, δεν κάνουμε τίποτα
-            if (query.match(/[0-9]+\.[0-9]+, [0-9]+\.[0-9]+/)) return;
+            if (query.length < 2) return;
+            if (query.includes("Εύρεση") || query.includes("Lat")) return;
 
-            // Δοκιμή 1: Όπως το έγραψε + Ελλάδα (αν δεν έχει)
-            var searchCtx = query;
-            if (!query.toLowerCase().includes("ελλαδα") && !query.toLowerCase().includes("greece")) {
-                searchCtx += ", Ελλάδα"; 
+            // Δείχνουμε ότι φορτώνει
+            var btn = document.getElementById(btnId);
+            var originalBtnText = btn.innerHTML;
+            btn.classList.add("loading");
+            btn.innerHTML = ""; 
+
+            // ΛΙΣΤΑ ΔΟΚΙΜΩΝ: Ψάχνει με πολλούς τρόπους μέχρι να το βρει
+            var attempts = [
+                query, // Σκέτο
+                query + ", Πειραιάς", // Δοκιμή με Πειραιά
+                query + ", Αθήνα", // Δοκιμή με Αθήνα
+                query + ", Αττική", // Δοκιμή με Αττική
+                query + ", Ελλάδα" // Γενικά
+            ];
+
+            runSearchAttempt(attempts, 0, type, inputId, btn, originalBtnText);
+        }
+
+        function runSearchAttempt(attempts, index, type, inputId, btn, originalBtnText) {
+            if (index >= attempts.length) {
+                // Τέλος προσπαθειών - Δεν βρέθηκε
+                alert("❌ Δεν βρέθηκε η διεύθυνση. Πατήστε πάνω στο χάρτη!");
+                btn.classList.remove("loading");
+                btn.innerHTML = originalBtnText;
+                return;
             }
 
-            geocoder.geocode(searchCtx, function(results) {
+            var currentQuery = attempts[index];
+            console.log("Searching for:", currentQuery); // Για debugging
+
+            geocoder.geocode(currentQuery, function(results) {
                 if (results && results.length > 0) {
+                    // ΒΡΕΘΗΚΕ!
                     applyResult(results[0], type, inputId);
+                    btn.classList.remove("loading");
+                    btn.innerHTML = originalBtnText;
                 } else {
-                    // Δοκιμή 2: Προσθέτουμε "Αττική" μήπως βοηθήσει
-                    geocoder.geocode(query + ", Αττική, Ελλάδα", function(retryResults) {
-                        if (retryResults && retryResults.length > 0) {
-                            applyResult(retryResults[0], type, inputId);
-                        } else {
-                            alert("❌ Η διεύθυνση δεν βρέθηκε!\nΔοκιμάστε να γράψετε και την περιοχή (π.χ. 'Βούλγαρη 163, Νίκαια')");
-                        }
-                    });
+                    // ΔΕΝ ΒΡΕΘΗΚΕ -> Πάμε στην επόμενη προσπάθεια
+                    runSearchAttempt(attempts, index + 1, type, inputId, btn, originalBtnText);
                 }
             });
         }
@@ -235,7 +257,7 @@
             updateRoute();
         }
 
-        // 4. Reverse Geocoding (Από Συντεταγμένες σε Όνομα)
+        // 4. Reverse Geocoding (Μετονομασία Συντεταγμένων)
         function reverseGeocode(latlng, type) {
             geocoder.reverse(latlng, map.options.crs.scale(map.getZoom()), function(results) {
                 if (results && results.length > 0) {
@@ -245,16 +267,18 @@
                     if (r.properties && r.properties.address) {
                         var road = r.properties.address.road || "";
                         var number = r.properties.address.house_number || "";
-                        var suburb = r.properties.address.suburb || r.properties.address.city || "";
+                        var suburb = r.properties.address.suburb || r.properties.address.city || r.properties.address.town || "";
                         
+                        // Φτιάχνουμε ωραίο όνομα
                         if (road) addressText = road + " " + number;
-                        if (suburb) addressText += ", " + suburb;
+                        else if (suburb) addressText = suburb; // Αν δεν έχει δρόμο, βάλε περιοχή
+                        
+                        if (suburb && road) addressText += ", " + suburb;
                     }
-                    
-                    // Ενημερώνουμε το κουτάκι ΜΟΝΟ αν βρήκαμε κάτι καλό
-                    if (addressText) {
-                        document.getElementById(type).value = addressText;
-                    }
+                    document.getElementById(type).value = addressText;
+                } else {
+                    // Αν αποτύχει τελείως, βάλε τις συντεταγμένες για να μην μείνει κενό
+                    document.getElementById(type).value = latlng.lat.toFixed(5) + ", " + latlng.lng.toFixed(5);
                 }
             });
         }
@@ -313,7 +337,7 @@
             
             // ΕΛΕΓΧΟΣ: Αν η τιμή είναι 0
             if (price == "0.00" || price == 0) {
-                alert("⚠️ Η διαδρομή δεν έχει υπολογιστεί!\n\nΠατήστε τους ΜΠΛΕ ΦΑΚΟΥΣ 🔍 δίπλα στις διευθύνσεις για να βγει η τιμή.");
+                alert("⚠️ Η διαδρομή δεν έχει υπολογιστεί!\n\nΠατήστε τους ΜΠΛΕ ΦΑΚΟΥΣ 🔍 δίπλα στις διευθύνσεις!");
                 return;
             }
 
