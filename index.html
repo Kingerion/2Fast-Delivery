@@ -34,8 +34,17 @@
         input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; transition: border 0.3s; }
         input:focus { border-color: #ff5722; outline: none; }
         
-        /* Εικονίδιο αναζήτησης μέσα στο input */
-        .search-icon { position: absolute; right: 10px; top: 35px; color: #999; }
+        /* Εικονίδιο αναζήτησης - Τώρα λειτουργεί και ως κουμπί */
+        .search-btn { 
+            position: absolute; 
+            right: 5px; 
+            top: 28px; 
+            background: none; 
+            border: none; 
+            font-size: 20px; 
+            cursor: pointer;
+            padding: 5px;
+        }
 
         textarea { resize: vertical; height: 70px; }
         
@@ -57,7 +66,7 @@
     <div class="container">
         <h2>Αποστολή Δέματος</h2>
         <div class="instructions">
-            ✍️ <strong>Νέο:</strong> Γράψε διεύθυνση και πάτα "Enter" ή επίλεξε σημείο στο χάρτη.
+            ✍️ Γράψε διεύθυνση και πάτα <b>Enter</b> ή τον φακό 🔍.
         </div>
         
         <div class="input-group">
@@ -66,13 +75,13 @@
         
         <div class="input-group">
             <label>Αφετηρία</label>
-            <input type="text" id="start" placeholder="Πληκτρολογήστε διεύθυνση..." onchange="geocodeInput('start')">
-            <span class="search-icon">🔍</span>
+            <input type="text" id="start" placeholder="Πληκτρολογήστε διεύθυνση..." onblur="geocodeInput('start')">
+            <button class="search-btn" onclick="geocodeInput('start')">🔍</button>
         </div>
         <div class="input-group">
             <label>Προορισμός</label>
-            <input type="text" id="end" placeholder="Πληκτρολογήστε διεύθυνση..." onchange="geocodeInput('end')">
-            <span class="search-icon">🔍</span>
+            <input type="text" id="end" placeholder="Πληκτρολογήστε διεύθυνση..." onblur="geocodeInput('end')">
+            <button class="search-btn" onclick="geocodeInput('end')">🔍</button>
         </div>
 
         <div class="input-group">
@@ -97,173 +106,161 @@
 
     <script>
         // --- ΡΥΘΜΙΣΕΙΣ ---
-        // ΒΑΛΕ ΕΔΩ ΤΟ LINK ΑΠΟ ΤΟ GOOGLE SCRIPT (Που δούλεψε με το 200)
+        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
+        
+        // 🟢 ΤΟ ΤΗΛΕΦΩΝΟ ΣΟΥ ΓΙΑ WHATSAPP (χωρίς +30, μόνο αριθμός)
+        const MY_PHONE = "306934021792";
         // -----------------
 
-        var map = L.map('map').setView([37.9838, 23.7275], 13); // Αθήνα
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+        var map = L.map('map').setView([37.9838, 23.7275], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
-        // Υπηρεσία Geocoding (Μετατροπή διεύθυνσης σε συντεταγμένες)
         var geocoder = L.Control.Geocoder.nominatim();
-
         var routingControl = L.Routing.control({
             waypoints: [],
             routeWhileDragging: false,
-            router: L.Routing.osrmv1({
-                serviceUrl: 'https://router.project-osrm.org/route/v1'
-            }),
+            router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
             show: false,
             addWaypoints: false,
-            createMarker: function(i, wp, nWps) {
-                var color = (i === 0) ? 'green' : 'red';
-                return L.marker(wp.latLng, { draggable: false }); // Οι markers δεν σέρνονται για απλότητα
+            createMarker: function(i, wp) {
+                return L.marker(wp.latLng, { draggable: false });
             }
         }).addTo(map);
 
-        var startPoint = null;
-        var endPoint = null;
-        var calculatedPrice = 0;
+        var startPoint = null, endPoint = null, calculatedPrice = 0;
 
-        // --- ΛΕΙΤΟΥΡΓΙΑ 1: ΚΛΙΚ ΣΤΟ ΧΑΡΤΗ ---
-        map.on('click', function(e) {
-            handleMapClick(e.latlng);
-        });
+        // 1. Διόρθωση ENTER KEY
+        function setupEnterKey(id, type) {
+            document.getElementById(id).addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Να μην κάνει refresh
+                    document.getElementById(id).blur(); // Κλείνει το πληκτρολόγιο
+                    geocodeInput(type);
+                }
+            });
+        }
+        setupEnterKey("start", "start");
+        setupEnterKey("end", "end");
+
+        // 2. Λειτουργία Χάρτη (Click)
+        map.on('click', function(e) { handleMapClick(e.latlng); });
 
         function handleMapClick(latlng) {
             if (!startPoint) {
                 startPoint = latlng;
-                // Reverse Geocoding (Προαιρετικό - για να δείξει διεύθυνση αντί για νούμερα)
-                geocoder.reverse(latlng, map.options.crs.scale(map.getZoom()), function(results) {
-                    var r = results[0];
-                    if (r) document.getElementById('start').value = r.name;
-                    else document.getElementById('start').value = latlng.lat.toFixed(4) + ", " + latlng.lng.toFixed(4);
-                });
+                reverseGeocode(latlng, 'start');
                 updateRoute();
             } else if (!endPoint) {
                 endPoint = latlng;
-                geocoder.reverse(latlng, map.options.crs.scale(map.getZoom()), function(results) {
-                    var r = results[0];
-                    if (r) document.getElementById('end').value = r.name;
-                    else document.getElementById('end').value = latlng.lat.toFixed(4) + ", " + latlng.lng.toFixed(4);
-                });
+                reverseGeocode(latlng, 'end');
                 updateRoute();
             } else {
-                // Reset αν υπάρχουν και τα δύο
                 resetMap();
-                handleMapClick(latlng); // Ξεκινάει νέα αφετηρία
+                handleMapClick(latlng);
             }
         }
 
-        // --- ΛΕΙΤΟΥΡΓΙΑ 2: ΠΛΗΚΤΡΟΛΟΓΗΣΗ ΔΙΕΥΘΥΝΣΗΣ ---
+        // 3. Αναζήτηση Διεύθυνσης
         function geocodeInput(type) {
             var inputId = type === 'start' ? 'start' : 'end';
             var query = document.getElementById(inputId).value;
-
-            if (query.length < 3) return; // Μην ψάχνεις για μικρά κείμενα
-
-            // Προσθέτουμε "Athens, Greece" για να ψάχνει τοπικά αν ο χρήστης δεν το έγραψε
-            if (!query.toLowerCase().includes("greece")) {
-                query += ", Athens, Greece";
+            if (query.length < 3) return; 
+            if (!query.toLowerCase().includes("greece") && !query.toLowerCase().includes("ελλαδα")) {
+                query += ", Αττική, Ελλάδα"; // Βοηθάει στην αναζήτηση
             }
 
             geocoder.geocode(query, function(results) {
                 if (results && results.length > 0) {
-                    var bestResult = results[0];
-                    var latlng = bestResult.center;
-                    
-                    if (type === 'start') {
-                        startPoint = latlng;
-                        map.panTo(latlng);
-                    } else {
-                        endPoint = latlng;
-                    }
+                    var r = results[0];
+                    if (type === 'start') { startPoint = r.center; map.panTo(r.center); } 
+                    else { endPoint = r.center; }
                     updateRoute();
-                } else {
-                    alert("Η διεύθυνση δεν βρέθηκε. Δοκιμάστε να πατήσετε στο χάρτη.");
                 }
             });
         }
 
+        function reverseGeocode(latlng, type) {
+            geocoder.reverse(latlng, map.options.crs.scale(map.getZoom()), function(results) {
+                if (results[0]) document.getElementById(type).value = results[0].name;
+            });
+        }
+
         function updateRoute() {
-            if (startPoint && endPoint) {
-                routingControl.setWaypoints([startPoint, endPoint]);
-            } else if (startPoint) {
-                routingControl.setWaypoints([startPoint]);
-            }
+            if (startPoint && endPoint) routingControl.setWaypoints([startPoint, endPoint]);
+            else if (startPoint) routingControl.setWaypoints([startPoint]);
         }
 
         function resetMap() {
-            startPoint = null;
-            endPoint = null;
+            startPoint = null; endPoint = null;
             document.getElementById('start').value = "";
             document.getElementById('end').value = "";
             document.getElementById('priceDisplay').innerText = "0.00 €";
-            document.getElementById('distDisplay').innerText = "-";
             document.getElementById('sendBtn').disabled = true;
             routingControl.setWaypoints([]);
         }
 
-        // Όταν βρεθεί διαδρομή
         routingControl.on('routesfound', function(e) {
-            var routes = e.routes;
-            var summary = routes[0].summary;
+            var summary = e.routes[0].summary;
             var distKm = summary.totalDistance / 1000;
-            
             calculatedPrice = calculateComplexPrice(distKm);
             
             document.getElementById('priceDisplay').innerText = calculatedPrice.toFixed(2) + " €";
-            document.getElementById('distDisplay').innerText = distKm.toFixed(1) + " χλμ • ~" + Math.round(summary.totalTime / 60) + " λεπτά";
+            document.getElementById('distDisplay').innerText = distKm.toFixed(1) + " χλμ";
             document.getElementById('sendBtn').disabled = false;
         });
 
-        // --- Ο ΤΥΠΟΣ ΧΡΕΩΣΗΣ ΣΟΥ ---
+        // Ο ΥΠΟΛΟΓΙΣΜΟΣ ΤΙΜΗΣ ΣΟΥ
         function calculateComplexPrice(km) {
-            let price = 0;
             if (km <= 1) return 3.00;
-            
-            price = 3.00;
+            let price = 3.00;
             let remaining = km - 1;
-
-            if (remaining <= 3) {
-                price += remaining * 0.50;
-                return price;
-            }
-
-            price += 1.50;
-            remaining -= 3;
             
+            if (remaining <= 3) { price += remaining * 0.50; return price; }
+            
+            price += 1.50; remaining -= 3;
             let rate = 0.60;
             while (remaining > 0) {
                 let chunk = remaining >= 1 ? 1 : remaining;
                 price += chunk * rate;
-                remaining -= 1;
-                rate += 0.10;
+                remaining -= 1; rate += 0.10;
             }
             return price;
         }
 
+        // 4. ΑΠΟΣΤΟΛΗ (SHIPDAY + WHATSAPP)
         function sendOrder() {
             var phone = document.getElementById('phone').value;
             var start = document.getElementById('start').value;
             var end = document.getElementById('end').value;
             var comments = document.getElementById('comments').value;
+            var price = calculatedPrice.toFixed(2);
 
             if (!phone) { alert("Παρακαλώ συμπληρώστε τηλέφωνο!"); return; }
 
             document.getElementById('sendBtn').disabled = true;
-            document.getElementById('btnText').style.display = 'none';
+            document.getElementById('btnText').innerText = "Αποστολή...";
             document.getElementById('loader').style.display = 'block';
 
+            // --- ΑΠΟΣΤΟΛΗ ΣΤΟ WHATSAPP ---
+            var waText = "*Νέα Παραγγελία!* 📦\n" +
+                         "📞 Τηλ: " + phone + "\n" +
+                         "📍 Από: " + start + "\n" +
+                         "🏁 Προς: " + end + "\n" +
+                         "💬 Σχόλια: " + comments + "\n" +
+                         "💰 Κόστος: " + price + " €";
+            
+            // Ανοίγει σε νέα καρτέλα το WhatsApp
+            var waLink = "https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waText);
+            window.open(waLink, '_blank');
+
+            // --- ΑΠΟΣΤΟΛΗ ΣΤΟ SHIPDAY ---
             var orderData = {
                 phone: phone,
                 start: start,
                 end: end,
                 comments: comments,
-                price: calculatedPrice.toFixed(2),
+                price: price,
                 dist: document.getElementById('distDisplay').innerText
             };
 
