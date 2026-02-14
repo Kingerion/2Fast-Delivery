@@ -27,16 +27,16 @@
         h2 { margin-top: 0; color: #333; text-align: center; font-size: 20px; }
         .instructions { text-align: center; font-size: 13px; color: #666; margin-bottom: 15px; background: #fff3e0; padding: 8px; border-radius: 8px; border: 1px solid #ffe0b2; }
         
-        .input-group { margin-bottom: 15px; position: relative; } /* Relative για να κολλήσει η λίστα */
+        .input-group { margin-bottom: 15px; position: relative; }
         label { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 5px; display: block; }
         
         input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
         input:focus { border-color: #2196f3; outline: none; }
         
-        /* Στυλ για τη Λίστα Αυτόματης Συμπλήρωσης */
+        /* Λίστα Αυτόματης Συμπλήρωσης */
         .suggestions-list {
             position: absolute;
-            top: 75px; /* Κάτω από το input */
+            top: 75px;
             left: 0;
             right: 0;
             background: white;
@@ -46,7 +46,7 @@
             overflow-y: auto;
             z-index: 1000;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: none; /* Κρυφό αρχικά */
+            display: none;
         }
         
         .suggestion-item {
@@ -79,7 +79,7 @@
     <div class="container">
         <h2>Αποστολή Δέματος</h2>
         <div class="instructions">
-            🚀 <strong>Smart Search:</strong> Ξεκίνα να γράφεις διεύθυνση και διάλεξε από τη λίστα!
+            🚀 <strong>Smart Search:</strong> Γράψε διεύθυνση ή πάτα στο χάρτη!
         </div>
         
         <div class="input-group">
@@ -143,8 +143,7 @@
 
         var startPoint = null, endPoint = null, calculatedPrice = 0;
 
-        // --- SMART SEARCH LOGIC (ΑΥΤΟΜΑΤΗ ΣΥΜΠΛΗΡΩΣΗ) ---
-        
+        // --- SMART SEARCH (ΑΥΤΟΜΑΤΗ ΣΥΜΠΛΗΡΩΣΗ) ---
         function setupAutocomplete(inputId, suggestionsId, type) {
             const input = document.getElementById(inputId);
             const list = document.getElementById(suggestionsId);
@@ -152,103 +151,70 @@
 
             input.addEventListener('input', function() {
                 const query = this.value;
-                
-                // Καθαρισμός αν είναι μικρό
-                if (query.length < 3) {
-                    list.style.display = 'none';
-                    return;
-                }
-
-                // Debounce (Περιμένουμε να σταματήσει να γράφει για 300ms)
+                if (query.length < 3) { list.style.display = 'none'; return; }
                 clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    fetchSuggestions(query, list, type, input);
-                }, 300);
+                timeout = setTimeout(() => { fetchSuggestions(query, list, type, input); }, 300);
             });
 
-            // Κλείσιμο λίστας αν πατήσεις αλλού
             document.addEventListener('click', function(e) {
-                if (e.target !== input && e.target !== list) {
-                    list.style.display = 'none';
-                }
+                if (e.target !== input && e.target !== list) { list.style.display = 'none'; }
             });
         }
 
         function fetchSuggestions(query, list, type, inputElement) {
-            // Ψάχνουμε μόνο Ελλάδα (countrycodes=gr)
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&countrycodes=gr&limit=5`;
-
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    list.innerHTML = ''; // Καθαρισμός
-                    
-                    if (data.length === 0) {
-                        list.style.display = 'none';
-                        return;
-                    }
+                    list.innerHTML = '';
+                    if (data.length === 0) { list.style.display = 'none'; return; }
 
                     data.forEach(item => {
                         const div = document.createElement('div');
                         div.className = 'suggestion-item';
                         
-                        // Φτιάχνουμε ωραίο κείμενο (Οδός, Περιοχή)
                         let displayText = item.address.road || item.address.pedestrian || "";
                         if (item.address.house_number) displayText += " " + item.address.house_number;
-                        
-                        let area = item.address.suburb || item.address.city || item.address.town || item.address.village || "";
+                        let area = item.address.suburb || item.address.city || item.address.town || "";
                         if (area) displayText += `, ${area}`;
-                        
-                        // Αν δεν βρήκε δρόμο, βάλε το display_name
                         if (!displayText) displayText = item.display_name.split(',').slice(0, 2).join(',');
 
                         div.innerHTML = `<strong>📍</strong> ${displayText}`;
-                        
-                        // Τι γίνεται όταν κάνεις ΚΛΙΚ στην πρόταση
                         div.onclick = function() {
-                            inputElement.value = displayText; // Γράψ' το στο κουτί
-                            list.style.display = 'none'; // Κρύψε τη λίστα
-                            
+                            inputElement.value = displayText;
+                            list.style.display = 'none';
                             const latlng = L.latLng(item.lat, item.lon);
-                            
-                            if (type === 'start') {
-                                startPoint = latlng;
-                                map.panTo(latlng);
-                            } else {
-                                endPoint = latlng;
-                            }
-                            updateRoute(); // Υπολόγισε διαδρομή
+                            if (type === 'start') { startPoint = latlng; map.panTo(latlng); } else { endPoint = latlng; }
+                            updateRoute();
                         };
-
                         list.appendChild(div);
                     });
-
                     list.style.display = 'block';
                 })
                 .catch(err => console.error(err));
         }
 
-        // Ενεργοποίηση Autocomplete
         setupAutocomplete('start', 'suggestions-start', 'start');
         setupAutocomplete('end', 'suggestions-end', 'end');
-
 
         // --- ΚΛΙΚ ΣΤΟ ΧΑΡΤΗ ---
         map.on('click', function(e) { handleMapClick(e.latlng); });
 
         function handleMapClick(latlng) {
-            // Αν πατήσει χάρτη, κλείνουμε τις λίστες
             document.getElementById('suggestions-start').style.display = 'none';
             document.getElementById('suggestions-end').style.display = 'none';
+            
+            // Κρατάμε τις συντεταγμένες ως backup αν δεν βρεθεί δρόμος
+            var coords = latlng.lat.toFixed(5) + ", " + latlng.lng.toFixed(5);
 
             if (!startPoint) {
                 startPoint = latlng;
-                document.getElementById('start').value = "Σημείο Χάρτη (Υπολογισμός...)";
+                document.getElementById('start').value = coords; // Βάζουμε συντεταγμένες προσωρινά
                 reverseGeocode(latlng, 'start');
                 updateRoute();
             } else if (!endPoint) {
                 endPoint = latlng;
-                document.getElementById('end').value = "Σημείο Χάρτη (Υπολογισμός...)";
+                document.getElementById('end').value = coords; // Βάζουμε συντεταγμένες προσωρινά
                 reverseGeocode(latlng, 'end');
                 updateRoute();
             } else {
@@ -257,7 +223,7 @@
             }
         }
 
-        // --- REVERSE GEOCODING (Για κλικ στο χάρτη) ---
+        // --- REVERSE GEOCODING (ΔΙΟΡΘΩΜΕΝΟ) ---
         function reverseGeocode(latlng, type) {
             const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lon}`;
             
@@ -266,15 +232,25 @@
                 .then(data => {
                     let displayText = "";
                     if (data.address) {
-                        let road = data.address.road || "";
+                        // Ψάχνουμε όλα τα πιθανά ονόματα δρόμων
+                        let road = data.address.road || data.address.pedestrian || data.address.footway || data.address.path || "";
                         let number = data.address.house_number || "";
-                        let area = data.address.suburb || data.address.city || "";
+                        let area = data.address.suburb || data.address.neighbourhood || data.address.city || data.address.town || data.address.village || "";
+                        
                         if (road) displayText = road + " " + number;
-                        if (area) displayText += ", " + area;
+                        if (area) displayText += (displayText ? ", " : "") + area;
                     }
-                    if (!displayText) displayText = "Σημείο στο χάρτη";
+                    
+                    // ΑΝ ΔΕΝ ΒΡΕΘΗΚΕ ΤΙΠΟΤΑ -> ΚΡΑΤΑΜΕ ΤΙΣ ΣΥΝΤΕΤΑΓΜΕΝΕΣ
+                    if (!displayText || displayText.trim() === "") {
+                        displayText = latlng.lat.toFixed(5) + ", " + latlng.lng.toFixed(5);
+                    }
                     
                     document.getElementById(type).value = displayText;
+                })
+                .catch(err => {
+                    // Σε περίπτωση λάθους δικτύου, αφήνουμε τις συντεταγμένες
+                    console.log("Geocode error, keeping coords");
                 });
         }
 
