@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2Fast Delivery (Smart Location)</title>
+    <title>2Fast Delivery (Pro)</title>
     
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f4; }
         
-        #map { height: 45vh; width: 100%; }
+        #map { height: 40vh; width: 100%; }
 
         .container { 
             padding: 20px; 
@@ -18,27 +18,82 @@
             top: -20px; 
             z-index: 999;
             box-shadow: 0 -5px 15px rgba(0,0,0,0.1); 
+            padding-bottom: 40px;
         }
 
-        h2 { margin-top: 0; color: #333; text-align: center; font-size: 20px; }
-        .instructions { text-align: center; font-size: 13px; color: #666; margin-bottom: 15px; background: #fff3e0; padding: 8px; border-radius: 8px; border: 1px solid #ffe0b2; }
+        h2 { margin-top: 0; color: #333; text-align: center; font-size: 20px; margin-bottom: 20px; }
         
-        .input-group { margin-bottom: 15px; }
-        label { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 5px; display: block; }
-        
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
-        input:focus { border-color: #4285F4; outline: none; }
-        
-        textarea { resize: vertical; height: 70px; }
-        
-        .price-box { background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; border: 2px solid #4285F4; }
-        .price-value { font-size: 28px; font-weight: bold; color: #1565c0; }
-        .distance-info { font-size: 15px; color: #555; margin-top: 5px; font-weight: 500; }
+        /* Στυλ για τις Ενότητες (Cards) */
+        .section-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2196f3;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+        .section-title span { margin-right: 5px; font-size: 16px; }
 
-        button#sendBtn { width: 100%; padding: 16px; background: #ff5722; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .input-group { margin-bottom: 10px; }
+        label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
+        
+        input, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            background: #fafafa; 
+            transition: all 0.2s;
+        }
+        input:focus { border-color: #2196f3; background: #fff; outline: none; }
+
+        /* Flexbox για τα μικρά κουτάκια δίπλα-δίπλα */
+        .row { display: flex; gap: 10px; }
+        .col-6 { flex: 1; } /* Μισό-Μισό */
+        .col-4 { flex: 0.4; } /* Μικρό */
+        .col-8 { flex: 0.8; } /* Μεγάλο */
+
+        textarea { resize: vertical; height: 60px; }
+        
+        .price-box { 
+            background: #e3f2fd; 
+            padding: 15px; 
+            border-radius: 12px; 
+            text-align: center; 
+            margin: 20px 0; 
+            border: 2px solid #2196f3; 
+        }
+        .price-value { font-size: 28px; font-weight: bold; color: #1565c0; }
+        .distance-info { font-size: 14px; color: #555; margin-top: 5px; font-weight: 500; }
+
+        button#sendBtn { 
+            width: 100%; 
+            padding: 16px; 
+            background: #ff5722; 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: background 0.3s; 
+            box-shadow: 0 4px 6px rgba(255, 87, 34, 0.3); 
+        }
         button:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
         
-        .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #ff5722; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
+        .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .pac-container { z-index: 10000 !important; border-radius: 0 0 8px 8px; margin-top: 2px; }
@@ -50,27 +105,54 @@
 
     <div class="container">
         <h2>Αποστολή Δέματος</h2>
-        <div class="instructions">
-            📍 <strong>Tip:</strong> Ενεργοποιήστε την τοποθεσία για να βρίσκει τους κοντινούς δρόμους πρώτα!
-        </div>
         
         <div class="input-group">
-            <label>Το τηλέφωνό σας</label>
-            <input type="tel" id="phone" placeholder="π.χ. 6900000000" required>
+            <label>Το Τηλέφωνό σας (Εντολέας)</label>
+            <input type="tel" id="phone" placeholder="π.χ. 6900000000" required style="font-weight: bold; font-size: 16px;">
         </div>
-        
-        <div class="input-group">
-            <label>Από Πού; (Παραλαβή)</label>
-            <input type="text" id="start" placeholder="Γράψε οδό και αριθμό..." autocomplete="off">
+
+        <div class="section-card">
+            <div class="section-title"><span>📍</span> ΠΑΡΑΛΑΒΗ (ΑΠΟ)</div>
+            
+            <div class="input-group">
+                <input type="text" id="start" placeholder="🔍 Διεύθυνση (γράψε & επίλεξε)...">
+            </div>
+            
+            <div class="row">
+                <div class="col-8">
+                    <input type="text" id="startName" placeholder="Όνομα / Κουδούνι">
+                </div>
+                <div class="col-4">
+                    <input type="text" id="startFloor" placeholder="Όροφος">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><span>🏁</span> ΠΑΡΑΔΟΣΗ (ΠΡΟΣ)</div>
+            
+            <div class="input-group">
+                <input type="text" id="end" placeholder="🔍 Διεύθυνση (γράψε & επίλεξε)...">
+            </div>
+
+            <div class="row input-group">
+                <div class="col-8">
+                    <input type="text" id="endName" placeholder="Όνομα / Κουδούνι">
+                </div>
+                <div class="col-4">
+                    <input type="text" id="endFloor" placeholder="Όροφος">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Τηλέφωνο Παραλήπτη (Υποχρεωτικό)</label>
+                <input type="tel" id="endPhone" placeholder="Ποιον καλούμε;" style="border-color: #ff9800;">
+            </div>
         </div>
 
         <div class="input-group">
-            <label>Πού Πάει; (Παράδοση)</label>
-            <input type="text" id="end" placeholder="Γράψε οδό και αριθμό..." autocomplete="off">
-        </div>
-
-        <div class="input-group">
-            <textarea id="comments" placeholder="Σχόλια (π.χ. Κουδούνι, Όροφος, Όνομα)"></textarea>
+            <label>Άλλες οδηγίες (π.χ. Προσοχή εύθραυστο)</label>
+            <textarea id="comments" placeholder="Γράψτε εδώ αν χρειάζεται κάτι άλλο..."></textarea>
         </div>
 
         <div class="price-box">
@@ -97,7 +179,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
 
         function initMap() {
-            var defaultCenter = { lat: 37.9838, lng: 23.7275 }; // Default: Αθήνα
+            var defaultCenter = { lat: 37.9429, lng: 23.6470 }; // Πειραιάς
             
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
@@ -113,24 +195,13 @@
 
             initAutocomplete();
             
-            // --- ΑΥΤΟΜΑΤΟΣ ΕΝΤΟΠΙΣΜΟΣ ---
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        };
-                        map.setCenter(pos); // Πάει τον χάρτη στον χρήστη
-                        
-                        // "Δένουμε" την αναζήτηση με τον χάρτη
-                        // Έτσι, αν ο χάρτης είναι Θεσσαλονίκη, ψάχνει πρώτα εκεί!
+                        const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                        map.setCenter(pos);
                         startAutocomplete.bindTo("bounds", map);
                         endAutocomplete.bindTo("bounds", map);
-                    },
-                    () => {
-                        // Αν αρνηθεί, δεν πειράζει, μένουμε Αθήνα
-                        console.log("Geolocation blocked");
                     }
                 );
             }
@@ -138,9 +209,9 @@
 
         function initAutocomplete() {
             var options = {
-                componentRestrictions: { country: "gr" }, // Μόνο Ελλάδα
+                componentRestrictions: { country: "gr" },
                 fields: ["formatted_address", "geometry", "name"],
-                strictBounds: false, // ΕΠΙΤΡΕΠΕΙ μακρινές αναζητήσεις
+                strictBounds: false,
             };
 
             var startInput = document.getElementById('start');
@@ -148,18 +219,12 @@
 
             startAutocomplete = new google.maps.places.Autocomplete(startInput, options);
             endAutocomplete = new google.maps.places.Autocomplete(endInput, options);
-            
-            // Από προεπιλογή, τα "δένουμε" με τον χάρτη
-            startAutocomplete.bindTo('bounds', map);
-            endAutocomplete.bindTo('bounds', map);
 
             startAutocomplete.addListener("place_changed", calcRoute);
             endAutocomplete.addListener("place_changed", calcRoute);
         }
 
         function calcRoute() {
-            var startPlace = startAutocomplete.getPlace();
-            var endPlace = endAutocomplete.getPlace();
             var startVal = document.getElementById('start').value;
             var endVal = document.getElementById('end').value;
 
@@ -168,10 +233,7 @@
                     origin: startVal,
                     destination: endVal,
                     travelMode: 'DRIVING',
-                    drivingOptions: {
-                        departureTime: new Date(Date.now()),
-                        trafficModel: 'bestguess'
-                    }
+                    drivingOptions: { departureTime: new Date(Date.now()), trafficModel: 'bestguess' }
                 };
 
                 directionsService.route(request, function(result, status) {
@@ -208,34 +270,58 @@
         }
 
         function sendOrder() {
+            // ΣΥΛΛΟΓΗ ΔΕΔΟΜΕΝΩΝ
             var phone = document.getElementById('phone').value;
-            var start = document.getElementById('start').value;
-            var end = document.getElementById('end').value;
+            
+            var startAddr = document.getElementById('start').value;
+            var startName = document.getElementById('startName').value || "-";
+            var startFloor = document.getElementById('startFloor').value || "-";
+            
+            var endAddr = document.getElementById('end').value;
+            var endName = document.getElementById('endName').value || "-";
+            var endFloor = document.getElementById('endFloor').value || "-";
+            var endPhone = document.getElementById('endPhone').value || "Χωρίς τηλ";
+            
             var comments = document.getElementById('comments').value;
             var price = calculatedPrice.toFixed(2);
 
-            if (!phone) { alert("⚠️ Παρακαλώ συμπληρώστε τηλέφωνο!"); return; }
-            if (price == 0) { alert("⚠️ Παρακαλώ επιλέξτε διευθύνσεις από τη λίστα!"); return; }
+            if (!phone) { alert("⚠️ Συμπληρώστε το τηλέφωνό σας!"); return; }
+            if (price == 0) { alert("⚠️ Επιλέξτε διευθύνσεις!"); return; }
 
             document.getElementById('sendBtn').disabled = true;
             document.getElementById('btnText').innerText = "Αποστολή...";
             document.getElementById('loader').style.display = 'block';
 
-            var waText = "*Νέα Παραγγελία!* 📦\n" +
-                         "📞 Τηλ: " + phone + "\n" +
-                         "📍 Από: " + start + "\n" +
-                         "🏁 Προς: " + end + "\n" +
-                         "💬 Σχόλια: " + comments + "\n" +
-                         "💰 Κόστος: " + price + " € (" + distanceText + ")";
+            // ΕΤΟΙΜΑΣΙΑ ΜΗΝΥΜΑΤΩΝ (Ενώνουμε τα στοιχεία για να φαίνονται παντού)
+            
+            // Για Shipday (Προσθέτουμε τις λεπτομέρειες μέσα στη διεύθυνση για να τις δει ο διανομέας)
+            var startFull = startAddr + " (🔔 " + startName + ", 🏢 " + startFloor + ")";
+            var endFull = endAddr + " (🔔 " + endName + ", 🏢 " + endFloor + ")";
+            var fullComments = "Τηλ Παραλήπτη: " + endPhone + " | " + comments;
+
+            // WhatsApp Μήνυμα (Καθαρό και επαγγελματικό)
+            var waText = "*Νέα Παραγγελία 2Fast!* 🚀\n\n" +
+                         "📞 *Εντολέας:* " + phone + "\n" +
+                         "-----------------------------\n" +
+                         "📍 *ΠΑΡΑΛΑΒΗ:*\n" + startAddr + "\n" +
+                         "👤 " + startName + " | 🏢 " + startFloor + "\n" +
+                         "-----------------------------\n" +
+                         "🏁 *ΠΑΡΑΔΟΣΗ:*\n" + endAddr + "\n" +
+                         "👤 " + endName + " | 🏢 " + endFloor + "\n" +
+                         "📞 Τηλ Παραλήπτη: " + endPhone + "\n" +
+                         "-----------------------------\n" +
+                         "💬 *Σχόλια:* " + comments + "\n" +
+                         "💰 *Κόστος:* " + price + " € (" + distanceText + ")";
             
             var waLink = "https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waText);
             window.open(waLink, '_blank');
 
+            // Αποστολή στο Server
             var orderData = {
                 phone: phone,
-                start: start,
-                end: end,
-                comments: comments,
+                start: startFull, // Στέλνουμε την πλήρη διεύθυνση
+                end: endFull,     // Στέλνουμε την πλήρη διεύθυνση
+                comments: fullComments, // Στέλνουμε τηλέφωνο παραλήπτη στα σχόλια
                 price: price,
                 dist: distanceText
             };
