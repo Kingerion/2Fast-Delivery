@@ -10,18 +10,9 @@
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8f9fa; }
         
-        /* MAP CONTAINER & TRAFFIC BUTTON */
-        #map-container { position: relative; height: 40vh; min-height: 250px; width: 100%; border-radius: 0 0 20px 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        #map { height: 100%; width: 100%; background: #e0e0e0; }
+        /* MAP */
+        #map { height: 38vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        .traffic-btn {
-            position: absolute; bottom: 20px; right: 20px; z-index: 50;
-            background: white; border: none; width: 45px; height: 45px; border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 20px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .traffic-btn.active { background: #2196f3; border: 2px solid white; }
-
         .container { padding: 20px; max-width: 600px; margin: -25px auto 0; position: relative; z-index: 10; padding-bottom: 80px; }
         
         .header-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px; }
@@ -53,9 +44,12 @@
         input:checked + .slider { background-color: #f57c00; }
         input:checked + .slider:before { transform: translateX(20px); }
 
+        /* PRICE BOX WITH VAT */
         .price-box { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; padding: 20px; border-radius: 16px; text-align: center; margin: 20px 0; box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3); }
-        .price-val { font-size: 36px; font-weight: 800; }
-        .price-dist { opacity: 0.9; font-size: 14px; margin-top: 5px; }
+        .price-net { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
+        .price-val { font-size: 38px; font-weight: 800; line-height: 1; }
+        .price-vat-label { font-size: 12px; opacity: 0.8; margin-top: 5px; font-weight: 600; text-transform: uppercase; }
+        .price-dist { opacity: 0.9; font-size: 14px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; }
         
         #sendBtn { width: 100%; padding: 16px; background: #ff5722; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3); transition: 0.3s; }
         #sendBtn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
@@ -68,10 +62,7 @@
 </head>
 <body>
 
-    <div id="map-container">
-        <div id="map"></div>
-        <button class="traffic-btn" id="trafficBtn" onclick="toggleTraffic()">🚦</button>
-    </div>
+    <div id="map"></div>
 
     <div class="container">
         <div class="header-row">
@@ -87,24 +78,26 @@
                 <button class="toggle-btn active" id="btnNow" onclick="setMode('now')">⚡ Τώρα</button>
                 <button class="toggle-btn" id="btnLater" onclick="setMode('later')">📅 Ραντεβού</button>
             </div>
-            <div id="nowInfo" style="text-align: center; font-size: 13px; color: green; font-weight: bold;">🚀 Άφιξη σε ~30'</div>
+            <div id="nowInfo" style="text-align: center; font-size: 14px; color: green; font-weight: bold;">🚀 Άφιξη 5-30' Max</div>
             <input type="datetime-local" id="scheduleTime" style="display: none;">
         </div>
 
         <div class="card">
             <div class="title">📍 ΠΑΡΑΛΑΒΗ</div>
             <input type="text" id="start" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
+            
             <div class="row">
-                <div class="col-8"><input type="text" id="startName" placeholder="Όνομα/Κουδούνι (Υποχρεωτικό)"></div>
-                <div class="col-4"><input type="number" id="startFloor" placeholder="Όροφος" inputmode="numeric"></div>
+                <div class="col-6"><input type="text" id="startStore" placeholder="🏢 Κατάστημα"></div>
+                <div class="col-6"><input type="text" id="startName" placeholder="👤 Υπεύθυνος"></div>
             </div>
+            <input type="number" id="startFloor" placeholder="Όροφος" inputmode="numeric">
         </div>
 
         <div class="card">
             <div class="title">🏁 ΠΑΡΑΔΟΣΗ</div>
             <input type="text" id="end" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
             <div class="row">
-                <div class="col-8"><input type="text" id="endName" placeholder="Όνομα/Κουδούνι (Υποχρεωτικό)"></div>
+                <div class="col-8"><input type="text" id="endName" placeholder="Όνομα/Κουδούνι"></div>
                 <div class="col-4"><input type="number" id="endFloor" placeholder="Όροφος" inputmode="numeric"></div>
             </div>
             <input type="tel" id="endPhone" placeholder="📞 Τηλέφωνο Παραλήπτη" style="border-left: 4px solid #ff9800;">
@@ -136,8 +129,9 @@
         </div>
 
         <div class="price-box" id="priceBox">
-            <div style="font-size: 13px; opacity: 0.8;">ΕΚΤΙΜΩΜΕΝΟ ΚΟΣΤΟΣ</div>
-            <div class="price-val" id="priceDisplay">0.00 €</div>
+            <div class="price-net" id="priceNet">Καθαρή Αξία: 0.00 €</div>
+            <div class="price-val" id="priceTotal">0.00 €</div>
+            <div class="price-vat-label">Συμπεριλαμβάνεται ΦΠΑ 24%</div>
             <div class="price-dist" id="distDisplay">-</div>
         </div>
 
@@ -161,8 +155,8 @@
         const MAX_KM = 35;
         // -----------------
 
-        let map, dirService, dirRenderer, startAuto, endAuto, trafficLayer;
-        let calculatedPrice = 0, distanceTxt = "";
+        let map, dirService, dirRenderer, startAuto, endAuto;
+        let finalTotal = 0, distanceTxt = "";
         let timeMode = 'now';
 
         window.onload = function() {
@@ -170,7 +164,7 @@
         };
 
         window.gm_authFailure = function() {
-            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΕλέγξτε το κλειδί API.");
+            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΕλέγξτε το νέο κλειδί API στο Cloud Console.");
         };
 
         function initMap() {
@@ -183,10 +177,6 @@
                     map: map, 
                     polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
                 });
-                
-                // Traffic
-                trafficLayer = new google.maps.TrafficLayer();
-
                 initAuto();
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(pos => {
@@ -194,16 +184,6 @@
                     });
                 }
             } catch (e) { console.error("Map Error:", e); }
-        }
-
-        function toggleTraffic() {
-            if(trafficLayer.getMap()) {
-                trafficLayer.setMap(null);
-                document.getElementById('trafficBtn').classList.remove('active');
-            } else {
-                trafficLayer.setMap(map);
-                document.getElementById('trafficBtn').classList.add('active');
-            }
         }
 
         function initAuto() {
@@ -217,9 +197,7 @@
         }
 
         function calc() {
-            // Close keyboard
             if(document.activeElement) document.activeElement.blur();
-
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
             
@@ -230,7 +208,6 @@
                 dirService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (res, status) => {
                     if (status === 'OK') {
                         dirRenderer.setDirections(res);
-                        
                         const bounds = res.routes[0].bounds;
                         map.fitBounds(bounds, { bottom: 20, left: 20, right: 20, top: 20 }); 
 
@@ -238,27 +215,35 @@
                         distanceTxt = res.routes[0].legs[0].distance.text;
 
                         if (km > MAX_KM) {
-                            document.getElementById('priceDisplay').innerText = "🚫";
+                            document.getElementById('priceTotal').innerText = "🚫";
                             document.getElementById('distDisplay').innerText = "> " + MAX_KM + "km";
                             document.getElementById('priceBox').style.background = "#d32f2f";
                             document.getElementById('sendBtn').disabled = true;
-                            calculatedPrice = 0;
+                            finalTotal = 0;
                             return;
                         }
 
-                        let price = 3.00;
+                        // BASE CALCULATION (NET)
+                        let net = 3.00;
                         if (km > 1) {
                             let rem = km - 1;
-                            if (rem <= 3) price += rem * 0.50;
+                            if (rem <= 3) net += rem * 0.50;
                             else {
-                                price += 1.50; rem -= 3;
+                                net += 1.50; rem -= 3;
                                 let rate = 0.60;
-                                while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; }
+                                while(rem > 0) { net += (rem>=1?1:rem)*rate; rem--; rate+=0.10; }
                             }
                         }
-                        if (document.getElementById('roundTrip').checked) price *= 2.0;
-                        calculatedPrice = price;
-                        document.getElementById('priceDisplay').innerText = price.toFixed(2) + " €";
+                        if (document.getElementById('roundTrip').checked) net *= 2.0;
+                        
+                        // VAT CALCULATION
+                        let vat = net * 0.24;
+                        let total = net + vat;
+
+                        finalTotal = total;
+
+                        document.getElementById('priceNet').innerText = "Καθαρή Αξία: " + net.toFixed(2) + " €";
+                        document.getElementById('priceTotal').innerText = total.toFixed(2) + " €";
                         document.getElementById('distDisplay').innerText = distanceTxt + " • ~" + res.routes[0].legs[0].duration.text;
                     }
                 });
@@ -287,8 +272,10 @@
             document.getElementById('parcel').selectedIndex = 0;
             document.getElementById('payment').selectedIndex = 0;
             setMode('now');
-            calculatedPrice = 0;
-            document.getElementById('priceDisplay').innerText = "0.00 €";
+            
+            finalTotal = 0;
+            document.getElementById('priceNet').innerText = "Καθαρή Αξία: 0.00 €";
+            document.getElementById('priceTotal').innerText = "0.00 €";
             document.getElementById('distDisplay').innerText = "-";
             document.getElementById('priceBox').style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
             document.getElementById('sendBtn').disabled = false;
@@ -310,18 +297,29 @@
             let valid = true;
             if(!validate('phone')) valid = false;
             if(!validate('start')) valid = false;
-            if(!validate('startName')) valid = false;
+            // Name OR Store must be filled
+            if(!document.getElementById('startName').value && !document.getElementById('startStore').value) {
+                document.getElementById('startName').classList.add('error');
+                document.getElementById('startStore').classList.add('error');
+                setTimeout(() => {
+                    document.getElementById('startName').classList.remove('error');
+                    document.getElementById('startStore').classList.remove('error');
+                }, 2000);
+                valid = false;
+            }
+
             if(!validate('end')) valid = false;
             if(!validate('endName')) valid = false;
 
             if (!valid) return;
-            if (calculatedPrice === 0) return alert("⚠️ Πρόβλημα διαδρομής!");
+            if (finalTotal === 0) return alert("⚠️ Πρόβλημα διαδρομής!");
 
             const phone = document.getElementById('phone').value;
             localStorage.setItem('phone', phone);
             
             const startAddr = document.getElementById('start').value;
-            const startName = document.getElementById('startName').value;
+            const startStore = document.getElementById('startStore').value || "-";
+            const startName = document.getElementById('startName').value || "-";
             const startFloor = document.getElementById('startFloor').value || "-";
             
             const endAddr = document.getElementById('end').value;
@@ -334,7 +332,7 @@
             const comments = document.getElementById('notes').value;
             const isRoundTrip = document.getElementById('roundTrip').checked;
 
-            let timeStr = "⚡ ΑΜΕΣΑ";
+            let timeStr = "⚡ 5-30' Max";
             if(timeMode === 'later') {
                 const t = document.getElementById('scheduleTime').value;
                 if(!t) {
@@ -345,7 +343,6 @@
                 timeStr = "📅 " + t.replace("T", " ");
             }
 
-            // NAVIGATION LINK
             const navLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(startAddr)}&destination=${encodeURIComponent(endAddr)}&travelmode=driving`;
 
             // WHATSAPP
@@ -354,28 +351,24 @@
             waMsg += `📞 *Εντολέας:* ${phone}\n`;
             waMsg += `--------------------------------\n`;
             waMsg += `📍 *ΑΠΟ:* ${startAddr}\n`;
-            waMsg += `      🔔 ${startName} | 🏢 ${startFloor}\n\n`;
+            waMsg += `      🏢 ${startStore}\n`;
+            waMsg += `      👤 ${startName} | 🏢 ${startFloor}\n\n`;
             waMsg += `🏁 *ΠΡΟΣ:* ${endAddr}\n`;
-            waMsg += `      🔔 ${endName} | 🏢 ${endFloor}\n`;
+            waMsg += `      👤 ${endName} | 🏢 ${endFloor}\n`;
             waMsg += `      📞 ${endPhone}\n`;
             waMsg += `--------------------------------\n`;
             waMsg += `📦 *Δέμα:* ${parcel}\n`;
             waMsg += `💳 *Πληρωμή:* ${payment}\n`;
             if(comments) waMsg += `📝 *Σχόλια:* ${comments}\n`;
-            waMsg += `\n💰 *ΤΕΛΙΚΟ ΚΟΣΤΟΣ: ${calculatedPrice.toFixed(2)} €*`;
-            waMsg += `\n\n🗺️ *ΠΛΟΗΓΗΣΗ (GPS):* ${navLink}`;
+            waMsg += `\n💰 *ΣΥΝΟΛΟ (με ΦΠΑ): ${finalTotal.toFixed(2)} €*`;
+            waMsg += `\n\n🗺️ *GPS:* ${navLink}`;
 
             window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waMsg), '_blank');
 
             // SHIPDAY
-            const fullStart = `${startAddr} (🔔 ${startName}, 🏢 ${startFloor})`;
+            const fullStart = `${startAddr} (🏢 ${startStore}, 👤 ${startName}, 🏢 ${startFloor})`;
             const fullEnd = `${endAddr} (🔔 ${endName}, 🏢 ${endFloor})`;
             const fullNotes = `ΩΡΑ: ${timeStr} | ΕΠΙΣΤΡΟΦΗ: ${isRoundTrip ? 'ΝΑΙ' : 'OXI'} | ΠΑΡΑΛΗΠΤΗΣ: ${endPhone} | ΔΕΜΑ: ${parcel} | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${comments} | GPS: ${navLink}`;
 
             document.getElementById('sendBtn').innerText = "Αποστολή...";
-            document.getElementById('sendBtn').disabled = true;
-            
-            fetch(SCRIPT_URL, {
-                method: 'POST', mode: 'no-cors',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ phone, start: fullStart, end: fullEnd, commen
+            document.getElementById('sendBtn').disab
