@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2Fast Delivery (Pro+)</title>
+    <title>2Fast Delivery (Pro+ Schedule)</title>
     
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f4; }
         
-        #map { height: 40vh; width: 100%; }
+        #map { height: 35vh; width: 100%; }
 
         .container { 
             padding: 20px; 
@@ -56,7 +56,7 @@
             font-size: 15px; 
             background: #fafafa; 
             transition: all 0.2s;
-            appearance: none; /* Καθαρό στυλ για τα dropdowns */
+            appearance: none; 
         }
         input:focus, select:focus { border-color: #2196f3; background: #fff; outline: none; }
 
@@ -65,6 +65,24 @@
         .col-6 { flex: 1; }
         .col-4 { flex: 0.4; }
         .col-8 { flex: 0.8; }
+
+        /* Time Buttons */
+        .time-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            background: #f9f9f9;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .time-btn.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            color: #1565c0;
+        }
 
         textarea { resize: vertical; height: 60px; }
         
@@ -110,6 +128,23 @@
         <div class="input-group">
             <label>Το Τηλέφωνό σας (Εντολέας)</label>
             <input type="tel" id="phone" placeholder="π.χ. 6900000000" required style="font-weight: bold; font-size: 16px;">
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><span>🕒</span> ΧΡΟΝΟΣ ΠΑΡΑΛΑΒΗΣ</div>
+            <div class="row">
+                <button type="button" class="time-btn active" id="btnNow" onclick="setTimeMode('now')">⚡ Τώρα</button>
+                <button type="button" class="time-btn" id="btnLater" onclick="setTimeMode('later')">📅 Ραντεβού</button>
+            </div>
+            
+            <div id="nowMsg" style="margin-top: 10px; font-size: 13px; color: #2e7d32; font-weight: 500;">
+                🚀 Εκτιμώμενη άφιξη διανομέα: <b>25-35 λεπτά</b>
+            </div>
+
+            <div id="laterInputs" style="display: none; margin-top: 10px;">
+                <label>Επιλέξτε Ημέρα & Ώρα</label>
+                <input type="datetime-local" id="scheduledTime">
+            </div>
         </div>
 
         <div class="section-card">
@@ -184,6 +219,7 @@
         var startAutocomplete, endAutocomplete;
         var calculatedPrice = 0;
         var distanceText = "";
+        var timeMode = 'now'; // 'now' or 'later'
         
         const MY_PHONE = "306934021792"; 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
@@ -219,6 +255,7 @@
                 componentRestrictions: { country: "gr" },
                 fields: ["formatted_address", "geometry", "name"],
                 strictBounds: false,
+                locationBias: { radius: 30000, center: { lat: 37.9429, lng: 23.6470 } }
             };
 
             startAutocomplete = new google.maps.places.Autocomplete(document.getElementById('start'), options);
@@ -226,6 +263,21 @@
 
             startAutocomplete.addListener("place_changed", calcRoute);
             endAutocomplete.addListener("place_changed", calcRoute);
+        }
+
+        function setTimeMode(mode) {
+            timeMode = mode;
+            if (mode === 'now') {
+                document.getElementById('btnNow').classList.add('active');
+                document.getElementById('btnLater').classList.remove('active');
+                document.getElementById('nowMsg').style.display = 'block';
+                document.getElementById('laterInputs').style.display = 'none';
+            } else {
+                document.getElementById('btnNow').classList.remove('active');
+                document.getElementById('btnLater').classList.add('active');
+                document.getElementById('nowMsg').style.display = 'none';
+                document.getElementById('laterInputs').style.display = 'block';
+            }
         }
 
         function calcRoute() {
@@ -284,12 +336,23 @@
             var endFloor = document.getElementById('endFloor').value || "-";
             var endPhone = document.getElementById('endPhone').value || "-";
             
-            // ΝΕΑ ΠΕΔΙΑ
             var parcelType = document.getElementById('parcelType').value;
             var paymentMethod = document.getElementById('paymentMethod').value;
-            
             var comments = document.getElementById('comments').value;
             var price = calculatedPrice.toFixed(2);
+
+            // Έλεγχος Ραντεβού
+            var timeString = "⚡ ΑΜΕΣΑ";
+            if (timeMode === 'later') {
+                var scheduledVal = document.getElementById('scheduledTime').value;
+                if (!scheduledVal) {
+                    alert("⚠️ Παρακαλώ επιλέξτε ώρα για το ραντεβού!");
+                    return;
+                }
+                // Μορφοποίηση ώρας για να φαίνεται ωραία (π.χ. 2023-10-25T14:30 -> 25/10 14:30)
+                var d = new Date(scheduledVal);
+                timeString = "📅 " + d.getDate() + "/" + (d.getMonth()+1) + " στις " + d.getHours() + ":" + (d.getMinutes()<10?'0':'') + d.getMinutes();
+            }
 
             if (!phone) { alert("⚠️ Συμπληρώστε το τηλέφωνό σας!"); return; }
             if (price == 0) { alert("⚠️ Επιλέξτε διευθύνσεις!"); return; }
@@ -300,10 +363,11 @@
 
             var startFull = startAddr + " (🔔 " + startName + ", 🏢 " + startFloor + ")";
             var endFull = endAddr + " (🔔 " + endName + ", 🏢 " + endFloor + ")";
-            var fullComments = "Τηλ Παραλήπτη: " + endPhone + " | Δέμα: " + parcelType + " | Πληρωμή: " + paymentMethod + " | " + comments;
+            var fullComments = "ΩΡΑ: " + timeString + " | Τηλ Παραλήπτη: " + endPhone + " | Δέμα: " + parcelType + " | Πληρωμή: " + paymentMethod + " | " + comments;
 
             // WhatsApp
-            var waText = "*Νέα Παραγγελία 2Fast!* 🚀\n\n" +
+            var waText = "*Νέα Παραγγελία 2Fast!* 🚀\n" +
+                         "⏰ *" + timeString + "*\n\n" +
                          "📞 *Εντολέας:* " + phone + "\n" +
                          "-----------------------------\n" +
                          "📍 *ΑΠΟ:* " + startAddr + "\n" +
@@ -325,7 +389,7 @@
                 phone: phone,
                 start: startFull,
                 end: endFull,
-                comments: fullComments,
+                comments: fullComments, // Όλα τα έξτρα μπαίνουν εδώ
                 price: price,
                 dist: distanceText
             };
