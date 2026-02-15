@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2Fast Delivery</title>
+    <title>2Fast Delivery (Google Maps)</title>
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f4; }
         
-        #map { height: 45vh; width: 100%; z-index: 1; }
-        .leaflet-routing-container { display: none !important; }
+        #map { height: 45vh; width: 100%; }
 
         .container { 
             padding: 20px; 
@@ -27,41 +23,15 @@
         h2 { margin-top: 0; color: #333; text-align: center; font-size: 20px; }
         .instructions { text-align: center; font-size: 13px; color: #666; margin-bottom: 15px; background: #fff3e0; padding: 8px; border-radius: 8px; border: 1px solid #ffe0b2; }
         
-        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group { margin-bottom: 15px; }
         label { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 5px; display: block; }
         
         input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
-        input:focus { border-color: #2196f3; outline: none; }
+        input:focus { border-color: #4285F4; outline: none; }
         
-        /* Λίστα Αυτόματης Συμπλήρωσης */
-        .suggestions-list {
-            position: absolute;
-            top: 75px;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 0 0 8px 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: none;
-        }
-        
-        .suggestion-item {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: #f5f5f5; }
-        .suggestion-item strong { color: #2196f3; }
-
         textarea { resize: vertical; height: 70px; }
         
-        .price-box { background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; border: 2px solid #2196f3; }
+        .price-box { background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; border: 2px solid #4285F4; }
         .price-value { font-size: 28px; font-weight: bold; color: #1565c0; }
         .distance-info { font-size: 15px; color: #555; margin-top: 5px; font-weight: 500; }
 
@@ -70,6 +40,9 @@
         
         .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #ff5722; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Google Autocomplete Style Fix */
+        .pac-container { z-index: 10000 !important; border-radius: 0 0 8px 8px; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -79,7 +52,7 @@
     <div class="container">
         <h2>Αποστολή Δέματος</h2>
         <div class="instructions">
-            🚀 <strong>Smart Search:</strong> Γράψε διεύθυνση ή πάτα στο χάρτη!
+            🚀 <strong>Google Maps:</strong> Γράψε διεύθυνση και επίλεξε από τη λίστα!
         </div>
         
         <div class="input-group">
@@ -89,14 +62,12 @@
         
         <div class="input-group">
             <label>Από Πού; (Παραλαβή)</label>
-            <input type="text" id="start" placeholder="Γράψε οδό..." autocomplete="off">
-            <div id="suggestions-start" class="suggestions-list"></div>
+            <input type="text" id="start" placeholder="Γράψε οδό και αριθμό..." autocomplete="off">
         </div>
 
         <div class="input-group">
             <label>Πού Πάει; (Παράδοση)</label>
-            <input type="text" id="end" placeholder="Γράψε οδό..." autocomplete="off">
-            <div id="suggestions-end" class="suggestions-list"></div>
+            <input type="text" id="end" placeholder="Γράψε οδό και αριθμό..." autocomplete="off">
         </div>
 
         <div class="input-group">
@@ -109,194 +80,131 @@
             <div class="distance-info" id="distDisplay">-</div>
         </div>
 
-        <button id="sendBtn" onclick="sendOrder()">
+        <button id="sendBtn" onclick="sendOrder()" disabled>
             <span id="btnText">Αποστολή Παραγγελίας</span>
             <div class="loader" id="loader"></div>
         </button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-
     <script>
-        // --- ΡΥΘΜΙΣΕΙΣ ---
-        // 🔴 ΒΑΛΕ ΤΟ LINK ΣΟΥ ΕΔΩ:
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
+        // --- ΜΕΤΑΒΛΗΤΕΣ ---
+        var map;
+        var directionsService;
+        var directionsRenderer;
+        var startAutocomplete, endAutocomplete;
+        var calculatedPrice = 0;
+        var distanceText = "";
         
-        // 🟢 ΤΟ ΤΗΛΕΦΩΝΟ ΣΟΥ (Χωρίς +)
-        const MY_PHONE = "306934021792";
-        // -----------------
+        // --- ΡΥΘΜΙΣΕΙΣ (ΒΑΛΕ ΤΑ ΔΙΚΑ ΣΟΥ ΕΔΩ) ---
+        const MY_PHONE = "306934021792"; 
+        // 🔴 Βάλε το δικό σου Google Apps Script URL εδώ:
+        const SCRIPT_URL = "https://script.google.com/macros/s/AIzaSyBkk3z2W3H172JxqlF4G0FjwppTDHJeXiw/exec"; 
+        // ----------------------------------------
 
-        var map = L.map('map').setView([37.9838, 23.7275], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-
-        var routingControl = L.Routing.control({
-            waypoints: [],
-            routeWhileDragging: false,
-            router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
-            show: false,
-            addWaypoints: false,
-            createMarker: function(i, wp) {
-                return L.marker(wp.latLng, { draggable: false });
-            }
-        }).addTo(map);
-
-        var startPoint = null, endPoint = null, calculatedPrice = 0;
-
-        // --- SMART SEARCH (ΑΥΤΟΜΑΤΗ ΣΥΜΠΛΗΡΩΣΗ) ---
-        function setupAutocomplete(inputId, suggestionsId, type) {
-            const input = document.getElementById(inputId);
-            const list = document.getElementById(suggestionsId);
-            let timeout = null;
-
-            input.addEventListener('input', function() {
-                const query = this.value;
-                if (query.length < 3) { list.style.display = 'none'; return; }
-                clearTimeout(timeout);
-                timeout = setTimeout(() => { fetchSuggestions(query, list, type, input); }, 300);
+        function initMap() {
+            // Κέντρο Αθήνα
+            var athens = { lat: 37.9838, lng: 23.7275 };
+            
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: athens,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false
             });
 
-            document.addEventListener('click', function(e) {
-                if (e.target !== input && e.target !== list) { list.style.display = 'none'; }
-            });
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
+
+            // Ενεργοποίηση Autocomplete στα πεδία
+            initAutocomplete();
         }
 
-        function fetchSuggestions(query, list, type, inputElement) {
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&countrycodes=gr&limit=5`;
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    list.innerHTML = '';
-                    if (data.length === 0) { list.style.display = 'none'; return; }
+        function initAutocomplete() {
+            var options = {
+                componentRestrictions: { country: "gr" }, // Μόνο Ελλάδα
+                fields: ["formatted_address", "geometry", "name"],
+                strictBounds: false,
+            };
 
-                    data.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'suggestion-item';
-                        
-                        let displayText = item.address.road || item.address.pedestrian || "";
-                        if (item.address.house_number) displayText += " " + item.address.house_number;
-                        let area = item.address.suburb || item.address.city || item.address.town || "";
-                        if (area) displayText += `, ${area}`;
-                        if (!displayText) displayText = item.display_name.split(',').slice(0, 2).join(',');
+            var startInput = document.getElementById('start');
+            var endInput = document.getElementById('end');
 
-                        div.innerHTML = `<strong>📍</strong> ${displayText}`;
-                        div.onclick = function() {
-                            inputElement.value = displayText;
-                            list.style.display = 'none';
-                            const latlng = L.latLng(item.lat, item.lon);
-                            if (type === 'start') { startPoint = latlng; map.panTo(latlng); } else { endPoint = latlng; }
-                            updateRoute();
-                        };
-                        list.appendChild(div);
-                    });
-                    list.style.display = 'block';
-                })
-                .catch(err => console.error(err));
+            startAutocomplete = new google.maps.places.Autocomplete(startInput, options);
+            endAutocomplete = new google.maps.places.Autocomplete(endInput, options);
+
+            // Όταν επιλέξει διεύθυνση
+            startAutocomplete.addListener("place_changed", calcRoute);
+            endAutocomplete.addListener("place_changed", calcRoute);
         }
 
-        setupAutocomplete('start', 'suggestions-start', 'start');
-        setupAutocomplete('end', 'suggestions-end', 'end');
+        function calcRoute() {
+            var startPlace = startAutocomplete.getPlace();
+            var endPlace = endAutocomplete.getPlace();
 
-        // --- ΚΛΙΚ ΣΤΟ ΧΑΡΤΗ ---
-        map.on('click', function(e) { handleMapClick(e.latlng); });
+            var startVal = document.getElementById('start').value;
+            var endVal = document.getElementById('end').value;
 
-        function handleMapClick(latlng) {
-            document.getElementById('suggestions-start').style.display = 'none';
-            document.getElementById('suggestions-end').style.display = 'none';
-            
-            // Κρατάμε τις συντεταγμένες ως backup αν δεν βρεθεί δρόμος
-            var coords = latlng.lat.toFixed(5) + ", " + latlng.lng.toFixed(5);
-
-            if (!startPoint) {
-                startPoint = latlng;
-                document.getElementById('start').value = coords; // Βάζουμε συντεταγμένες προσωρινά
-                reverseGeocode(latlng, 'start');
-                updateRoute();
-            } else if (!endPoint) {
-                endPoint = latlng;
-                document.getElementById('end').value = coords; // Βάζουμε συντεταγμένες προσωρινά
-                reverseGeocode(latlng, 'end');
-                updateRoute();
-            } else {
-                resetMap();
-                handleMapClick(latlng);
-            }
-        }
-
-        // --- REVERSE GEOCODING (ΔΙΟΡΘΩΜΕΝΟ) ---
-        function reverseGeocode(latlng, type) {
-            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lon}`;
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    let displayText = "";
-                    if (data.address) {
-                        // Ψάχνουμε όλα τα πιθανά ονόματα δρόμων
-                        let road = data.address.road || data.address.pedestrian || data.address.footway || data.address.path || "";
-                        let number = data.address.house_number || "";
-                        let area = data.address.suburb || data.address.neighbourhood || data.address.city || data.address.town || data.address.village || "";
-                        
-                        if (road) displayText = road + " " + number;
-                        if (area) displayText += (displayText ? ", " : "") + area;
+            // Αν έχουμε συμπληρωμένα και τα δύο πεδία (έστω και κείμενο)
+            if (startVal && endVal) {
+                var request = {
+                    origin: startVal,
+                    destination: endVal,
+                    travelMode: 'DRIVING',
+                    drivingOptions: {
+                        departureTime: new Date(Date.now()),  // Υπολογισμός με κίνηση
+                        trafficModel: 'bestguess'
                     }
-                    
-                    // ΑΝ ΔΕΝ ΒΡΕΘΗΚΕ ΤΙΠΟΤΑ -> ΚΡΑΤΑΜΕ ΤΙΣ ΣΥΝΤΕΤΑΓΜΕΝΕΣ
-                    if (!displayText || displayText.trim() === "") {
-                        displayText = latlng.lat.toFixed(5) + ", " + latlng.lng.toFixed(5);
+                };
+
+                directionsService.route(request, function(result, status) {
+                    if (status == 'OK') {
+                        directionsRenderer.setDirections(result);
+                        
+                        var route = result.routes[0].legs[0];
+                        var distMeters = route.distance.value;
+                        var distKm = distMeters / 1000;
+                        distanceText = route.distance.text;
+
+                        // ΥΠΟΛΟΓΙΣΜΟΣ ΤΙΜΗΣ
+                        calculatedPrice = calculateComplexPrice(distKm);
+
+                        // Ενημέρωση UI
+                        document.getElementById('priceDisplay').innerText = calculatedPrice.toFixed(2) + " €";
+                        document.getElementById('distDisplay').innerText = distanceText + " • ~" + route.duration.text;
+                        document.getElementById('sendBtn').disabled = false;
                     }
-                    
-                    document.getElementById(type).value = displayText;
-                })
-                .catch(err => {
-                    // Σε περίπτωση λάθους δικτύου, αφήνουμε τις συντεταγμένες
-                    console.log("Geocode error, keeping coords");
                 });
-        }
-
-        function updateRoute() {
-            if (startPoint && endPoint) {
-                routingControl.setWaypoints([startPoint, endPoint]);
-            } else if (startPoint) {
-                routingControl.setWaypoints([startPoint]);
             }
         }
 
-        function resetMap() {
-            startPoint = null; endPoint = null;
-            document.getElementById('start').value = "";
-            document.getElementById('end').value = "";
-            document.getElementById('priceDisplay').innerText = "0.00 €";
-            document.getElementById('distDisplay').innerText = "-";
-            routingControl.setWaypoints([]);
-        }
-
-        routingControl.on('routesfound', function(e) {
-            var summary = e.routes[0].summary;
-            var distKm = summary.totalDistance / 1000;
-            calculatedPrice = calculateComplexPrice(distKm);
-            
-            document.getElementById('priceDisplay').innerText = calculatedPrice.toFixed(2) + " €";
-            document.getElementById('distDisplay').innerText = distKm.toFixed(1) + " χλμ • ~" + Math.round(summary.totalTime / 60) + " λεπτά";
-        });
-
-        // ΥΠΟΛΟΓΙΣΜΟΣ ΤΙΜΗΣ
+        // --- Ο ΤΥΠΟΣ ΧΡΕΩΣΗΣ ΣΟΥ ---
         function calculateComplexPrice(km) {
             if (km <= 1) return 3.00;
+            
             let price = 3.00;
             let remaining = km - 1;
-            if (remaining <= 3) { price += remaining * 0.50; return price; }
-            price += 1.50; remaining -= 3;
+
+            if (remaining <= 3) { // 1-4 km
+                price += remaining * 0.50;
+                return price;
+            }
+
+            // Πάνω από 4km
+            price += 1.50; // Το κόστος για τα 3 χλμ (1-4)
+            remaining -= 3;
+            
             let rate = 0.60;
             while (remaining > 0) {
                 let chunk = remaining >= 1 ? 1 : remaining;
                 price += chunk * rate;
-                remaining -= 1; rate += 0.10;
+                remaining -= 1;
+                rate += 0.10;
             }
             return price;
         }
 
-        // ΑΠΟΣΤΟΛΗ
         function sendOrder() {
             var phone = document.getElementById('phone').value;
             var start = document.getElementById('start').value;
@@ -305,33 +213,31 @@
             var price = calculatedPrice.toFixed(2);
 
             if (!phone) { alert("⚠️ Παρακαλώ συμπληρώστε τηλέφωνο!"); return; }
-            
-            if (price == "0.00" || price == 0) {
-                alert("⚠️ Η διαδρομή δεν έχει υπολογιστεί! Επιλέξτε διευθύνσεις.");
-                return;
-            }
+            if (price == 0) { alert("⚠️ Παρακαλώ επιλέξτε διευθύνσεις από τη λίστα!"); return; }
 
             document.getElementById('sendBtn').disabled = true;
             document.getElementById('btnText').innerText = "Αποστολή...";
             document.getElementById('loader').style.display = 'block';
 
+            // WhatsApp Link
             var waText = "*Νέα Παραγγελία!* 📦\n" +
                          "📞 Τηλ: " + phone + "\n" +
                          "📍 Από: " + start + "\n" +
                          "🏁 Προς: " + end + "\n" +
                          "💬 Σχόλια: " + comments + "\n" +
-                         "💰 Κόστος: " + price + " €";
+                         "💰 Κόστος: " + price + " € (" + distanceText + ")";
             
             var waLink = "https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waText);
             window.open(waLink, '_blank');
 
+            // Shipday Send
             var orderData = {
                 phone: phone,
                 start: start,
                 end: end,
                 comments: comments,
                 price: price,
-                dist: document.getElementById('distDisplay').innerText
+                dist: distanceText
             };
 
             fetch(SCRIPT_URL, {
@@ -350,5 +256,8 @@
             });
         }
     </script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkk3z2W3H172JxqlF4G0FjwppTDHJeXiw&libraries=places&callback=initMap" async defer></script>
+
 </body>
 </html>
