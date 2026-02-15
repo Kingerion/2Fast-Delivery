@@ -10,18 +10,17 @@
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8f9fa; }
         
-        /* MAP CONTAINER */
+        /* MAP CONTAINER & TRAFFIC BUTTON */
         #map-container { position: relative; height: 40vh; min-height: 250px; width: 100%; border-radius: 0 0 20px 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         #map { height: 100%; width: 100%; background: #e0e0e0; }
         
-        /* TRAFFIC BUTTON ON MAP */
-        .map-btn {
-            position: absolute; bottom: 20px; right: 20px; 
-            background: white; border: none; padding: 12px; border-radius: 50%; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer; z-index: 50;
-            font-size: 20px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+        .traffic-btn {
+            position: absolute; bottom: 20px; right: 20px; z-index: 50;
+            background: white; border: none; width: 45px; height: 45px; border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
-        .map-btn.active { background: #2196f3; color: white; }
+        .traffic-btn.active { background: #2196f3; border: 2px solid white; }
 
         .container { padding: 20px; max-width: 600px; margin: -25px auto 0; position: relative; z-index: 10; padding-bottom: 80px; }
         
@@ -71,7 +70,7 @@
 
     <div id="map-container">
         <div id="map"></div>
-        <button class="map-btn" id="trafficBtn" onclick="toggleTraffic()" title="Εμφάνιση Κίνησης">🚦</button>
+        <button class="traffic-btn" id="trafficBtn" onclick="toggleTraffic()">🚦</button>
     </div>
 
     <div class="container">
@@ -171,7 +170,7 @@
         };
 
         window.gm_authFailure = function() {
-            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΤο κλειδί API δεν λειτουργεί.");
+            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΕλέγξτε το κλειδί API.");
         };
 
         function initMap() {
@@ -185,7 +184,7 @@
                     polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
                 });
                 
-                // Traffic Layer Setup
+                // Traffic
                 trafficLayer = new google.maps.TrafficLayer();
 
                 initAuto();
@@ -197,7 +196,6 @@
             } catch (e) { console.error("Map Error:", e); }
         }
 
-        // Toggle Traffic
         function toggleTraffic() {
             if(trafficLayer.getMap()) {
                 trafficLayer.setMap(null);
@@ -220,7 +218,7 @@
 
         function calc() {
             // Close keyboard
-            document.activeElement.blur();
+            if(document.activeElement) document.activeElement.blur();
 
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
@@ -234,14 +232,14 @@
                         dirRenderer.setDirections(res);
                         
                         const bounds = res.routes[0].bounds;
-                        map.fitBounds(bounds, { bottom: 100, left: 20, right: 20, top: 20 }); 
+                        map.fitBounds(bounds, { bottom: 20, left: 20, right: 20, top: 20 }); 
 
                         const km = res.routes[0].legs[0].distance.value / 1000;
                         distanceTxt = res.routes[0].legs[0].distance.text;
 
                         if (km > MAX_KM) {
                             document.getElementById('priceDisplay').innerText = "🚫";
-                            document.getElementById('distDisplay').innerText = "Εκτός Περιοχής (> " + MAX_KM + "km)";
+                            document.getElementById('distDisplay').innerText = "> " + MAX_KM + "km";
                             document.getElementById('priceBox').style.background = "#d32f2f";
                             document.getElementById('sendBtn').disabled = true;
                             calculatedPrice = 0;
@@ -365,14 +363,14 @@
             waMsg += `💳 *Πληρωμή:* ${payment}\n`;
             if(comments) waMsg += `📝 *Σχόλια:* ${comments}\n`;
             waMsg += `\n💰 *ΤΕΛΙΚΟ ΚΟΣΤΟΣ: ${calculatedPrice.toFixed(2)} €*`;
-            waMsg += `\n\n🗺️ *ΠΛΟΗΓΗΣΗ:* ${navLink}`; // ΝΕΟ: Link για GPS
+            waMsg += `\n\n🗺️ *ΠΛΟΗΓΗΣΗ (GPS):* ${navLink}`;
 
             window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waMsg), '_blank');
 
             // SHIPDAY
             const fullStart = `${startAddr} (🔔 ${startName}, 🏢 ${startFloor})`;
             const fullEnd = `${endAddr} (🔔 ${endName}, 🏢 ${endFloor})`;
-            const fullNotes = `ΩΡΑ: ${timeStr} | ΕΠΙΣΤΡΟΦΗ: ${isRoundTrip ? 'ΝΑΙ' : 'OXI'} | ΠΑΡΑΛΗΠΤΗΣ: ${endPhone} | ΔΕΜΑ: ${parcel} | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${comments}`;
+            const fullNotes = `ΩΡΑ: ${timeStr} | ΕΠΙΣΤΡΟΦΗ: ${isRoundTrip ? 'ΝΑΙ' : 'OXI'} | ΠΑΡΑΛΗΠΤΗΣ: ${endPhone} | ΔΕΜΑ: ${parcel} | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${comments} | GPS: ${navLink}`;
 
             document.getElementById('sendBtn').innerText = "Αποστολή...";
             document.getElementById('sendBtn').disabled = true;
@@ -380,4 +378,4 @@
             fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
                 headers: {'Content-Type': 'application/json'},
-             
+                body: JSON.stringify({ phone, start: fullStart, end: fullEnd, commen
