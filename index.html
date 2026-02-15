@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2Fast Delivery (Pro)</title>
+    <title>2Fast Delivery (Pro+)</title>
     
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f4; }
@@ -18,12 +18,12 @@
             top: -20px; 
             z-index: 999;
             box-shadow: 0 -5px 15px rgba(0,0,0,0.1); 
-            padding-bottom: 40px;
+            padding-bottom: 50px;
         }
 
         h2 { margin-top: 0; color: #333; text-align: center; font-size: 20px; margin-bottom: 20px; }
         
-        /* Στυλ για τις Ενότητες (Cards) */
+        /* Cards */
         .section-card {
             background: #fff;
             border: 1px solid #eee;
@@ -47,23 +47,24 @@
         .input-group { margin-bottom: 10px; }
         label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
         
-        input, textarea { 
+        input, textarea, select { 
             width: 100%; 
-            padding: 10px; 
+            padding: 12px; 
             border: 1px solid #ddd; 
             border-radius: 8px; 
             box-sizing: border-box; 
             font-size: 15px; 
             background: #fafafa; 
             transition: all 0.2s;
+            appearance: none; /* Καθαρό στυλ για τα dropdowns */
         }
-        input:focus { border-color: #2196f3; background: #fff; outline: none; }
+        input:focus, select:focus { border-color: #2196f3; background: #fff; outline: none; }
 
-        /* Flexbox για τα μικρά κουτάκια δίπλα-δίπλα */
+        /* Row Layout */
         .row { display: flex; gap: 10px; }
-        .col-6 { flex: 1; } /* Μισό-Μισό */
-        .col-4 { flex: 0.4; } /* Μικρό */
-        .col-8 { flex: 0.8; } /* Μεγάλο */
+        .col-6 { flex: 1; }
+        .col-4 { flex: 0.4; }
+        .col-8 { flex: 0.8; }
 
         textarea { resize: vertical; height: 60px; }
         
@@ -113,46 +114,55 @@
 
         <div class="section-card">
             <div class="section-title"><span>📍</span> ΠΑΡΑΛΑΒΗ (ΑΠΟ)</div>
-            
             <div class="input-group">
                 <input type="text" id="start" placeholder="🔍 Διεύθυνση (γράψε & επίλεξε)...">
             </div>
-            
             <div class="row">
-                <div class="col-8">
-                    <input type="text" id="startName" placeholder="Όνομα / Κουδούνι">
-                </div>
-                <div class="col-4">
-                    <input type="text" id="startFloor" placeholder="Όροφος">
-                </div>
+                <div class="col-8"><input type="text" id="startName" placeholder="Όνομα / Κουδούνι"></div>
+                <div class="col-4"><input type="text" id="startFloor" placeholder="Όροφος"></div>
             </div>
         </div>
 
         <div class="section-card">
             <div class="section-title"><span>🏁</span> ΠΑΡΑΔΟΣΗ (ΠΡΟΣ)</div>
-            
             <div class="input-group">
                 <input type="text" id="end" placeholder="🔍 Διεύθυνση (γράψε & επίλεξε)...">
             </div>
-
             <div class="row input-group">
-                <div class="col-8">
-                    <input type="text" id="endName" placeholder="Όνομα / Κουδούνι">
-                </div>
-                <div class="col-4">
-                    <input type="text" id="endFloor" placeholder="Όροφος">
-                </div>
+                <div class="col-8"><input type="text" id="endName" placeholder="Όνομα / Κουδούνι"></div>
+                <div class="col-4"><input type="text" id="endFloor" placeholder="Όροφος"></div>
             </div>
-
             <div class="input-group">
-                <label>Τηλέφωνο Παραλήπτη (Υποχρεωτικό)</label>
+                <label>Τηλέφωνο Παραλήπτη</label>
                 <input type="tel" id="endPhone" placeholder="Ποιον καλούμε;" style="border-color: #ff9800;">
             </div>
         </div>
 
+        <div class="section-card">
+            <div class="section-title"><span>📦</span> ΛΕΠΤΟΜΕΡΕΙΕΣ</div>
+            <div class="row input-group">
+                <div class="col-6">
+                    <label>Τύπος Δέματος</label>
+                    <select id="parcelType">
+                        <option value="Φάκελος">📄 Φάκελος</option>
+                        <option value="Μικρό Δέμα">📦 Μικρό Δέμα</option>
+                        <option value="Μεγάλο Δέμα">🎒 Μεγάλο Δέμα</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label>Πληρωμή</label>
+                    <select id="paymentMethod">
+                        <option value="Μετρητά">💵 Μετρητά</option>
+                        <option value="Κάρτα (POS)">💳 Κάρτα (POS)</option>
+                        <option value="Iris/Transfer">🏦 Iris/Transfer</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <div class="input-group">
-            <label>Άλλες οδηγίες (π.χ. Προσοχή εύθραυστο)</label>
-            <textarea id="comments" placeholder="Γράψτε εδώ αν χρειάζεται κάτι άλλο..."></textarea>
+            <label>Άλλες οδηγίες</label>
+            <textarea id="comments" placeholder="π.χ. Προσοχή εύθραυστο..."></textarea>
         </div>
 
         <div class="price-box">
@@ -179,14 +189,11 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
 
         function initMap() {
-            var defaultCenter = { lat: 37.9429, lng: 23.6470 }; // Πειραιάς
+            var defaultCenter = { lat: 37.9429, lng: 23.6470 };
             
             map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 13,
-                center: defaultCenter,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false
+                zoom: 13, center: defaultCenter,
+                mapTypeControl: false, streetViewControl: false, fullscreenControl: false
             });
 
             directionsService = new google.maps.DirectionsService();
@@ -214,11 +221,8 @@
                 strictBounds: false,
             };
 
-            var startInput = document.getElementById('start');
-            var endInput = document.getElementById('end');
-
-            startAutocomplete = new google.maps.places.Autocomplete(startInput, options);
-            endAutocomplete = new google.maps.places.Autocomplete(endInput, options);
+            startAutocomplete = new google.maps.places.Autocomplete(document.getElementById('start'), options);
+            endAutocomplete = new google.maps.places.Autocomplete(document.getElementById('end'), options);
 
             startAutocomplete.addListener("place_changed", calcRoute);
             endAutocomplete.addListener("place_changed", calcRoute);
@@ -230,8 +234,7 @@
 
             if (startVal && endVal) {
                 var request = {
-                    origin: startVal,
-                    destination: endVal,
+                    origin: startVal, destination: endVal,
                     travelMode: 'DRIVING',
                     drivingOptions: { departureTime: new Date(Date.now()), trafficModel: 'bestguess' }
                 };
@@ -270,7 +273,6 @@
         }
 
         function sendOrder() {
-            // ΣΥΛΛΟΓΗ ΔΕΔΟΜΕΝΩΝ
             var phone = document.getElementById('phone').value;
             
             var startAddr = document.getElementById('start').value;
@@ -280,7 +282,11 @@
             var endAddr = document.getElementById('end').value;
             var endName = document.getElementById('endName').value || "-";
             var endFloor = document.getElementById('endFloor').value || "-";
-            var endPhone = document.getElementById('endPhone').value || "Χωρίς τηλ";
+            var endPhone = document.getElementById('endPhone').value || "-";
+            
+            // ΝΕΑ ΠΕΔΙΑ
+            var parcelType = document.getElementById('parcelType').value;
+            var paymentMethod = document.getElementById('paymentMethod').value;
             
             var comments = document.getElementById('comments').value;
             var price = calculatedPrice.toFixed(2);
@@ -292,36 +298,34 @@
             document.getElementById('btnText').innerText = "Αποστολή...";
             document.getElementById('loader').style.display = 'block';
 
-            // ΕΤΟΙΜΑΣΙΑ ΜΗΝΥΜΑΤΩΝ (Ενώνουμε τα στοιχεία για να φαίνονται παντού)
-            
-            // Για Shipday (Προσθέτουμε τις λεπτομέρειες μέσα στη διεύθυνση για να τις δει ο διανομέας)
             var startFull = startAddr + " (🔔 " + startName + ", 🏢 " + startFloor + ")";
             var endFull = endAddr + " (🔔 " + endName + ", 🏢 " + endFloor + ")";
-            var fullComments = "Τηλ Παραλήπτη: " + endPhone + " | " + comments;
+            var fullComments = "Τηλ Παραλήπτη: " + endPhone + " | Δέμα: " + parcelType + " | Πληρωμή: " + paymentMethod + " | " + comments;
 
-            // WhatsApp Μήνυμα (Καθαρό και επαγγελματικό)
+            // WhatsApp
             var waText = "*Νέα Παραγγελία 2Fast!* 🚀\n\n" +
                          "📞 *Εντολέας:* " + phone + "\n" +
                          "-----------------------------\n" +
-                         "📍 *ΠΑΡΑΛΑΒΗ:*\n" + startAddr + "\n" +
-                         "👤 " + startName + " | 🏢 " + startFloor + "\n" +
+                         "📍 *ΑΠΟ:* " + startAddr + "\n" +
+                         "   └ " + startName + " (" + startFloor + ")\n" +
+                         "🏁 *ΠΡΟΣ:* " + endAddr + "\n" +
+                         "   └ " + endName + " (" + endFloor + ")\n" +
+                         "   📞 " + endPhone + "\n" +
                          "-----------------------------\n" +
-                         "🏁 *ΠΑΡΑΔΟΣΗ:*\n" + endAddr + "\n" +
-                         "👤 " + endName + " | 🏢 " + endFloor + "\n" +
-                         "📞 Τηλ Παραλήπτη: " + endPhone + "\n" +
-                         "-----------------------------\n" +
-                         "💬 *Σχόλια:* " + comments + "\n" +
+                         "📦 *Δέμα:* " + parcelType + "\n" +
+                         "💳 *Πληρωμή:* " + paymentMethod + "\n" +
+                         "💬 " + comments + "\n" +
                          "💰 *Κόστος:* " + price + " € (" + distanceText + ")";
             
             var waLink = "https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waText);
             window.open(waLink, '_blank');
 
-            // Αποστολή στο Server
+            // Shipday
             var orderData = {
                 phone: phone,
-                start: startFull, // Στέλνουμε την πλήρη διεύθυνση
-                end: endFull,     // Στέλνουμε την πλήρη διεύθυνση
-                comments: fullComments, // Στέλνουμε τηλέφωνο παραλήπτη στα σχόλια
+                start: startFull,
+                end: endFull,
+                comments: fullComments,
                 price: price,
                 dist: distanceText
             };
