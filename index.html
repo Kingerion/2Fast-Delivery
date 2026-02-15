@@ -45,7 +45,7 @@
         input:checked + .slider { background-color: #f57c00; }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* PRICE BOX WITH VAT STYLE */
+        /* PRICE BOX */
         .price-box { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; padding: 20px; border-radius: 16px; text-align: center; margin: 20px 0; box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3); }
         .price-net { font-size: 14px; opacity: 0.8; margin-bottom: 5px; }
         .price-val { font-size: 38px; font-weight: 800; line-height: 1; margin: 5px 0; }
@@ -86,7 +86,6 @@
         <div class="card">
             <div class="title">📍 ΠΑΡΑΛΑΒΗ</div>
             <input type="text" id="start" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
-            
             <div class="row">
                 <div class="col-6"><input type="text" id="startStore" placeholder="🏢 Κατάστημα"></div>
                 <div class="col-6"><input type="text" id="startName" placeholder="👤 Υπεύθυνος"></div>
@@ -132,7 +131,7 @@
         <div class="price-box" id="priceBox">
             <div class="price-net" id="priceNet">Καθαρή Αξία: 0.00 €</div>
             <div class="price-val" id="priceTotal">0.00 €</div>
-            <div class="price-vat-label">Συμπεριλαμβάνεται ΦΠΑ 24%</div>
+            <div class="price-vat-label">+ ΦΠΑ 24%</div>
             <div class="price-dist" id="distDisplay">-</div>
         </div>
 
@@ -151,7 +150,7 @@
     <script>
         // --- ΡΥΘΜΙΣΕΙΣ ---
         const MY_PHONE = "306934021792";
-        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ:
+        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ ΠΡΟΣΕΚΤΙΚΑ:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
         const MAX_KM = 35;
         // -----------------
@@ -161,77 +160,4 @@
         let timeMode = 'now';
 
         window.onload = function() {
-            if(localStorage.getItem('phone')) document.getElementById('phone').value = localStorage.getItem('phone');
-        };
-
-        window.gm_authFailure = function() {
-            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΗ Google δεν φόρτωσε σωστά. Κάντε ανανέωση της σελίδας.");
-        };
-
-        function initMap() {
-            try {
-                map = new google.maps.Map(document.getElementById('map'), {
-                    zoom: 13, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true
-                });
-                dirService = new google.maps.DirectionsService();
-                dirRenderer = new google.maps.DirectionsRenderer({ 
-                    map: map, 
-                    polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
-                });
-                initAuto();
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(pos => {
-                        map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                    });
-                }
-            } catch (e) { console.error("Map Error:", e); }
-        }
-
-        function initAuto() {
-            const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
-            startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
-            endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
-            startAuto.bindTo('bounds', map);
-            endAuto.bindTo('bounds', map);
-            startAuto.addListener("place_changed", calc);
-            endAuto.addListener("place_changed", calc);
-        }
-
-        function calc() {
-            if(document.activeElement) document.activeElement.blur();
-            const start = document.getElementById('start').value;
-            const end = document.getElementById('end').value;
-            
-            document.getElementById('priceBox').style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
-            document.getElementById('sendBtn').disabled = false;
-
-            if (start.length > 3 && end.length > 3) {
-                dirService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (res, status) => {
-                    if (status === 'OK') {
-                        dirRenderer.setDirections(res);
-                        const bounds = res.routes[0].bounds;
-                        map.fitBounds(bounds, { bottom: 20, left: 20, right: 20, top: 20 }); 
-
-                        const km = res.routes[0].legs[0].distance.value / 1000;
-                        distanceTxt = res.routes[0].legs[0].distance.text;
-
-                        if (km > MAX_KM) {
-                            document.getElementById('priceTotal').innerText = "🚫";
-                            document.getElementById('distDisplay').innerText = "> " + MAX_KM + "km";
-                            document.getElementById('priceBox').style.background = "#d32f2f";
-                            document.getElementById('sendBtn').disabled = true;
-                            finalTotal = 0;
-                            return;
-                        }
-
-                        // BASE CALCULATION (NET)
-                        let net = 3.00;
-                        if (km > 1) {
-                            let rem = km - 1;
-                            if (rem <= 3) net += rem * 0.50;
-                            else {
-                                net += 1.50; rem -= 3;
-                                let rate = 0.60;
-                                while(rem > 0) { net += (rem>=1?1:rem)*rate; rem--; rate+=0.10; }
-                            }
-                        }
+            if(localStorage.getItem
