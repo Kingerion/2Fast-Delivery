@@ -10,13 +10,13 @@
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8f9fa; }
         
-        /* ΧΑΡΤΗΣ */
+        /* MAP */
         #map { height: 38vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .container { padding: 20px; max-width: 600px; margin: -20px auto 0; position: relative; z-index: 10; padding-bottom: 80px; }
         h2 { text-align: center; color: #333; margin: 20px 0; font-size: 22px; font-weight: 800; }
 
-        /* CARDS & INPUTS */
+        /* CARDS */
         .card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .title { color: #1976d2; font-weight: 800; font-size: 13px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
@@ -31,7 +31,7 @@
         .toggle-btn { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: white; font-weight: 600; color: #555; }
         .toggle-btn.active { background: #e3f2fd; border-color: #2196f3; color: #1976d2; }
 
-        /* SWITCH (ROUND TRIP) */
+        /* SWITCH */
         .switch-wrap { display: flex; justify-content: space-between; align-items: center; background: #fff3e0; padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ffe0b2; }
         .switch-label { font-weight: bold; color: #f57c00; font-size: 15px; }
         .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
@@ -41,7 +41,7 @@
         input:checked + .slider { background-color: #f57c00; }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* PRICE BOX */
+        /* PRICE */
         .price-box { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; padding: 20px; border-radius: 16px; text-align: center; margin: 20px 0; box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3); }
         .price-val { font-size: 36px; font-weight: 800; }
         .price-dist { opacity: 0.9; font-size: 14px; margin-top: 5px; }
@@ -96,15 +96,10 @@
 
         <div class="card">
             <div class="title">📦 ΛΕΠΤΟΜΕΡΕΙΕΣ</div>
-            
             <div class="switch-wrap" onclick="toggleSwitch()">
                 <span class="switch-label">🔄 Με Επιστροφή (x2)</span>
-                <label class="switch">
-                    <input type="checkbox" id="roundTrip" onchange="calc()">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="roundTrip" onchange="calc()"><span class="slider"></span></label>
             </div>
-
             <div class="row">
                 <div class="col-6">
                     <select id="parcel">
@@ -116,7 +111,7 @@
                 <div class="col-6">
                     <select id="payment">
                         <option>Μετρητά</option>
-                        <option>POS (Κάρτα)</option>
+                        <option>POS</option>
                         <option>Iris</option>
                     </select>
                 </div>
@@ -143,40 +138,30 @@
     </div>
 
     <script>
-        // GLOBAL VARIABLES
         let map, dirService, dirRenderer, startAuto, endAuto;
         let calculatedPrice = 0, distanceTxt = "";
         let timeMode = 'now';
 
-        // --- ΡΥΘΜΙΣΕΙΣ ---
         const MY_PHONE = "306934021792";
         // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
-        // -----------------
 
-        // 1. AUTO-LOAD (ΜΝΗΜΗ)
         window.onload = function() {
             if(localStorage.getItem('phone')) document.getElementById('phone').value = localStorage.getItem('phone');
         };
 
-        // 2. ERROR HANDLING (ΑΝ ΔΕΝ ΦΟΡΤΩΣΕΙ Ο ΧΑΡΤΗΣ)
         window.gm_authFailure = function() {
-            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΤο κλειδί API δεν λειτουργεί. Ελέγξτε το Google Cloud Console (Billing & Restrictions).");
+            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΤο κλειδί API δεν λειτουργεί. Ελέγξτε το Google Cloud Console.");
         };
 
-        // 3. INIT MAP
         function initMap() {
             try {
                 map = new google.maps.Map(document.getElementById('map'), {
-                    zoom: 13, center: { lat: 37.9429, lng: 23.6470 }, // Piraeus
-                    disableDefaultUI: true
+                    zoom: 13, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true
                 });
                 dirService = new google.maps.DirectionsService();
                 dirRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 } });
-
                 initAuto();
-                
-                // Try Geolocation
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(pos => {
                         map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -189,29 +174,21 @@
             const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
             startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
             endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
-            
             startAuto.bindTo('bounds', map);
             endAuto.bindTo('bounds', map);
-
             startAuto.addListener("place_changed", calc);
             endAuto.addListener("place_changed", calc);
         }
 
-        // 4. CALCULATE ROUTE & PRICE
         function calc() {
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
-
             if (start.length > 3 && end.length > 3) {
-                dirService.route({
-                    origin: start, destination: end, travelMode: 'DRIVING'
-                }, (res, status) => {
+                dirService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (res, status) => {
                     if (status === 'OK') {
                         dirRenderer.setDirections(res);
                         const km = res.routes[0].legs[0].distance.value / 1000;
                         distanceTxt = res.routes[0].legs[0].distance.text;
-                        
-                        // Price Logic
                         let price = 3.00;
                         if (km > 1) {
                             let rem = km - 1;
@@ -222,12 +199,7 @@
                                 while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; }
                             }
                         }
-                        
-                        // Round Trip Logic
-                        if (document.getElementById('roundTrip').checked) {
-                            price = price * 2.0;
-                        }
-
+                        if (document.getElementById('roundTrip').checked) price *= 2.0;
                         calculatedPrice = price;
                         document.getElementById('priceDisplay').innerText = price.toFixed(2) + " €";
                         document.getElementById('distDisplay').innerText = distanceTxt + " • ~" + res.routes[0].legs[0].duration.text;
@@ -237,7 +209,6 @@
             }
         }
 
-        // 5. HELPER FUNCTIONS
         function setMode(m) {
             timeMode = m;
             document.getElementById('btnNow').className = m==='now'?'toggle-btn active':'toggle-btn';
@@ -252,7 +223,6 @@
             calc();
         }
 
-        // 6. SEND ORDER
         function send() {
             const phone = document.getElementById('phone').value;
             if(!phone) return alert("⚠️ Συμπληρώστε τηλέφωνο!");
@@ -260,15 +230,21 @@
 
             localStorage.setItem('phone', phone);
             
-            // Collect Data
-            const start = document.getElementById('start').value + 
-                          " (🔔 " + (document.getElementById('startName').value || "-") + 
-                          ", 🏢 " + (document.getElementById('startFloor').value || "-") + ")";
-                          
-            const end = document.getElementById('end').value + 
-                        " (🔔 " + (document.getElementById('endName').value || "-") + 
-                        ", 🏢 " + (document.getElementById('endFloor').value || "-") + ")";
+            // --- ΔΕΔΟΜΕΝΑ ---
+            const startAddr = document.getElementById('start').value;
+            const startName = document.getElementById('startName').value || "-";
+            const startFloor = document.getElementById('startFloor').value || "-";
             
+            const endAddr = document.getElementById('end').value;
+            const endName = document.getElementById('endName').value || "-";
+            const endFloor = document.getElementById('endFloor').value || "-";
+            const endPhone = document.getElementById('endPhone').value || "-";
+            
+            const parcel = document.getElementById('parcel').value;
+            const payment = document.getElementById('payment').value;
+            const comments = document.getElementById('notes').value;
+            const isRoundTrip = document.getElementById('roundTrip').checked;
+
             let timeStr = "⚡ ΑΜΕΣΑ";
             if(timeMode === 'later') {
                 const t = document.getElementById('scheduleTime').value;
@@ -276,23 +252,35 @@
                 timeStr = "📅 " + t.replace("T", " ");
             }
 
-            const details = "ΩΡΑ: " + timeStr + 
-                            " | ΕΠΙΣΤΡΟΦΗ: " + (document.getElementById('roundTrip').checked ? "ΝΑΙ (x2)" : "ΟΧΙ") +
-                            " | ΠΑΡΑΛΗΠΤΗΣ: " + (document.getElementById('endPhone').value || "-") +
-                            " | ΔΕΜΑ: " + document.getElementById('parcel').value +
-                            " | ΠΛΗΡΩΜΗ: " + document.getElementById('payment').value +
-                            " | ΣΧΟΛΙΑ: " + document.getElementById('notes').value;
+            // --- 1. WHATSAPP MESSAGE (Clean Format) ---
+            let waMsg = `*Νέα Παραγγελία 2Fast!* 🚀\n`;
+            waMsg += `⏰ *${timeStr}*` + (isRoundTrip ? " | 🔄 *Με Επιστροφή*" : "") + `\n\n`;
+            waMsg += `📞 *Εντολέας:* ${phone}\n`;
+            waMsg += `--------------------------------\n`;
+            waMsg += `📍 *ΑΠΟ:* ${startAddr}\n`;
+            waMsg += `      🔔 ${startName} | 🏢 ${startFloor}\n\n`;
+            waMsg += `🏁 *ΠΡΟΣ:* ${endAddr}\n`;
+            waMsg += `      🔔 ${endName} | 🏢 ${endFloor}\n`;
+            waMsg += `      📞 ${endPhone}\n`;
+            waMsg += `--------------------------------\n`;
+            waMsg += `📦 *Δέμα:* ${parcel}\n`;
+            waMsg += `💳 *Πληρωμή:* ${payment}\n`;
+            if(comments) waMsg += `📝 *Σχόλια:* ${comments}\n`;
+            waMsg += `\n💰 *ΤΕΛΙΚΟ ΚΟΣΤΟΣ: ${calculatedPrice.toFixed(2)} €*`;
 
-            // WhatsApp
-            const waMsg = `*Νέα Παραγγελία!* 🚀\n📞 *${phone}*\n\n📍 ΑΠΟ: ${start}\n🏁 ΠΡΟΣ: ${end}\n\n📝 ${details}\n\n💰 *${calculatedPrice.toFixed(2)} €*`;
             window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waMsg), '_blank');
 
-            // Server
+            // --- 2. SHIPDAY DATA (Compact Format) ---
+            const fullStart = `${startAddr} (🔔 ${startName}, 🏢 ${startFloor})`;
+            const fullEnd = `${endAddr} (🔔 ${endName}, 🏢 ${endFloor})`;
+            const fullNotes = `ΩΡΑ: ${timeStr} | ΕΠΙΣΤΡΟΦΗ: ${isRoundTrip ? 'ΝΑΙ' : 'OXI'} | ΠΑΡΑΛΗΠΤΗΣ: ${endPhone} | ΔΕΜΑ: ${parcel} | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${comments}`;
+
             document.getElementById('sendBtn').innerText = "Αποστολή...";
+            
             fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ phone, start, end, comments: details, price: calculatedPrice.toFixed(2), dist: distanceTxt })
+                body: JSON.stringify({ phone, start: fullStart, end: fullEnd, comments: fullNotes, price: calculatedPrice.toFixed(2), dist: distanceTxt })
             }).then(() => {
                 document.getElementById('successModal').style.display = 'flex';
                 document.getElementById('sendBtn').innerText = "Αποστολή Παραγγελίας";
