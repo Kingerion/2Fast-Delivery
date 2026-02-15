@@ -2,7 +2,6 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
@@ -208,4 +207,177 @@
             document.getElementById('sendBtn').disabled = false;
 
             if (start.length > 3 && end.length > 3) {
-                dirService.route({ origin: start, destination: end, travel
+                dirService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (res, status) => {
+                    if (status === 'OK') {
+                        dirRenderer.setDirections(res);
+                        
+                        // Padding για να μη κρύβεται η διαδρομή
+                        const bounds = res.routes[0].bounds;
+                        map.fitBounds(bounds, { bottom: 100, left: 20, right: 20, top: 20 }); 
+
+                        const km = res.routes[0].legs[0].distance.value / 1000;
+                        distanceTxt = res.routes[0].legs[0].distance.text;
+
+                        if (km > MAX_KM) {
+                            document.getElementById('priceDisplay').innerText = "🚫";
+                            document.getElementById('distDisplay').innerText = "Εκτός Περιοχής (> " + MAX_KM + "km)";
+                            document.getElementById('priceBox').style.background = "#d32f2f";
+                            document.getElementById('sendBtn').disabled = true;
+                            calculatedPrice = 0;
+                            return;
+                        }
+
+                        let price = 3.00;
+                        if (km > 1) {
+                            let rem = km - 1;
+                            if (rem <= 3) price += rem * 0.50;
+                            else {
+                                price += 1.50; rem -= 3;
+                                let rate = 0.60;
+                                while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; }
+                            }
+                        }
+                        if (document.getElementById('roundTrip').checked) price *= 2.0;
+                        calculatedPrice = price;
+                        document.getElementById('priceDisplay').innerText = price.toFixed(2) + " €";
+                        document.getElementById('distDisplay').innerText = distanceTxt + " • ~" + res.routes[0].legs[0].duration.text;
+                    }
+                });
+            }
+        }
+
+        function setMode(m) {
+            timeMode = m;
+            document.getElementById('btnNow').className = m==='now'?'toggle-btn active':'toggle-btn';
+            document.getElementById('btnLater').className = m==='later'?'toggle-btn active':'toggle-btn';
+            document.getElementById('nowInfo').style.display = m==='now'?'block':'none';
+            document.getElementById('scheduleTime').style.display = m==='later'?'block':'none';
+        }
+
+        function toggleSwitch() {
+            const chk = document.getElementById('roundTrip');
+            chk.checked = !chk.checked;
+            calc();
+        }
+
+        // RESET FUNCTION
+        function resetForm() {
+            // Κρατάμε το τηλέφωνο
+            const savedPhone = document.getElementById('phone').value;
+            
+            // Καθαρισμός πεδίων
+            const inputs = document.querySelectorAll('input:not(#phone), textarea');
+            inputs.forEach(input => input.value = '');
+            
+            // Επαναφορά Defaults
+            document.getElementById('roundTrip').checked = false;
+            document.getElementById('parcel').selectedIndex = 0;
+            document.getElementById('payment').selectedIndex = 0;
+            setMode('now');
+            
+            // Καθαρισμός Τιμής & Χάρτη
+            calculatedPrice = 0;
+            document.getElementById('priceDisplay').innerText = "0.00 €";
+            document.getElementById('distDisplay').innerText = "-";
+            document.getElementById('priceBox').style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('sendBtn').innerText = "Αποστολή Παραγγελίας";
+            
+            // Καθαρισμός Διαδρομής στον Χάρτη
+            if(dirRenderer) dirRenderer.setDirections({routes: []});
+        }
+
+        function validate(id) {
+            const el = document.getElementById(id);
+            if (!el.value) {
+                el.classList.add('error');
+                setTimeout(() => el.classList.remove('error'), 2000);
+                return false;
+            }
+            return true;
+        }
+
+        function send() {
+            let valid = true;
+            if(!validate('phone')) valid = false;
+            if(!validate('start')) valid = false;
+            if(!validate('startName')) valid = false;
+            if(!validate('end')) valid = false;
+            if(!validate('endName')) valid = false;
+
+            if (!valid) return;
+            if (calculatedPrice === 0) return alert("⚠️ Πρόβλημα διαδρομής!");
+
+            const phone = document.getElementById('phone').value;
+            localStorage.setItem('phone', phone);
+            
+            const startAddr = document.getElementById('start').value;
+            const startName = document.getElementById('startName').value;
+            const startFloor = document.getElementById('startFloor').value || "-";
+            
+            const endAddr = document.getElementById('end').value;
+            const endName = document.getElementById('endName').value;
+            const endFloor = document.getElementById('endFloor').value || "-";
+            const endPhone = document.getElementById('endPhone').value || "-";
+            
+            const parcel = document.getElementById('parcel').value;
+            const payment = document.getElementById('payment').value;
+            const comments = document.getElementById('notes').value;
+            const isRoundTrip = document.getElementById('roundTrip').checked;
+
+            let timeStr = "⚡ ΑΜΕΣΑ";
+            if(timeMode === 'later') {
+                const t = document.getElementById('scheduleTime').value;
+                if(!t) {
+                    alert("⚠️ Επιλέξτε ώρα ραντεβού!");
+                    document.getElementById('scheduleTime').classList.add('error');
+                    return;
+                }
+                timeStr = "📅 " + t.replace("T", " ");
+            }
+
+            // WHATSAPP
+            let waMsg = `*Νέα Παραγγελία 2Fast!* 🚀\n`;
+            waMsg += `⏰ *${timeStr}*` + (isRoundTrip ? " | 🔄 *Με Επιστροφή*" : "") + `\n\n`;
+            waMsg += `📞 *Εντολέας:* ${phone}\n`;
+            waMsg += `--------------------------------\n`;
+            waMsg += `📍 *ΑΠΟ:* ${startAddr}\n`;
+            waMsg += `      🔔 ${startName} | 🏢 ${startFloor}\n\n`;
+            waMsg += `🏁 *ΠΡΟΣ:* ${endAddr}\n`;
+            waMsg += `      🔔 ${endName} | 🏢 ${endFloor}\n`;
+            waMsg += `      📞 ${endPhone}\n`;
+            waMsg += `--------------------------------\n`;
+            waMsg += `📦 *Δέμα:* ${parcel}\n`;
+            waMsg += `💳 *Πληρωμή:* ${payment}\n`;
+            if(comments) waMsg += `📝 *Σχόλια:* ${comments}\n`;
+            waMsg += `\n💰 *ΤΕΛΙΚΟ ΚΟΣΤΟΣ: ${calculatedPrice.toFixed(2)} €*`;
+
+            window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waMsg), '_blank');
+
+            // SHIPDAY
+            const fullStart = `${startAddr} (🔔 ${startName}, 🏢 ${startFloor})`;
+            const fullEnd = `${endAddr} (🔔 ${endName}, 🏢 ${endFloor})`;
+            const fullNotes = `ΩΡΑ: ${timeStr} | ΕΠΙΣΤΡΟΦΗ: ${isRoundTrip ? 'ΝΑΙ' : 'OXI'} | ΠΑΡΑΛΗΠΤΗΣ: ${endPhone} | ΔΕΜΑ: ${parcel} | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${comments}`;
+
+            document.getElementById('sendBtn').innerText = "Αποστολή...";
+            document.getElementById('sendBtn').disabled = true;
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ phone, start: fullStart, end: fullEnd, comments: fullNotes, price: calculatedPrice.toFixed(2), dist: distanceTxt })
+            }).then(() => {
+                document.getElementById('successModal').style.display = 'flex';
+                document.getElementById('sendBtn').innerText = "Αποστολή Παραγγελίας";
+                // Το κουμπί θα ξεμπλοκάρει όταν ο χρήστης πατήσει "Νέα Παραγγελία" στο modal
+            }).catch(e => {
+                alert("Σφάλμα: " + e);
+                document.getElementById('sendBtn').disabled = false;
+            });
+        }
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
+
+</body>
+</html>
