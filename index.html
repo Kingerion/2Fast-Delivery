@@ -15,8 +15,8 @@
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f8f9fa; -webkit-tap-highlight-color: transparent; }
         
-        /* Χάρτης Full Width αλλά με στρογγυλεμένες γωνίες κάτω */
-        #map { height: 38vh; width: 100%; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        /* FIX: Min-height για να μην εξαφανίζεται ποτέ */
+        #map { height: 38vh; min-height: 250px; width: 100%; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #e0e0e0; }
 
         .container { 
             padding: 20px; 
@@ -25,12 +25,12 @@
             position: relative; 
             top: -15px; 
             z-index: 999;
-            padding-bottom: 80px; /* Χώρος για το scrolling */
+            padding-bottom: 80px; 
         }
 
         h2 { margin-top: 10px; color: #333; text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
         
-        /* Cards Design */
+        /* Cards */
         .section-card {
             background: #fff;
             border: none;
@@ -40,7 +40,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             transition: transform 0.2s;
         }
-        .section-card:active { transform: scale(0.99); }
 
         .section-title {
             font-size: 13px;
@@ -71,11 +70,10 @@
         }
         input:focus, select:focus { border-color: #2196f3; background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1); }
 
-        /* Row Layout */
         .row { display: flex; gap: 10px; }
         .col-6 { flex: 1; }
-        .col-4 { flex: 0.4; }
         .col-8 { flex: 0.8; }
+        .col-4 { flex: 0.4; }
 
         /* Time Buttons */
         .time-btn {
@@ -133,7 +131,7 @@
 
         .pac-container { z-index: 10000 !important; border-radius: 12px; margin-top: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: none; }
 
-        /* SUCCESS MODAL (POPUP) */
+        /* MODAL */
         .modal-overlay {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -150,12 +148,10 @@
             text-align: center;
             width: 85%;
             max-width: 350px;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .checkmark-circle {
             width: 60px; height: 60px; background: #4CAF50; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
         }
         .checkmark { color: white; font-size: 30px; }
         .modal-title { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px; }
@@ -164,9 +160,6 @@
             background: #2196f3; color: white; border: none; padding: 12px 25px;
             border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; width: 100%;
         }
-
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
     </style>
 </head>
 <body>
@@ -198,7 +191,7 @@
         <div class="section-card">
             <div class="section-title"><span>📍</span> ΠΑΡΑΛΑΒΗ</div>
             <div class="input-group">
-                <input type="text" id="start" placeholder="🔍 Οδός Αριθμός, Περιοχή...">
+                <input type="text" id="start" placeholder="🔍 Οδός Αριθμός, Περιοχή..." onblur="calcRoute()">
             </div>
             <div class="row">
                 <div class="col-8"><input type="text" id="startName" placeholder="Όνομα / Κουδούνι"></div>
@@ -209,7 +202,7 @@
         <div class="section-card">
             <div class="section-title"><span>🏁</span> ΠΑΡΑΔΟΣΗ</div>
             <div class="input-group">
-                <input type="text" id="end" placeholder="🔍 Οδός Αριθμός, Περιοχή...">
+                <input type="text" id="end" placeholder="🔍 Οδός Αριθμός, Περιοχή..." onblur="calcRoute()">
             </div>
             <div class="row input-group">
                 <div class="col-8"><input type="text" id="endName" placeholder="Όνομα / Κουδούνι"></div>
@@ -262,14 +255,9 @@
 
     <div id="successModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="checkmark-circle">
-                <span class="checkmark">✓</span>
-            </div>
+            <div class="checkmark-circle"><span class="checkmark">✓</span></div>
             <div class="modal-title">Έτοιμο!</div>
-            <div class="modal-text">
-                Η παραγγελία σας καταχωρήθηκε.<br>
-                Ένας διανομέας έρχεται! 🚀
-            </div>
+            <div class="modal-text">Η παραγγελία σας καταχωρήθηκε.<br>Ένας διανομέας έρχεται! 🚀</div>
             <button class="modal-btn" onclick="closeModal()">Εντάξει</button>
         </div>
     </div>
@@ -283,34 +271,47 @@
         var distanceText = "";
         var timeMode = 'now'; 
         
+        // --- ΡΥΘΜΙΣΕΙΣ ---
         const MY_PHONE = "306934021792"; 
+        // ΒΑΛΕ ΤΟ ΔΙΚΟ ΣΟΥ LINK:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
+        // -----------------
+
+        // Έλεγχος σφαλμάτων API
+        window.gm_authFailure = function() {
+            alert("⚠️ Πρόβλημα Χάρτη Google!\nΕλέγξτε αν έχετε ενεργό Billing Account στο Google Cloud ή αν το κλειδί έχει λήξει.");
+        };
 
         function initMap() {
             var defaultCenter = { lat: 37.9429, lng: 23.6470 };
             
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 13, center: defaultCenter,
-                mapTypeControl: false, streetViewControl: false, fullscreenControl: false
-            });
+            try {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 13, center: defaultCenter,
+                    mapTypeControl: false, streetViewControl: false, fullscreenControl: false
+                });
 
-            directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
-            });
-            directionsRenderer.setMap(map);
+                directionsService = new google.maps.DirectionsService();
+                directionsRenderer = new google.maps.DirectionsRenderer({
+                    polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
+                });
+                directionsRenderer.setMap(map);
 
-            initAutocomplete();
-            
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
-                        map.setCenter(pos);
-                        startAutocomplete.bindTo("bounds", map);
-                        endAutocomplete.bindTo("bounds", map);
-                    }
-                );
+                initAutocomplete();
+                
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                            map.setCenter(pos);
+                            // Προσπάθεια σύνδεσης autocomplete, αλλά με ασφάλεια
+                            if(startAutocomplete) startAutocomplete.bindTo("bounds", map);
+                            if(endAutocomplete) endAutocomplete.bindTo("bounds", map);
+                        }
+                    );
+                }
+            } catch (e) {
+                console.error("Map Load Error:", e);
             }
         }
 
@@ -322,15 +323,20 @@
                 locationBias: { radius: 30000, center: { lat: 37.9429, lng: 23.6470 } }
             };
 
-            startAutocomplete = new google.maps.places.Autocomplete(document.getElementById('start'), options);
-            endAutocomplete = new google.maps.places.Autocomplete(document.getElementById('end'), options);
+            var startEl = document.getElementById('start');
+            var endEl = document.getElementById('end');
 
-            startAutocomplete.addListener("place_changed", calcRoute);
-            endAutocomplete.addListener("place_changed", calcRoute);
+            if(startEl && endEl && google.maps.places) {
+                startAutocomplete = new google.maps.places.Autocomplete(startEl, options);
+                endAutocomplete = new google.maps.places.Autocomplete(endEl, options);
+
+                startAutocomplete.addListener("place_changed", calcRoute);
+                endAutocomplete.addListener("place_changed", calcRoute);
+            }
         }
 
         function setTimeMode(mode) {
-            if(navigator.vibrate) navigator.vibrate(50); // Haptic feedback
+            if(navigator.vibrate) navigator.vibrate(50);
             timeMode = mode;
             if (mode === 'now') {
                 document.getElementById('btnNow').classList.add('active');
@@ -349,7 +355,8 @@
             var startVal = document.getElementById('start').value;
             var endVal = document.getElementById('end').value;
 
-            if (startVal && endVal) {
+            // Υπολογισμός μόνο αν υπάρχουν τιμές και στα δύο πεδία
+            if (startVal && endVal && startVal.length > 3 && endVal.length > 3) {
                 var request = {
                     origin: startVal, destination: endVal,
                     travelMode: 'DRIVING',
@@ -369,6 +376,8 @@
                         document.getElementById('priceDisplay').innerText = calculatedPrice.toFixed(2) + " €";
                         document.getElementById('distDisplay').innerText = distanceText + " • ~" + route.duration.text;
                         document.getElementById('sendBtn').disabled = false;
+                    } else {
+                        console.log("Route Error:", status);
                     }
                 });
             }
@@ -390,19 +399,16 @@
         }
 
         function sendOrder() {
-            if(navigator.vibrate) navigator.vibrate(50); // Haptic
+            if(navigator.vibrate) navigator.vibrate(50);
             
             var phone = document.getElementById('phone').value;
-            
             var startAddr = document.getElementById('start').value;
             var startName = document.getElementById('startName').value || "-";
             var startFloor = document.getElementById('startFloor').value || "-";
-            
             var endAddr = document.getElementById('end').value;
             var endName = document.getElementById('endName').value || "-";
             var endFloor = document.getElementById('endFloor').value || "-";
             var endPhone = document.getElementById('endPhone').value || "-";
-            
             var parcelType = document.getElementById('parcelType').value;
             var paymentMethod = document.getElementById('paymentMethod').value;
             var comments = document.getElementById('comments').value;
@@ -417,7 +423,7 @@
             }
 
             if (!phone) { alert("⚠️ Συμπληρώστε το τηλέφωνό σας!"); return; }
-            if (price == 0) { alert("⚠️ Επιλέξτε διευθύνσεις!"); return; }
+            if (price == 0) { alert("⚠️ Πατήστε πάνω στη διεύθυνση για να υπολογιστεί η τιμή!"); calcRoute(); return; }
 
             document.getElementById('sendBtn').disabled = true;
             document.getElementById('btnText').style.display = 'none';
@@ -448,21 +454,4 @@
             // Shipday Send
             var orderData = {
                 phone: phone,
-                start: startFull,
-                end: endFull,
-                comments: fullComments,
-                price: price,
-                dist: distanceText
-            };
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            }).then(() => {
-                // Ανοίγουμε WhatsApp
-                window.open(waLink, '_blank');
-                
-                // Εμφάνιση Success Modal
-                document.getElementById(
+                start: st
