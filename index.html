@@ -11,31 +11,37 @@
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8f9fa; }
         
-        /* ΧΑΡΤΗΣ */
-        #map { height: 38vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        /* MAP */
+        #map { height: 40vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .container { padding: 20px; max-width: 600px; margin: -25px auto 0; position: relative; z-index: 10; padding-bottom: 80px; }
         
+        /* HEADER ΜΕ RESET BUTTON */
         .header-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px; }
         h2 { color: #333; font-size: 22px; font-weight: 800; margin: 0; }
         .reset-btn { background: #ffebee; color: #d32f2f; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; }
 
+        /* CARDS */
         .card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .title { color: #1976d2; font-weight: 800; font-size: 13px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
+        /* INPUTS */
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; background: #f9f9f9; margin-bottom: 8px; transition: 0.3s; }
         input:focus { border-color: #2196f3; background: #fff; outline: none; }
         
+        /* ERROR STYLE */
         .error { border-color: #ff3b30 !important; background: #fff0f0 !important; animation: shake 0.3s; }
         @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
 
         .row { display: flex; gap: 10px; }
         .col-8 { flex: 2; } .col-4 { flex: 1; } .col-6 { flex: 1; }
 
+        /* BUTTONS */
         .btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
         .toggle-btn { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: white; font-weight: 600; color: #555; }
         .toggle-btn.active { background: #e3f2fd; border-color: #2196f3; color: #1976d2; }
 
+        /* SWITCH */
         .switch-wrap { display: flex; justify-content: space-between; align-items: center; background: #fff3e0; padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ffe0b2; }
         .switch-label { font-weight: bold; color: #f57c00; font-size: 15px; }
         .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
@@ -45,16 +51,15 @@
         input:checked + .slider { background-color: #f57c00; }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* PRICE BOX */
+        /* PRICE */
         .price-box { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; padding: 20px; border-radius: 16px; text-align: center; margin: 20px 0; box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3); }
-        .price-net { font-size: 14px; opacity: 0.8; margin-bottom: 5px; }
-        .price-val { font-size: 38px; font-weight: 800; line-height: 1; margin: 5px 0; }
-        .price-vat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block; }
-        .price-dist { opacity: 0.9; font-size: 14px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; }
+        .price-val { font-size: 36px; font-weight: 800; }
+        .price-dist { opacity: 0.9; font-size: 14px; margin-top: 5px; }
         
         #sendBtn { width: 100%; padding: 16px; background: #ff5722; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3); transition: 0.3s; }
         #sendBtn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
 
+        /* SUCCESS MODAL */
         #successModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 80%; max-width: 300px; animation: pop 0.3s; }
         .tick { font-size: 50px; color: #4CAF50; display: block; margin-bottom: 10px; }
@@ -79,7 +84,7 @@
                 <button class="toggle-btn active" id="btnNow" onclick="setMode('now')">⚡ Τώρα</button>
                 <button class="toggle-btn" id="btnLater" onclick="setMode('later')">📅 Ραντεβού</button>
             </div>
-            <div id="nowInfo" style="text-align: center; font-size: 14px; color: green; font-weight: bold;">🚀 Άφιξη 5-30' Max</div>
+            <div id="nowInfo" style="text-align: center; font-size: 13px; color: green; font-weight: bold;">🚀 Άφιξη σε ~30'</div>
             <input type="datetime-local" id="scheduleTime" style="display: none;">
         </div>
 
@@ -87,17 +92,16 @@
             <div class="title">📍 ΠΑΡΑΛΑΒΗ</div>
             <input type="text" id="start" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
             <div class="row">
-                <div class="col-6"><input type="text" id="startStore" placeholder="🏢 Κατάστημα"></div>
-                <div class="col-6"><input type="text" id="startName" placeholder="👤 Υπεύθυνος"></div>
+                <div class="col-8"><input type="text" id="startName" placeholder="Όνομα/Κουδούνι (Υποχρεωτικό)"></div>
+                <div class="col-4"><input type="number" id="startFloor" placeholder="Όροφος" inputmode="numeric"></div>
             </div>
-            <input type="number" id="startFloor" placeholder="Όροφος" inputmode="numeric">
         </div>
 
         <div class="card">
             <div class="title">🏁 ΠΑΡΑΔΟΣΗ</div>
             <input type="text" id="end" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
             <div class="row">
-                <div class="col-8"><input type="text" id="endName" placeholder="Όνομα/Κουδούνι"></div>
+                <div class="col-8"><input type="text" id="endName" placeholder="Όνομα/Κουδούνι (Υποχρεωτικό)"></div>
                 <div class="col-4"><input type="number" id="endFloor" placeholder="Όροφος" inputmode="numeric"></div>
             </div>
             <input type="tel" id="endPhone" placeholder="📞 Τηλέφωνο Παραλήπτη" style="border-left: 4px solid #ff9800;">
@@ -129,9 +133,8 @@
         </div>
 
         <div class="price-box" id="priceBox">
-            <div class="price-net" id="priceNet">Καθαρή Αξία: 0.00 €</div>
-            <div class="price-val" id="priceTotal">0.00 €</div>
-            <div class="price-vat-label">+ ΦΠΑ 24%</div>
+            <div style="font-size: 13px; opacity: 0.8;">ΕΚΤΙΜΩΜΕΝΟ ΚΟΣΤΟΣ</div>
+            <div class="price-val" id="priceDisplay">0.00 €</div>
             <div class="price-dist" id="distDisplay">-</div>
         </div>
 
@@ -150,14 +153,59 @@
     <script>
         // --- ΡΥΘΜΙΣΕΙΣ ---
         const MY_PHONE = "306934021792";
-        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ ΠΡΟΣΕΚΤΙΚΑ:
+        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
         const MAX_KM = 35;
         // -----------------
 
         let map, dirService, dirRenderer, startAuto, endAuto;
-        let finalTotal = 0, distanceTxt = "";
+        let calculatedPrice = 0, distanceTxt = "";
         let timeMode = 'now';
 
         window.onload = function() {
-            if(localStorage.getItem
+            if(localStorage.getItem('phone')) document.getElementById('phone').value = localStorage.getItem('phone');
+        };
+
+        window.gm_authFailure = function() {
+            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΤο κλειδί API δεν λειτουργεί.");
+        };
+
+        function initMap() {
+            try {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 13, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true
+                });
+                dirService = new google.maps.DirectionsService();
+                dirRenderer = new google.maps.DirectionsRenderer({ 
+                    map: map, 
+                    polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
+                });
+                initAuto();
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(pos => {
+                        map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    });
+                }
+            } catch (e) { console.error("Map Error:", e); }
+        }
+
+        function initAuto() {
+            const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
+            startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
+            endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
+            startAuto.bindTo('bounds', map);
+            endAuto.bindTo('bounds', map);
+            startAuto.addListener("place_changed", calc);
+            endAuto.addListener("place_changed", calc);
+        }
+
+        function calc() {
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            
+            // Reset Styles
+            document.getElementById('priceBox').style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
+            document.getElementById('sendBtn').disabled = false;
+
+            if (start.length > 3 && end.length > 3) {
+                dirService.route({ origin: start, destination: end, travel
