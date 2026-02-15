@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2196f3">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/7541/7541900.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/7541/7541900.png">
+
     <title>2Fast Delivery App</title>
     
     <style>
@@ -13,7 +17,10 @@
         
         #map { height: 38vh; min-height: 250px; width: 100%; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; background: #e0e0e0; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; position: relative; top: -15px; z-index: 999; padding-bottom: 80px; }
+        .container { 
+            padding: 20px; max-width: 600px; margin: 0 auto; position: relative; top: -15px; z-index: 999; padding-bottom: 80px; 
+        }
+
         h2 { margin-top: 10px; color: #333; text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
         
         .section-card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s; }
@@ -32,10 +39,17 @@
         .time-btn { flex: 1; padding: 14px; border: 1px solid #eee; background: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .time-btn.active { background: #e3f2fd; border-color: #2196f3; color: #1565c0; box-shadow: 0 2px 5px rgba(33, 150, 243, 0.2); }
 
-        .round-trip-wrapper { display: flex; align-items: center; justify-content: space-between; background: #fff3e0; border: 1px solid #ffe0b2; padding: 10px 15px; border-radius: 12px; margin-bottom: 15px; }
+        /* Round Trip Toggle - Βελτιωμένο */
+        .round-trip-wrapper {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff3e0; border: 1px solid #ffe0b2; padding: 12px 15px; border-radius: 12px; margin-bottom: 15px;
+            cursor: pointer; /* Κάνει όλο το κουτί κλικable */
+        }
         .round-trip-label { font-weight: bold; color: #ef6c00; font-size: 15px; }
-        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        
+        /* Checkbox Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #ef6c00; }
@@ -111,10 +125,15 @@
 
         <div class="section-card">
             <div class="section-title"><span>📦</span> ΛΕΠΤΟΜΕΡΕΙΕΣ</div>
-            <div class="round-trip-wrapper" onclick="toggleRoundTrip()">
-                <div class="round-trip-label">🔄 Με Επιστροφή (x2)</div>
-                <label class="toggle-switch"><input type="checkbox" id="roundTrip" onchange="calcRoute()"><span class="slider"></span></label>
-            </div>
+            
+            <label class="round-trip-wrapper">
+                <span class="round-trip-label">🔄 Με Επιστροφή (x2)</span>
+                <span class="switch">
+                    <input type="checkbox" id="roundTrip" onchange="calcRoute()">
+                    <span class="slider"></span>
+                </span>
+            </label>
+
             <div class="row">
                 <div class="col-6"><label>Δέμα</label><select id="parcelType"><option>Φάκελος</option><option>Μικρό</option><option>Μεγάλο</option></select></div>
                 <div class="col-6"><label>Πληρωμή</label><select id="paymentMethod"><option>Μετρητά</option><option>POS</option><option>Iris</option></select></div>
@@ -139,7 +158,7 @@
         <div class="modal-content">
             <div class="checkmark-circle"><span class="checkmark">✓</span></div>
             <div class="modal-title">Έτοιμο!</div>
-            <div class="modal-text">Η παραγγελία εστάλη.<br>Διανομέας ειδοποιήθηκε! 🚀</div>
+            <div class="modal-text">Η παραγγελία σας καταχωρήθηκε.<br>Ένας διανομέας ειδοποιήθηκε! 🚀</div>
             <button class="modal-btn" onclick="closeModal()">Εντάξει</button>
         </div>
     </div>
@@ -148,16 +167,19 @@
         var map, directionsService, directionsRenderer, startAutocomplete, endAutocomplete;
         var calculatedPrice = 0, distanceText = "", timeMode = 'now';
         const MY_PHONE = "306934021792"; 
+        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
+        // -----------------
 
+        // Auto-Load
         document.addEventListener('DOMContentLoaded', () => {
             const savedPhone = localStorage.getItem('myPhone');
             if (savedPhone) document.getElementById('phone').value = savedPhone;
         });
 
-        // 🚨 ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ ΝΑ ΔΟΥΜΕ ΤΟ ΣΦΑΛΜΑ 🚨
+        // Error Handling
         window.gm_authFailure = function() {
-            alert("⚠️ ERROR: Το Google Key δεν λειτουργεί!\nΕλέγξτε: 1. Billing Active, 2. Website Restrictions (Βάλτε None).");
+            alert("⚠️ Google Maps Error: Ελέγξτε το Billing ή τα Restrictions στο Google Cloud.");
         };
 
         function initMap() {
@@ -197,15 +219,11 @@
             document.getElementById('laterInputs').style.display = mode==='later'?'block':'none';
         }
 
-        function toggleRoundTrip() {
-            var chk = document.getElementById('roundTrip');
-            chk.checked = !chk.checked;
-            calcRoute();
-        }
-
         function calcRoute() {
             var startVal = document.getElementById('start').value;
             var endVal = document.getElementById('end').value;
+            
+            // Προχωράμε μόνο αν έχουν συμπληρωθεί και τα δύο
             if (startVal && endVal && startVal.length > 3 && endVal.length > 3) {
                 directionsService.route({ origin: startVal, destination: endVal, travelMode: 'DRIVING' }, function(result, status) {
                     if (status == 'OK') {
@@ -233,7 +251,11 @@
                 price += chunk * rate;
                 remaining -= 1; rate += 0.10;
             }
-            if (document.getElementById('roundTrip').checked) price = price * 2.0; 
+            
+            // Απλά διπλασιάζουμε την τιμή αν είναι επιλεγμένο
+            if (document.getElementById('roundTrip').checked) {
+                price = price * 2.0; 
+            }
             return price;
         }
 
@@ -241,6 +263,7 @@
             if(navigator.vibrate) navigator.vibrate(50);
             var phone = document.getElementById('phone').value;
             localStorage.setItem('myPhone', phone);
+            
             var startAddr = document.getElementById('start').value;
             var startName = document.getElementById('startName').value || "-";
             var startFloor = document.getElementById('startFloor').value || "-";
@@ -273,24 +296,4 @@
             var endFull = endAddr + " (🔔 " + endName + ", 🏢 " + endFloor + ")";
             var fullComments = "ΕΠΙΣΤΡΟΦΗ: " + isRoundTrip + " | ΩΡΑ: " + timeString + " | Τηλ Παραλήπτη: " + endPhone + " | Δέμα: " + parcelType + " | Πληρωμή: " + paymentMethod + " | " + comments;
 
-            var waText = "*Νέα Παραγγελία 2Fast!* 🚀\n" + "⏰ *" + timeString + "*\n" + "🔄 *Επιστροφή:* " + isRoundTrip + "\n\n" + "📞 *Εντολέας:* " + phone + "\n" + "-----------------------------\n" + "📍 *ΑΠΟ:* " + startAddr + "\n" + "   └ " + startName + " (" + startFloor + ")\n" + "🏁 *ΠΡΟΣ:* " + endAddr + "\n" + "   └ " + endName + " (" + endFloor + ")\n" + "   📞 " + endPhone + "\n" + "-----------------------------\n" + "📦 *Δέμα:* " + parcelType + "\n" + "💳 *Πληρωμή:* " + paymentMethod + "\n" + "💬 " + comments + "\n" + "💰 *Κόστος:* " + price + " € (" + distanceText + ")";
-            
-            var waLink = "https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waText);
-            window.open(waLink, '_blank');
-
-            var orderData = { phone: phone, start: startFull, end: endFull, comments: fullComments, price: price, dist: distanceText };
-
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) })
-            .then(() => {
-                document.getElementById('successModal').style.display = 'flex';
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('btnText').style.display = 'block';
-                document.getElementById('btnText').innerText = "Εστάλη!";
-            }).catch(error => { alert("Σφάλμα: " + error); location.reload(); });
-        }
-
-        function closeModal() { location.reload(); }
-    </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkk3z2W3H172JxqlF4G0FjwppTDHJeXiw&libraries=places&callback=initMap" async defer></script>
-</body>
-</html>
+            var waText = "*Νέα Παραγγελία 2Fast!* 🚀\n" + "⏰ *" + timeString + "*\n" + "🔄 *Επιστροφή:* " + isRoundTrip + "\n\n" + "📞 *Εντολέας:* " + phone + "\n" + "-----------------------------\n" + "📍 *ΑΠΟ:* " + startAddr + "\n" + "
