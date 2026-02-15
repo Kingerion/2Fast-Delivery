@@ -2,23 +2,26 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <meta name="referrer" content="origin">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
-    <title>2Fast Delivery</title>
+    <title>2Fast Delivery (Debug)</title>
     
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8f9fa; }
         
-        /* MAP */
-        #map { height: 38vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
+        /* MAP CONTAINER */
+        #map { height: 38vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; position: relative; }
         
-        /* ERROR MESSAGE IN MAP */
-        #map-error-msg {
-            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80%; text-align: center; color: #d32f2f; background: rgba(255, 255, 255, 0.9);
-            padding: 20px; border-radius: 12px; font-weight: bold; border: 2px solid #d32f2f; z-index: 100;
+        /* 🚨 DEBUG BOX - ΕΜΦΑΝΙΖΕΤΑΙ ΜΟΝΟ ΑΝ ΥΠΑΡΧΕΙ ΛΑΘΟΣ 🚨 */
+        #debug-console {
+            display: none; 
+            position: absolute; top: 10px; left: 10px; right: 10px; 
+            background: rgba(0,0,0,0.85); color: #ff5252; 
+            padding: 15px; border-radius: 8px; font-size: 12px; 
+            z-index: 9999; font-family: monospace; border: 1px solid red;
+            word-wrap: break-word;
         }
 
         .container { padding: 20px; max-width: 600px; margin: -25px auto 0; position: relative; z-index: 10; padding-bottom: 80px; }
@@ -52,7 +55,6 @@
         input:checked + .slider { background-color: #f57c00; }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* PRICE BOX */
         .price-box { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; padding: 20px; border-radius: 16px; text-align: center; margin: 20px 0; box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3); }
         .price-net { font-size: 14px; opacity: 0.8; margin-bottom: 5px; }
         .price-val { font-size: 38px; font-weight: 800; line-height: 1; margin: 5px 0; }
@@ -71,7 +73,7 @@
 <body>
 
     <div id="map">
-        <div id="map-error-msg"></div>
+        <div id="debug-console"></div>
     </div>
 
     <div class="container">
@@ -95,7 +97,6 @@
         <div class="card">
             <div class="title">📍 ΠΑΡΑΛΑΒΗ</div>
             <input type="text" id="start" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
-            
             <div class="row">
                 <div class="col-6"><input type="text" id="startStore" placeholder="🏢 Κατάστημα"></div>
                 <div class="col-6"><input type="text" id="startName" placeholder="👤 Υπεύθυνος"></div>
@@ -169,49 +170,64 @@
         let finalTotal = 0, distanceTxt = "";
         let timeMode = 'now';
 
+        // 🚨 ΚΑΤΑΓΡΑΦΗ ΛΑΘΩΝ (DEBUGGING) 🚨
+        function logError(msg) {
+            const consoleDiv = document.getElementById('debug-console');
+            consoleDiv.style.display = 'block';
+            consoleDiv.innerHTML += "⚠️ " + msg + "<br><hr>";
+            console.error(msg);
+        }
+
+        window.gm_authFailure = function() {
+            logError("GOOGLE AUTH ERROR: Το κλειδί απορρίφθηκε. Ελέγξτε: 1. Restrictions στο Cloud Console. 2. Αν είναι ενεργό το Billing.");
+        };
+
         window.onload = function() {
             if(localStorage.getItem('phone')) document.getElementById('phone').value = localStorage.getItem('phone');
         };
 
-        // 🚨 ΕΜΦΑΝΙΣΗ ΣΦΑΛΜΑΤΟΣ ΣΤΟΝ ΧΑΡΤΗ 🚨
-        window.gm_authFailure = function() {
-            const errDiv = document.getElementById('map-error-msg');
-            errDiv.style.display = 'block';
-            errDiv.innerHTML = "⚠️ ERROR: Η Google μπλόκαρε το κλειδί.<br><br>Λύση: Πηγαίνετε στο Cloud Console -> Credentials και βάλτε το Application Restrictions στο 'None'.";
-        };
-
         function initMap() {
             try {
+                if (typeof google === 'undefined') {
+                    logError("GOOGLE MAPS NOT LOADED: Η βιβλιοθήκη δεν φόρτωσε. Πιθανό θέμα δικτύου ή κλειδιού.");
+                    return;
+                }
+
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 13, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true
                 });
+                
                 dirService = new google.maps.DirectionsService();
                 dirRenderer = new google.maps.DirectionsRenderer({ 
                     map: map, 
                     polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
                 });
                 initAuto();
+                
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(pos => {
                         map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    }, () => {
+                        console.log("Geolocation not allowed");
                     });
                 }
             } catch (e) { 
-                console.error("Map Error:", e);
-                document.getElementById('map-error-msg').innerText = "JS Error: " + e.message;
-                document.getElementById('map-error-msg').style.display = 'block';
+                logError("MAP INIT ERROR: " + e.message);
             }
         }
 
         function initAuto() {
-            if(!google || !google.maps || !google.maps.places) return;
-            const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
-            startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
-            endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
-            startAuto.bindTo('bounds', map);
-            endAuto.bindTo('bounds', map);
-            startAuto.addListener("place_changed", calc);
-            endAuto.addListener("place_changed", calc);
+            try {
+                const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
+                startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
+                endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
+                startAuto.bindTo('bounds', map);
+                endAuto.bindTo('bounds', map);
+                startAuto.addListener("place_changed", calc);
+                endAuto.addListener("place_changed", calc);
+            } catch (e) {
+                logError("AUTOCOMPLETE ERROR: " + e.message);
+            }
         }
 
         function calc() {
@@ -262,6 +278,8 @@
                         document.getElementById('priceNet').innerText = "Καθαρή Αξία: " + net.toFixed(2) + " €";
                         document.getElementById('priceTotal').innerText = total.toFixed(2) + " €";
                         document.getElementById('distDisplay').innerText = distanceTxt + " • ~" + res.routes[0].legs[0].duration.text;
+                    } else {
+                        logError("ROUTE ERROR: " + status);
                     }
                 });
             }
@@ -298,6 +316,7 @@
             document.getElementById('sendBtn').disabled = false;
             document.getElementById('sendBtn').innerText = "Αποστολή Παραγγελίας";
             if(dirRenderer) dirRenderer.setDirections({routes: []});
+            document.getElementById('debug-console').style.display = 'none';
         }
 
         function validate(id) {
@@ -362,14 +381,4 @@
                 timeStr = "📅 " + t.replace("T", " ");
             }
 
-            const navLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(startAddr)}&destination=${encodeURIComponent(endAddr)}&travelmode=driving`;
-
-            // WHATSAPP
-            let waMsg = `*Νέα Παραγγελία 2Fast!* 🚀\n`;
-            waMsg += `⏰ *${timeStr}*` + (isRoundTrip ? " | 🔄 *Με Επιστροφή*" : "") + `\n\n`;
-            waMsg += `📞 *Εντολέας:* ${phone}\n`;
-            waMsg += `--------------------------------\n`;
-            waMsg += `📍 *ΑΠΟ:* ${startAddr}\n`;
-            if(startStore !== "-") waMsg += `      🏢 ${startStore}\n`;
-            waMsg += `      👤 ${startName} | 🏢 ${startFloor}\n\n`;
-            waMsg += `🏁 *ΠΡΟ
+            const navLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(startAddr)}&destination=${encodeU
