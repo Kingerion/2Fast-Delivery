@@ -2,6 +2,7 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
@@ -11,8 +12,15 @@
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8f9fa; }
         
         /* MAP */
-        #map { height: 38vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #map { height: 38vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
         
+        /* ERROR MESSAGE IN MAP */
+        #map-error-msg {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80%; text-align: center; color: #d32f2f; background: rgba(255, 255, 255, 0.9);
+            padding: 20px; border-radius: 12px; font-weight: bold; border: 2px solid #d32f2f; z-index: 100;
+        }
+
         .container { padding: 20px; max-width: 600px; margin: -25px auto 0; position: relative; z-index: 10; padding-bottom: 80px; }
         
         .header-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px; }
@@ -44,11 +52,11 @@
         input:checked + .slider { background-color: #f57c00; }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* PRICE BOX WITH VAT */
+        /* PRICE BOX */
         .price-box { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; padding: 20px; border-radius: 16px; text-align: center; margin: 20px 0; box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3); }
-        .price-net { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
-        .price-val { font-size: 38px; font-weight: 800; line-height: 1; }
-        .price-vat-label { font-size: 12px; opacity: 0.8; margin-top: 5px; font-weight: 600; text-transform: uppercase; }
+        .price-net { font-size: 14px; opacity: 0.8; margin-bottom: 5px; }
+        .price-val { font-size: 38px; font-weight: 800; line-height: 1; margin: 5px 0; }
+        .price-vat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .price-dist { opacity: 0.9; font-size: 14px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; }
         
         #sendBtn { width: 100%; padding: 16px; background: #ff5722; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3); transition: 0.3s; }
@@ -62,7 +70,9 @@
 </head>
 <body>
 
-    <div id="map"></div>
+    <div id="map">
+        <div id="map-error-msg"></div>
+    </div>
 
     <div class="container">
         <div class="header-row">
@@ -131,7 +141,7 @@
         <div class="price-box" id="priceBox">
             <div class="price-net" id="priceNet">Καθαρή Αξία: 0.00 €</div>
             <div class="price-val" id="priceTotal">0.00 €</div>
-            <div class="price-vat-label">Συμπεριλαμβάνεται ΦΠΑ 24%</div>
+            <div class="price-vat-label">+ ΦΠΑ 24%</div>
             <div class="price-dist" id="distDisplay">-</div>
         </div>
 
@@ -163,8 +173,11 @@
             if(localStorage.getItem('phone')) document.getElementById('phone').value = localStorage.getItem('phone');
         };
 
+        // 🚨 ΕΜΦΑΝΙΣΗ ΣΦΑΛΜΑΤΟΣ ΣΤΟΝ ΧΑΡΤΗ 🚨
         window.gm_authFailure = function() {
-            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΕλέγξτε το νέο κλειδί API στο Cloud Console.");
+            const errDiv = document.getElementById('map-error-msg');
+            errDiv.style.display = 'block';
+            errDiv.innerHTML = "⚠️ ERROR: Η Google μπλόκαρε το κλειδί.<br><br>Λύση: Πηγαίνετε στο Cloud Console -> Credentials και βάλτε το Application Restrictions στο 'None'.";
         };
 
         function initMap() {
@@ -183,10 +196,15 @@
                         map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
                     });
                 }
-            } catch (e) { console.error("Map Error:", e); }
+            } catch (e) { 
+                console.error("Map Error:", e);
+                document.getElementById('map-error-msg').innerText = "JS Error: " + e.message;
+                document.getElementById('map-error-msg').style.display = 'block';
+            }
         }
 
         function initAuto() {
+            if(!google || !google.maps || !google.maps.places) return;
             const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
             startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
             endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
@@ -223,7 +241,7 @@
                             return;
                         }
 
-                        // BASE CALCULATION (NET)
+                        // Net Calculation
                         let net = 3.00;
                         if (km > 1) {
                             let rem = km - 1;
@@ -236,10 +254,9 @@
                         }
                         if (document.getElementById('roundTrip').checked) net *= 2.0;
                         
-                        // VAT CALCULATION
+                        // VAT
                         let vat = net * 0.24;
                         let total = net + vat;
-
                         finalTotal = total;
 
                         document.getElementById('priceNet').innerText = "Καθαρή Αξία: " + net.toFixed(2) + " €";
@@ -297,13 +314,15 @@
             let valid = true;
             if(!validate('phone')) valid = false;
             if(!validate('start')) valid = false;
-            // Name OR Store must be filled
-            if(!document.getElementById('startName').value && !document.getElementById('startStore').value) {
-                document.getElementById('startName').classList.add('error');
+            
+            const store = document.getElementById('startStore').value;
+            const name = document.getElementById('startName').value;
+            if(!store && !name) {
                 document.getElementById('startStore').classList.add('error');
+                document.getElementById('startName').classList.add('error');
                 setTimeout(() => {
-                    document.getElementById('startName').classList.remove('error');
                     document.getElementById('startStore').classList.remove('error');
+                    document.getElementById('startName').classList.remove('error');
                 }, 2000);
                 valid = false;
             }
@@ -351,24 +370,6 @@
             waMsg += `📞 *Εντολέας:* ${phone}\n`;
             waMsg += `--------------------------------\n`;
             waMsg += `📍 *ΑΠΟ:* ${startAddr}\n`;
-            waMsg += `      🏢 ${startStore}\n`;
+            if(startStore !== "-") waMsg += `      🏢 ${startStore}\n`;
             waMsg += `      👤 ${startName} | 🏢 ${startFloor}\n\n`;
-            waMsg += `🏁 *ΠΡΟΣ:* ${endAddr}\n`;
-            waMsg += `      👤 ${endName} | 🏢 ${endFloor}\n`;
-            waMsg += `      📞 ${endPhone}\n`;
-            waMsg += `--------------------------------\n`;
-            waMsg += `📦 *Δέμα:* ${parcel}\n`;
-            waMsg += `💳 *Πληρωμή:* ${payment}\n`;
-            if(comments) waMsg += `📝 *Σχόλια:* ${comments}\n`;
-            waMsg += `\n💰 *ΣΥΝΟΛΟ (με ΦΠΑ): ${finalTotal.toFixed(2)} €*`;
-            waMsg += `\n\n🗺️ *GPS:* ${navLink}`;
-
-            window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waMsg), '_blank');
-
-            // SHIPDAY
-            const fullStart = `${startAddr} (🏢 ${startStore}, 👤 ${startName}, 🏢 ${startFloor})`;
-            const fullEnd = `${endAddr} (🔔 ${endName}, 🏢 ${endFloor})`;
-            const fullNotes = `ΩΡΑ: ${timeStr} | ΕΠΙΣΤΡΟΦΗ: ${isRoundTrip ? 'ΝΑΙ' : 'OXI'} | ΠΑΡΑΛΗΠΤΗΣ: ${endPhone} | ΔΕΜΑ: ${parcel} | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${comments} | GPS: ${navLink}`;
-
-            document.getElementById('sendBtn').innerText = "Αποστολή...";
-            document.getElementById('sendBtn').disab
+            waMsg += `🏁 *ΠΡΟ
