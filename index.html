@@ -23,7 +23,7 @@
 
         h2 { margin-top: 10px; color: #333; text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
         
-        .section-card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .section-card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s; }
         .section-title { font-size: 13px; font-weight: 800; color: #2196f3; margin-bottom: 12px; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.8px; }
         .section-title span { margin-right: 8px; font-size: 18px; }
 
@@ -38,6 +38,19 @@
 
         .time-btn { flex: 1; padding: 14px; border: 1px solid #eee; background: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .time-btn.active { background: #e3f2fd; border-color: #2196f3; color: #1565c0; box-shadow: 0 2px 5px rgba(33, 150, 243, 0.2); }
+
+        /* Round Trip Toggle */
+        .round-trip-wrapper {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff3e0; border: 1px solid #ffe0b2; padding: 10px 15px; border-radius: 12px; margin-bottom: 15px; cursor: pointer;
+        }
+        .round-trip-label { font-weight: bold; color: #ef6c00; display: flex; align-items: center; }
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #ef6c00; }
+        input:checked + .slider:before { transform: translateX(20px); }
 
         textarea { resize: vertical; height: 70px; }
         
@@ -121,6 +134,15 @@
 
         <div class="section-card">
             <div class="section-title"><span>📦</span> ΛΕΠΤΟΜΕΡΕΙΕΣ</div>
+            
+            <div class="round-trip-wrapper" onclick="toggleRoundTrip()">
+                <div class="round-trip-label">🔄 Με Επιστροφή</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="roundTrip" onchange="calcRoute()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <div class="row">
                 <div class="col-6"><label>Δέμα</label><select id="parcelType"><option>Φάκελος</option><option>Μικρό</option><option>Μεγάλο</option></select></div>
                 <div class="col-6"><label>Πληρωμή</label><select id="paymentMethod"><option>Μετρητά</option><option>POS</option><option>Iris</option></select></div>
@@ -145,7 +167,7 @@
         <div class="modal-content">
             <div class="checkmark-circle"><span class="checkmark">✓</span></div>
             <div class="modal-title">Έτοιμο!</div>
-            <div class="modal-text">Η παραγγελία εστάλη επιτυχώς.<br>Ένας διανομέας ειδοποιήθηκε! 🚀</div>
+            <div class="modal-text">Η παραγγελία σας καταχωρήθηκε.<br>Ένας διανομέας ειδοποιήθηκε! 🚀</div>
             <button class="modal-btn" onclick="closeModal()">Εντάξει</button>
         </div>
     </div>
@@ -154,12 +176,20 @@
         var map, directionsService, directionsRenderer, startAutocomplete, endAutocomplete;
         var calculatedPrice = 0, distanceText = "", timeMode = 'now';
         
-        // --- ΡΥΘΜΙΣΕΙΣ (ΜΗΝ ΤΙΣ ΞΕΧΑΣΕΙΣ) ---
+        // --- ΡΥΘΜΙΣΕΙΣ ---
         const MY_PHONE = "306934021792"; 
-        
-        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ (ΑΝΤΙ ΓΙΑ ΤΟ XXXX):
+        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
-        // ------------------------------------
+        // -----------------
+
+        // --- AUTO-LOAD MEMORY ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedPhone = localStorage.getItem('myPhone');
+            if (savedPhone) document.getElementById('phone').value = savedPhone;
+
+            const savedPayment = localStorage.getItem('paymentMethod');
+            if (savedPayment) document.getElementById('paymentMethod').value = savedPayment;
+        });
 
         function initMap() {
             try {
@@ -198,6 +228,12 @@
             document.getElementById('laterInputs').style.display = mode==='later'?'block':'none';
         }
 
+        function toggleRoundTrip() {
+            var chk = document.getElementById('roundTrip');
+            chk.checked = !chk.checked;
+            calcRoute();
+        }
+
         function calcRoute() {
             var startVal = document.getElementById('start').value;
             var endVal = document.getElementById('end').value;
@@ -228,6 +264,12 @@
                 price += chunk * rate;
                 remaining -= 1; rate += 0.10;
             }
+            
+            // Έλεγχος Επιστροφής (ΤΩΡΑ ΕΙΝΑΙ x2, ΔΗΛΑΔΗ ΧΩΡΙΣ ΕΚΠΤΩΣΗ)
+            if (document.getElementById('roundTrip').checked) {
+                price = price * 2.0; 
+            }
+            
             return price;
         }
 
@@ -235,6 +277,11 @@
             if(navigator.vibrate) navigator.vibrate(50);
             
             var phone = document.getElementById('phone').value;
+            // --- AUTO SAVE ---
+            localStorage.setItem('myPhone', phone);
+            localStorage.setItem('paymentMethod', document.getElementById('paymentMethod').value);
+            // -----------------
+
             var startAddr = document.getElementById('start').value;
             var startName = document.getElementById('startName').value || "-";
             var startFloor = document.getElementById('startFloor').value || "-";
@@ -245,6 +292,7 @@
             var parcelType = document.getElementById('parcelType').value;
             var paymentMethod = document.getElementById('paymentMethod').value;
             var comments = document.getElementById('comments').value;
+            var isRoundTrip = document.getElementById('roundTrip').checked ? "ΝΑΙ 🔄 (x2)" : "ΟΧΙ";
             var price = calculatedPrice.toFixed(2);
 
             var timeString = "⚡ ΑΜΕΣΑ";
@@ -264,11 +312,12 @@
 
             var startFull = startAddr + " (🔔 " + startName + ", 🏢 " + startFloor + ")";
             var endFull = endAddr + " (🔔 " + endName + ", 🏢 " + endFloor + ")";
-            var fullComments = "ΩΡΑ: " + timeString + " | Τηλ Παραλήπτη: " + endPhone + " | Δέμα: " + parcelType + " | Πληρωμή: " + paymentMethod + " | " + comments;
+            var fullComments = "ΕΠΙΣΤΡΟΦΗ: " + isRoundTrip + " | ΩΡΑ: " + timeString + " | Τηλ Παραλήπτη: " + endPhone + " | Δέμα: " + parcelType + " | Πληρωμή: " + paymentMethod + " | " + comments;
 
             // WhatsApp
             var waText = "*Νέα Παραγγελία 2Fast!* 🚀\n" +
-                         "⏰ *" + timeString + "*\n\n" +
+                         "⏰ *" + timeString + "*\n" +
+                         "🔄 *Επιστροφή:* " + isRoundTrip + "\n\n" +
                          "📞 *Εντολέας:* " + phone + "\n" +
                          "-----------------------------\n" +
                          "📍 *ΑΠΟ:* " + startAddr + "\n" +
@@ -283,11 +332,9 @@
                          "💰 *Κόστος:* " + price + " € (" + distanceText + ")";
             
             var waLink = "https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waText);
-
-            // 1. Ανοίγουμε WhatsApp
             window.open(waLink, '_blank');
 
-            // 2. Στέλνουμε στο Shipday/Google Sheet
+            // Shipday Send
             var orderData = {
                 phone: phone,
                 start: startFull,
@@ -303,21 +350,8 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
             }).then(() => {
-                // 3. Εμφανίζουμε Επιτυχία
                 document.getElementById('successModal').style.display = 'flex';
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('btnText').style.display = 'block';
                 document.getElementById('btnText').innerText = "Εστάλη!";
-            }).catch(error => {
-                alert("Σφάλμα: " + error);
-                location.reload();
-            });
-        }
-
-        function closeModal() { location.reload(); }
-    </script>
-    
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkk3z2W3H172JxqlF4G0FjwppTDHJeXiw&libraries=places&callback=initMap" async defer></script>
-
-</body>
-</html>
+            }).c
