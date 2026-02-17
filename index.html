@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
     <title>2Fast Delivery</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="shortcut icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="favicon.png">
-
     
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8f9fa; }
         
         /* MAP */
-        #map { height: 40vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #map { height: 40vh; min-height: 250px; width: 100%; background: #e0e0e0; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; z-index: 1; }
         
         .container { padding: 20px; max-width: 600px; margin: -25px auto 0; position: relative; z-index: 10; padding-bottom: 100px; }
         
-        /* HEADER ΜΕ RESET BUTTON */
         .header-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px; }
         h2 { color: #333; font-size: 22px; font-weight: 800; margin: 0; }
         .reset-btn { background: #ffebee; color: #d32f2f; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; }
@@ -28,23 +22,19 @@
         .card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .title { color: #1976d2; font-weight: 800; font-size: 13px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
-        /* INPUTS */
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; background: #f9f9f9; margin-bottom: 8px; transition: 0.3s; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; background: #f9f9f9; margin-bottom: 8px; }
         input:focus { border-color: #2196f3; background: #fff; outline: none; }
         
-        /* ERROR STYLE */
         .error { border-color: #ff3b30 !important; background: #fff0f0 !important; animation: shake 0.3s; }
         @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
 
         .row { display: flex; gap: 10px; }
         .col-8 { flex: 2; } .col-4 { flex: 1; } .col-6 { flex: 1; }
 
-        /* BUTTONS */
         .btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
         .toggle-btn { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: white; font-weight: 600; color: #555; }
         .toggle-btn.active { background: #e3f2fd; border-color: #2196f3; color: #1976d2; }
 
-        /* SWITCH */
         .switch-wrap { display: flex; justify-content: space-between; align-items: center; background: #fff3e0; padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ffe0b2; }
         .switch-label { font-weight: bold; color: #f57c00; font-size: 15px; }
         .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
@@ -54,50 +44,27 @@
         input:checked + .slider { background-color: #f57c00; }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* PRICE */
         .price-box { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; padding: 20px; border-radius: 16px; text-align: center; margin: 20px 0; box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3); }
         .price-val { font-size: 36px; font-weight: 800; }
-        .price-dist { opacity: 0.9; font-size: 14px; margin-top: 5px; }
         
-        #sendBtn { width: 100%; padding: 16px; background: #ff5722; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3); transition: 0.3s; }
-        #sendBtn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+        #sendBtn { width: 100%; padding: 16px; background: #ff5722; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 50px; }
+        #sendBtn:disabled { background: #ccc; }
 
+        /* FAB STYLES */
+        .fab-container { position: fixed; bottom: 25px; right: 25px; z-index: 9999; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 15px; }
+        .fab-main { width: 65px; height: 65px; background: #25D366; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; outline: none; transition: transform 0.2s; }
+        .fab-main:active { transform: scale(0.9); }
+        .fab-icon { width: 35px; height: 35px; fill: white; }
+        .fab-options { display: none; flex-direction: column; gap: 12px; align-items: flex-end; }
+        .fab-options.show { display: flex; animation: slideUp 0.3s; }
+        .fab-btn { background: white; color: #333; padding: 12px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; font-size: 16px; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
         /* SUCCESS MODAL */
         #successModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 80%; max-width: 300px; animation: pop 0.3s; }
         .tick { font-size: 50px; color: #4CAF50; display: block; margin-bottom: 10px; }
         @keyframes pop { from{transform:scale(0.8)} to{transform:scale(1)} }
-
-        /* --- ΝΕΟ CSS ΓΙΑ ΤΟ ΚΟΥΜΠΙ ΕΠΙΚΟΙΝΩΝΙΑΣ --- */
-        .fab-container { position: fixed; bottom: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
-        
-        /* Το Κεντρικό Κουμπί */
-        .fab-main { 
-            width: 60px; height: 60px; background: #25D366; color: white; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
-            cursor: pointer; transition: 0.3s; font-size: 30px; border: none; outline: none;
-            animation: pulse 2s infinite;
-        }
-        .fab-main:hover { transform: scale(1.1); }
-        .fab-main svg { width: 32px; height: 32px; fill: white; }
-
-        /* Τα Κουμπιά Επιλογών */
-        .fab-options { display: none; flex-direction: column; gap: 10px; align-items: flex-end; margin-bottom: 5px; }
-        .fab-options.show { display: flex; animation: slideUp 0.3s; }
-        
-        .fab-btn { 
-            background: white; color: #333; padding: 10px 15px; border-radius: 25px; 
-            text-decoration: none; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
-            display: flex; align-items: center; gap: 10px; font-size: 14px; transition: 0.2s;
-        }
-        .fab-btn:active { background: #f0f0f0; transform: scale(0.98); }
-        .fab-btn img, .fab-btn span.icon { width: 24px; height: 24px; display: block; }
-        
-        .wa-color { color: #25D366; }
-        .em-color { color: #EA4335; }
-
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -126,8 +93,8 @@
             <div class="title">📍 ΠΑΡΑΛΑΒΗ</div>
             <input type="text" id="start" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
             <div class="row">
-                <div class="col-8"><input type="text" id="startName" placeholder="Όνομα/Κουδούνι (Υποχρεωτικό)"></div>
-                <div class="col-4"><input type="number" id="startFloor" placeholder="Όροφος" inputmode="numeric"></div>
+                <div class="col-8"><input type="text" id="startName" placeholder="Όνομα/Κουδούνι"></div>
+                <div class="col-4"><input type="number" id="startFloor" placeholder="Όροφος"></div>
             </div>
         </div>
 
@@ -135,32 +102,24 @@
             <div class="title">🏁 ΠΑΡΑΔΟΣΗ</div>
             <input type="text" id="end" placeholder="🔍 Οδός Αριθμός..." onblur="calc()">
             <div class="row">
-                <div class="col-8"><input type="text" id="endName" placeholder="Όνομα/Κουδούνι (Υποχρεωτικό)"></div>
-                <div class="col-4"><input type="number" id="endFloor" placeholder="Όροφος" inputmode="numeric"></div>
+                <div class="col-8"><input type="text" id="endName" placeholder="Όνομα/Κουδούνι"></div>
+                <div class="col-4"><input type="number" id="endFloor" placeholder="Όροφος"></div>
             </div>
-            <input type="tel" id="endPhone" placeholder="📞 Τηλέφωνο Παραλήπτη" style="border-left: 4px solid #ff9800;">
+            <input type="tel" id="endPhone" placeholder="📞 Τηλέφωνο Παραλήπτη">
         </div>
 
         <div class="card">
             <div class="title">📦 ΛΕΠΤΟΜΕΡΕΙΕΣ</div>
-            <div class="switch-wrap" onclick="toggleSwitch()">
+            <div class="switch-wrap">
                 <span class="switch-label">🔄 Με Επιστροφή (x2)</span>
                 <label class="switch"><input type="checkbox" id="roundTrip" onchange="calc()"><span class="slider"></span></label>
             </div>
             <div class="row">
                 <div class="col-6">
-                    <select id="parcel">
-                        <option>Φάκελος</option>
-                        <option>Μικρό Δέμα</option>
-                        <option>Μεγάλο Δέμα</option>
-                    </select>
+                    <select id="parcel"><option>Φάκελος</option><option>Μικρό Δέμα</option><option>Μεγάλο Δέμα</option></select>
                 </div>
                 <div class="col-6">
-                    <select id="payment">
-                        <option>Μετρητά</option>
-                        <option>POS</option>
-                        <option>Iris</option>
-                    </select>
+                    <select id="payment"><option>Μετρητά</option><option>POS</option><option>Iris</option></select>
                 </div>
             </div>
             <textarea id="notes" placeholder="Σχόλια / Οδηγίες..." style="height: 60px;"></textarea>
@@ -186,46 +145,46 @@
 
     <div class="fab-container">
         <div class="fab-options" id="fabOptions">
-            <a href="https://wa.me/306934021792" target="_blank" class="fab-btn">
-                <span class="wa-color">WhatsApp</span>
-                <span class="icon">💬</span>
+            <a href="https://wa.me/306934021792" class="fab-btn" style="color: #25D366;">
+                💬 WhatsApp
             </a>
-            <a href="mailto: 2fastdelivery1@gmail.com" class="fab-btn">
-                <span class="em-color">Email</span>
-                <span class="icon">✉️</span>
+            <a href="mailto:2fastdelivery1@gmail.com" class="fab-btn" style="color: #EA4335;">
+                ✉️ Email
             </a>
         </div>
         <button class="fab-main" onclick="toggleFab()">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 1a9 9 0 0 0-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 0 0-9-9z"/>
+            <svg class="fab-icon" viewBox="0 0 24 24">
+                <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM19 12h2a9 9 0 0 0-9-9v2c3.87 0 7 3.13 7 7zm-4 0h2c0-2.76-2.24-5-5-5v2c1.66 0 3 1.34 3 3z"/>
             </svg>
         </button>
     </div>
-
     <script>
         // --- ΡΥΘΜΙΣΕΙΣ ---
         const MY_PHONE = "306934021792";
-        // 🔴 ΒΑΛΕ ΤΟ URL ΣΟΥ ΕΔΩ:
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_XXXXXXXXXXXX/exec"; 
         const MAX_KM = 35;
-        // -----------------
 
-        // --- ΝΕΑ ΣΥΝΑΡΤΗΣΗ ΓΙΑ ΤΟ ΚΟΥΜΠΙ ---
+        // --- ΛΕΙΤΟΥΡΓΙΑ ΚΟΥΜΠΙΟΥ ---
         function toggleFab() {
-            const opts = document.getElementById('fabOptions');
-            opts.classList.toggle('show');
+            var options = document.getElementById('fabOptions');
+            if (options.style.display === "flex") {
+                options.style.display = "none";
+                options.classList.remove('show');
+            } else {
+                options.style.display = "flex";
+                setTimeout(function(){ options.classList.add('show'); }, 10);
+            }
         }
 
         let map, dirService, dirRenderer, startAuto, endAuto;
-        let calculatedPrice = 0, distanceTxt = "";
-        let timeMode = 'now';
+        let calculatedPrice = 0;
 
         window.onload = function() {
             if(localStorage.getItem('phone')) document.getElementById('phone').value = localStorage.getItem('phone');
         };
 
         window.gm_authFailure = function() {
-            alert("⚠️ ΣΦΑΛΜΑ GOOGLE MAPS!\nΤο κλειδί API δεν λειτουργεί.");
+            document.getElementById('map').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;text-align:center;padding:20px;">⚠️ Ο χάρτης δεν φορτώνει.<br>Ελέγξτε το API Key.</div>';
         };
 
         function initMap() {
@@ -234,25 +193,15 @@
                     zoom: 13, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true
                 });
                 dirService = new google.maps.DirectionsService();
-                dirRenderer = new google.maps.DirectionsRenderer({ 
-                    map: map, 
-                    polylineOptions: { strokeColor: "#2196f3", strokeWeight: 5 }
-                });
+                dirRenderer = new google.maps.DirectionsRenderer({ map: map });
                 initAuto();
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(pos => {
-                        map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                    });
-                }
-            } catch (e) { console.error("Map Error:", e); }
+            } catch (e) { console.error(e); }
         }
 
         function initAuto() {
             const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
             startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
             endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
-            startAuto.bindTo('bounds', map);
-            endAuto.bindTo('bounds', map);
             startAuto.addListener("place_changed", calc);
             endAuto.addListener("place_changed", calc);
         }
@@ -261,24 +210,16 @@
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
             
-            document.getElementById('priceBox').style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
-            document.getElementById('sendBtn').disabled = false;
-
             if (start.length > 3 && end.length > 3) {
                 dirService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (res, status) => {
                     if (status === 'OK') {
                         dirRenderer.setDirections(res);
-                        const bounds = res.routes[0].bounds;
-                        map.fitBounds(bounds, { bottom: 100, left: 20, right: 20, top: 20 }); 
-
                         const km = res.routes[0].legs[0].distance.value / 1000;
-                        distanceTxt = res.routes[0].legs[0].distance.text;
+                        const distTxt = res.routes[0].legs[0].distance.text;
 
                         if (km > MAX_KM) {
                             document.getElementById('priceDisplay').innerText = "🚫";
-                            document.getElementById('distDisplay').innerText = "Εκτός Περιοχής (> " + MAX_KM + "km)";
-                            document.getElementById('priceBox').style.background = "#d32f2f";
-                            document.getElementById('sendBtn').disabled = true;
+                            document.getElementById('distDisplay').innerText = "> " + MAX_KM + "km";
                             calculatedPrice = 0;
                             return;
                         }
@@ -296,40 +237,24 @@
                         if (document.getElementById('roundTrip').checked) price *= 2.0;
                         calculatedPrice = price;
                         document.getElementById('priceDisplay').innerText = price.toFixed(2) + " €";
-                        document.getElementById('distDisplay').innerText = distanceTxt + " • ~" + res.routes[0].legs[0].duration.text;
+                        document.getElementById('distDisplay').innerText = distTxt;
                     }
                 });
             }
         }
 
         function setMode(m) {
-            timeMode = m;
             document.getElementById('btnNow').className = m==='now'?'toggle-btn active':'toggle-btn';
             document.getElementById('btnLater').className = m==='later'?'toggle-btn active':'toggle-btn';
             document.getElementById('nowInfo').style.display = m==='now'?'block':'none';
             document.getElementById('scheduleTime').style.display = m==='later'?'block':'none';
         }
 
-        function toggleSwitch() {
-            const chk = document.getElementById('roundTrip');
-            chk.checked = !chk.checked;
-            calc();
-        }
-
         function resetForm() {
-            const savedPhone = document.getElementById('phone').value;
-            const inputs = document.querySelectorAll('input:not(#phone), textarea');
-            inputs.forEach(input => input.value = '');
-            document.getElementById('roundTrip').checked = false;
-            document.getElementById('parcel').selectedIndex = 0;
-            document.getElementById('payment').selectedIndex = 0;
-            setMode('now');
-            calculatedPrice = 0;
+            document.getElementById('start').value = '';
+            document.getElementById('end').value = '';
             document.getElementById('priceDisplay').innerText = "0.00 €";
             document.getElementById('distDisplay').innerText = "-";
-            document.getElementById('priceBox').style.background = "linear-gradient(135deg, #1e88e5, #1565c0)";
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('sendBtn').innerText = "Αποστολή Παραγγελίας";
             if(dirRenderer) dirRenderer.setDirections({routes: []});
         }
 
@@ -347,9 +272,7 @@
             let valid = true;
             if(!validate('phone')) valid = false;
             if(!validate('start')) valid = false;
-            if(!validate('startName')) valid = false;
             if(!validate('end')) valid = false;
-            if(!validate('endName')) valid = false;
 
             if (!valid) return;
             if (calculatedPrice === 0) return alert("⚠️ Πρόβλημα διαδρομής!");
@@ -358,11 +281,11 @@
             localStorage.setItem('phone', phone);
             
             const startAddr = document.getElementById('start').value;
-            const startName = document.getElementById('startName').value;
+            const startName = document.getElementById('startName').value || "-";
             const startFloor = document.getElementById('startFloor').value || "-";
             
             const endAddr = document.getElementById('end').value;
-            const endName = document.getElementById('endName').value;
+            const endName = document.getElementById('endName').value || "-";
             const endFloor = document.getElementById('endFloor').value || "-";
             const endPhone = document.getElementById('endPhone').value || "-";
             
@@ -372,15 +295,59 @@
             const isRoundTrip = document.getElementById('roundTrip').checked;
 
             let timeStr = "⚡ ΑΜΕΣΑ";
-            if(timeMode === 'later') {
+            // Έλεγχος αν είναι Ραντεβού
+            if(document.getElementById('btnLater').classList.contains('active')) {
                 const t = document.getElementById('scheduleTime').value;
                 if(!t) {
-                    alert("⚠️ Επιλέξτε ώρα ραντεβού!");
-                    document.getElementById('scheduleTime').classList.add('error');
-                    return;
+                     alert("⚠️ Επιλέξτε ώρα ραντεβού!");
+                     return;
                 }
                 timeStr = "📅 " + t.replace("T", " ");
             }
 
+            // WHATSAPP
             let waMsg = `*Νέα Παραγγελία 2Fast!* 🚀\n`;
-   
+            waMsg += `⏰ *${timeStr}*` + (isRoundTrip ? " | 🔄 *Με Επιστροφή*" : "") + `\n\n`;
+            waMsg += `📞 *Εντολέας:* ${phone}\n`;
+            waMsg += `--------------------------------\n`;
+            waMsg += `📍 *ΑΠΟ:* ${startAddr}\n`;
+            waMsg += `      🔔 ${startName} | 🏢 ${startFloor}\n\n`;
+            waMsg += `🏁 *ΠΡΟΣ:* ${endAddr}\n`;
+            waMsg += `      🔔 ${endName} | 🏢 ${endFloor}\n`;
+            waMsg += `      📞 ${endPhone}\n`;
+            waMsg += `--------------------------------\n`;
+            waMsg += `📦 *Δέμα:* ${parcel}\n`;
+            waMsg += `💳 *Πληρωμή:* ${payment}\n`;
+            if(comments) waMsg += `📝 *Σχόλια:* ${comments}\n`;
+            waMsg += `\n💰 *ΤΕΛΙΚΟ ΚΟΣΤΟΣ: ${calculatedPrice.toFixed(2)} €*`;
+
+            window.open("https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(waMsg), '_blank');
+
+            // SHIPDAY (Προαιρετικό - για να δουλέψει θέλει το SCRIPT_URL)
+            const fullStart = `${startAddr} (🔔 ${startName}, 🏢 ${startFloor})`;
+            const fullEnd = `${endAddr} (🔔 ${endName}, 🏢 ${endFloor})`;
+            const fullNotes = `ΩΡΑ: ${timeStr} | ΠΑΡΑΛΗΠΤΗΣ: ${endPhone} | ${parcel} | ${payment} | ${comments}`;
+            
+            document.getElementById('sendBtn').innerText = "Αποστολή...";
+            document.getElementById('sendBtn').disabled = true;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ phone, start: fullStart, end: fullEnd, comments: fullNotes, price: calculatedPrice.toFixed(2) })
+            }).then(() => {
+                document.getElementById('successModal').style.display = 'flex';
+                document.getElementById('sendBtn').innerText = "Αποστολή Παραγγελίας";
+            }).catch(e => {
+                // Ακόμα και αν αποτύχει το Script, το WhatsApp άνοιξε, οπότε δείχνουμε επιτυχία
+                document.getElementById('successModal').style.display = 'flex';
+                document.getElementById('sendBtn').innerText = "Αποστολή Παραγγελίας";
+                document.getElementById('sendBtn').disabled = false;
+            });
+        }
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
+
+</body>
+</html>
