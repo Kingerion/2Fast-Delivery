@@ -98,9 +98,152 @@
                 <div class="price-val" id="priceDisplay">0.00 €</div>
                 <div class="price-dist" id="distDisplay">Επιλέξτε διευθύνσεις στο χάρτη</div>
             </div>
-          </div>
-       </div>
+        </div>
+
         <div class="card">
+            <div class="title">📦 Στοιχεία Παραλαβής</div>
+            <div class="input-group">
+                <input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)">
+            </div>
+            <div class="row">
+                <div class="input-group">
+                    <input type="tel" id="pickupPhone" placeholder="Τηλέφωνο">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="pickupTime" placeholder="Ώρα (π.χ. 14:30)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="title">🏠 Στοιχεία Παράδοσης</div>
+            <div class="input-group">
+                <input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο (Παραλήπτης)">
+            </div>
+            <div class="input-group">
+                <input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη">
+            </div>
+            <div class="row" style="margin-bottom: 16px;">
+                <div class="input-group">
+                    <input type="text" id="deliveryDate" placeholder="Ημερομηνία" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="deliveryTime" placeholder="Ώρα (π.χ. 15:00)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ</div>
+                <textarea id="deliveryNote" rows="3" placeholder="Υποχρεωτικό πεδίο: Γράψτε Όροφο, Κουδούνι, ή Οδηγίες..."></textarea>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 0;">
+                <div class="title" style="font-size: 11px; margin-bottom: 5px;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
+                <select id="paymentMethod">
+                    <option value="Μετρητά">💵 Πληρωμή: Μετρητά</option>
+                    <option value="Κάρτα (POS)">💳 Πληρωμή: Κάρτα (POS)</option>
+                </select>
+            </div>
+        </div>
+
+        <button id="sendBtn" onclick="submitOrder()">Ολοκληρωση Παραγγελιας</button>
+
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h3>Σχετικα με εμας</h3>
+                <p>Η <strong>2Fast Delivery</strong> είναι η σύγχρονη λύση στις ταχυμεταφορές. Πέρα από απλά δέματα, αναλαμβάνουμε να σας φέρουμε ό,τι χρειάζεστε: από <strong>φάρμακα</strong> και <strong>είδη περιπτέρου (όπως τσιγάρα)</strong>, μέχρι οτιδήποτε άλλο θελήσετε, άμεσα και με ασφάλεια στην πόρτα σας!</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Τι Προσφερουμε</h3>
+                <ul>
+                    <li>🚀 Άμεση παραλαβή και παράδοση</li>
+                    <li>💊 Θελήματα Φαρμακείου & Περιπτέρου</li>
+                    <li>🛍️ Εξυπηρέτηση επιχειρήσεων & ιδιωτών</li>
+                    <li>🎧 Ζωντανή υποστήριξη πελατών</li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Επικοινωνια</h3>
+                <p><strong>Τηλέφωνο:</strong> <a href="tel:+306934021792">6934 021 792</a></p>
+                <p><strong>Email:</strong> <a href="mailto:2fastdelivery1@gmail.com">2fastdelivery1@gmail.com</a></p>
+                <p><strong>Ωράριο Λειτουργίας:</strong><br>Δευτέρα - Σάββατο<br>09:00 - 21:00</p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Χρησιμοι Συνδεσμοι</h3>
+                <ul>
+                    <li><a onclick="openModal('termsModal')">Όροι & Προϋποθέσεις</a></li>
+                    <li><a onclick="openModal('privacyModal')">Πολιτική Απορρήτου</a></li>
+                    <li><a onclick="openModal('faqModal')">Συχνές Ερωτήσεις (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 2Fast Delivery. Με επιφύλαξη παντός δικαιώματος.
+        </div>
+    </footer>
+
+    <div class="support-menu" id="supportMenu">
+        <a href="https://wa.me/306934021792" class="support-item" target="_blank">🟢 WhatsApp Support</a>
+        <a href="mailto:2fastdelivery1@gmail.com" class="support-item">📧 Αποστολή Email</a>
+    </div>
+    <div class="support-fab" onclick="toggleSupport()">🎧</div>
+
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('termsModal')">&times;</span>
+            <h2 class="modal-title">Όροι & Προϋποθέσεις</h2>
+            <div class="modal-body">
+                <p>Καλώς ήρθατε στην <strong>2Fast Delivery</strong>. Η χρήση της πλατφόρμας μας προϋποθέτει την αποδοχή των παρακάτω όρων:</p>
+                <h4>1. Υπηρεσίες Μεταφοράς</h4>
+                <p>Αναλαμβάνουμε την ταχυμεταφορά εγγράφων, μικροδεμάτων και αντικειμένων, καθώς και την αγορά ειδών πρώτης ανάγκης (φάρμακα, είδη περιπτέρου κλπ).</p>
+                <h4>2. Απαγορευμένα Αντικείμενα</h4>
+                <p>Δεν αναλαμβάνουμε τη μεταφορά εύφλεκτων υλικών, παράνομων ουσιών ή αντικειμένων που αντίκεινται στην Ελληνική Νομοθεσία.</p>
+                <h4>3. Χρεώσεις & Πληρωμές</h4>
+                <p>Το κόστος αποστολής υπολογίζεται βάσει χιλιομετρικής απόστασης. Το ποσό (συν το κόστος των προϊόντων αν πρόκειται για αγορά εκ μέρους του πελάτη) καταβάλλεται στον διανομέα, με μετρητά ή κάρτα.</p>
+                <h4>4. Ευθύνη & Αποζημιώσεις</h4>
+                <p>Φέρουμε ευθύνη για την ασφαλή μεταφορά του δέματος από την παραλαβή έως την παράδοση, με τα συνήθη όρια που ορίζει ο νόμος.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="privacyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('privacyModal')">&times;</span>
+            <h2 class="modal-title">Πολιτική Απορρήτου</h2>
+            <div class="modal-body">
+                <p>Η <strong>2Fast Delivery</strong> σέβεται τα προσωπικά σας δεδομένα (GDPR).</p>
+                <h4>1. Δεδομένα που συλλέγουμε</h4>
+                <p>Ονοματεπώνυμο, τηλέφωνο, διεύθυνση και οδηγίες παράδοσης.</p>
+                <h4>2. Χρήση των Δεδομένων</h4>
+                <p>Χρησιμοποιούνται αποκλειστικά για την επιτυχή εκτέλεση της μεταφοράς και την επικοινωνία του διανομέα μαζί σας.</p>
+                <h4>3. Κοινοποίηση</h4>
+                <p>Τα δεδομένα μεταφέρονται κρυπτογραφημένα στο σύστημα διαχείρισης στόλου που χρησιμοποιούμε (Shipday). Δεν πωλούνται σε τρίτους.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="faqModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('faqModal')">&times;</span>
+            <h2 class="modal-title">Συχνές Ερωτήσεις (FAQ)</h2>
+            <div class="modal-body">
+                <div class="faq-q">1. Μπορείτε να μου φέρετε φάρμακα ή τσιγάρα;</div>
+                <div class="faq-a">Φυσικά! Αναλαμβάνουμε αγορές από το φαρμακείο ή το περίπτερο της περιοχής σας. Εσείς πληρώνετε απλά τα μεταφορικά και το κόστος των προϊόντων.</div>
+                
+                <div class="faq-q">2. Πώς μπορώ να πληρώσω;</div>
+                <div class="faq-a">Μπορείτε να πληρώσετε τον διανομέα μας κατά την παράδοση με Μετρητά ή Κάρτα (POS).</div>
+                
+                <div class="faq-q">3. Ποιες περιοχές εξυπηρετείτε;</div>
+                <div class="faq-a">Το σύστημά μας υπολογίζει αυτόματα την απόσταση. Αν είστε εντός εμβέλειας, θα βγάλει κανονικά την τιμή.</div>
+            </div>
+        </div>
+    </div>
     <script>
         function openModal(id) {
             document.getElementById(id).style.display = "block";
