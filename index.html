@@ -174,26 +174,35 @@
         }
 
         function calc() {
-            const start = document.getElementById('start').value;
-            const end = document.getElementById('end').value;
-            if (start.length > 3 && end.length > 3) {
-                dirService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (res, status) => {
-                    if (status === 'OK') {
-                        dirRenderer.setDirections(res);
-                        const km = res.routes[0].legs[0].distance.value / 1000;
-                        const txt = res.routes[0].legs[0].distance.text;
-                        if (km > MAX_KM) { document.getElementById('priceDisplay').innerText = "🚫"; calculatedPrice = 0; return; }
-                        
-                        let price = 3.00;
-                        if (km > 0.5) {
-                            let rem = km - 0.5;
-                            if (rem <= 3.5) price += rem * 0.50;
-                            else { price += 3.5 * 0.50; rem -= 3.5; let rate = 0.60; while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; } }
-                        }
-                        calculatedPrice = price.toFixed(2);
-                        document.getElementById('priceDisplay').innerText = calculatedPrice + " €";
-                        document.getElementById('distDisplay').innerText = txt + " απόσταση • ~" + res.routes[0].legs[0].duration.text;
-                    }
+    const start = document.getElementById('start').value;
+    const end = document.getElementById('end').value;
+    if (start.length > 3 && end.length > 3) {
+        dirService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (res, status) => {
+            if (status === 'OK') {
+                dirRenderer.setDirections(res);
+                const km = res.routes[0].legs[0].distance.value / 1000;
+                const txt = res.routes[0].legs[0].distance.text;
+                if (km > MAX_KM) { document.getElementById('priceDisplay').innerText = "🚫"; calculatedPrice = 0; return; }
+                
+                let price = 3.00;
+                if (km > 0.5) {
+                    let rem = km - 0.5;
+                    if (rem <= 3.5) price += rem * 0.50;
+                    else { price += 3.5 * 0.50; rem -= 3.5; let rate = 0.60; while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; } }
+                }
+                calculatedPrice = price.toFixed(2);
+                document.getElementById('priceDisplay').innerText = calculatedPrice + " €";
+                document.getElementById('distDisplay').innerText = txt + " απόσταση • ~" + res.routes[0].legs[0].duration.text;
+                
+                // --- ΝΕΟΣ ΚΩΔΙΚΑΣ GOOGLE ANALYTICS (Για τον Τζίρο) ---
+                if (typeof gtag === 'function') {
+                    gtag('event', 'delivery_quote', {
+                        'currency': 'EUR',
+                        'value': parseFloat(calculatedPrice)
+                    });
+                }
+                // ------------------------------------------------------
+            }
                 });
             }
         }
