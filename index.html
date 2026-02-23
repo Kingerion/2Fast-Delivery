@@ -361,6 +361,20 @@
                 deliveryTime: document.getElementById('deliveryTime').value,
                 notes: combinedNotes
             };
+            deliveryTime: document.getElementById('deliveryTime').value,
+            notes: combinedNotes
+        }; // <-- Αυτή είναι η δική σου Γραμμή 362
+
+        // --- ΝΕΟ: Αποθήκευση στη Βάση μας (Firestore) ---
+        if (window.saveDeliveryData) {
+            window.saveDeliveryData(
+                payload.deliveryName, 
+                payload.deliveryPhone,
+                document.getElementById('end').value, // Σώζει τη Διεύθυνση
+                document.getElementById('deliveryNote').value // Σώζει Όροφο, Κουδούνι κλπ
+            );
+        }
+        // ------------------------------------------------
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(response => response.text())
