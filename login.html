@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1E293B">
+    <title>2Fast Delivery | Σύνδεση</title>
+    
+    <style>
+        :root { --primary: #FF5722; --secondary: #1E293B; --bg: #F1F5F9; --card: #FFFFFF; --text: #334155; --border: #E2E8F0; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--secondary); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        
+        .login-container { background: var(--card); width: 90%; max-width: 400px; padding: 35px 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center; position: relative; overflow: hidden; }
+        
+        .logo-area img { max-height: 55px; margin-bottom: 20px; }
+        .title { color: var(--secondary); font-size: 24px; font-weight: 800; margin-bottom: 5px; }
+        .subtitle { color: #64748b; font-size: 14px; margin-bottom: 25px; }
+
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; font-weight: bold; color: var(--secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 12px; font-size: 15px; box-sizing: border-box; background: #F8FAFC; transition: 0.3s; color: var(--text); font-family: inherit; }
+        input:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15); }
+
+        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 87, 34, 0.3); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .google-btn { background: #ffffff; color: #334155; border: 2px solid #E2E8F0; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .google-btn:hover { background: #F1F5F9; box-shadow: none; transform: translateY(-2px); }
+        .google-btn img { width: 22px; height: 22px; }
+
+        .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #94a3b8; font-size: 13px; font-weight: bold; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+
+        .toggle-link { margin-top: 25px; font-size: 14px; color: #64748b; cursor: pointer; display: inline-block; transition: 0.2s; }
+        .toggle-link span { color: var(--primary); font-weight: bold; }
+        .toggle-link:hover span { text-decoration: underline; }
+
+        #registerForm { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="logo-area">
+            <img src="https://via.placeholder.com/300x80/1E293B/FFFFFF?text=2Fast+Delivery" alt="2Fast Delivery">
+        </div>
+
+        <div id="loginForm">
+            <div class="title">Καλώς ήρθατε!</div>
+            <div class="subtitle">Συνδεθείτε για να παραγγείλετε άμεσα</div>
+
+            <button class="btn google-btn" id="googleLoginBtn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                Συνδεσου με Google
+            </button>
+
+            <div class="divider">Ή ΜΕ EMAIL</div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="π.χ. user@email.com">
+            </div>
+            <div class="input-group">
+                <label>Κωδικός</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+
+            <button class="btn" id="loginBtn">Εισοδος</button>
+
+            <div class="toggle-link" onclick="toggleForms()">
+                Δεν έχετε λογαριασμό; <span>Εγγραφείτε εδώ</span>
+            </div>
+        </div>
+
+        <div id="registerForm">
+            <div class="title">Νέος Χρήστης;</div>
+            <div class="subtitle">Δημιουργήστε λογαριασμό σε 1 λεπτό</div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="regEmail" placeholder="Το email σας">
+            </div>
+            <div class="input-group">
+                <label>Κωδικός (τουλάχιστον 6 χαρακτήρες)</label>
+                <input type="password" id="regPassword" placeholder="Δημιουργήστε έναν κωδικό">
+            </div>
+
+            <button class="btn" style="background: var(--secondary);" id="registerBtn">Δημιουργια Λογαριασμου</button>
+
+            <div class="toggle-link" onclick="toggleForms()">
+                Έχετε ήδη λογαριασμό; <span>Συνδεθείτε</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleForms() {
+            const login = document.getElementById('loginForm');
+            const register = document.getElementById('registerForm');
+            if (login.style.display === 'none') {
+                login.style.display = 'block';
+                register.style.display = 'none';
+            } else {
+                login.style.display = 'none';
+                register.style.display = 'block';
+            }
+        }
+    </script>
+
+    <script type="module">
+        // Εισαγωγή των εργαλείων του Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Τα ΔΙΚΑ ΣΟΥ Κλειδιά!
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
+            authDomain: "fast-delivery-8227d.firebaseapp.com",
+            projectId: "fast-delivery-8227d",
+            storageBucket: "fast-delivery-8227d.firebasestorage.app",
+            messagingSenderId: "751019896171",
+            appId: "1:751019896171:web:44530a82b4f016fb1ef02e"
+        };
+
+        // Εκκίνηση του Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // 1. ΕΓΓΡΑΦΗ ΜΕ EMAIL/ΚΩΔΙΚΟ
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            if(!email || !password) { alert("Παρακαλώ συμπληρώστε email και κωδικό!"); return; }
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Επιτυχής δημιουργία λογαριασμού!");
+                    window.location.href = "index.html"; // Πάει στην κύρια σελίδα παραγγελίας
+                })
+                .catch((error) => {
+                    alert("Σφάλμα: " + error.message);
+                });
+        });
+
+        // 2. ΕΙΣΟΔΟΣ ΜΕ EMAIL/ΚΩΔΙΚΟ
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if(!email || !password) { alert("Παρακαλώ συμπληρώστε email και κωδικό!"); return; }
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    window.location.href = "index.html"; // Πάει στην κύρια σελίδα παραγγελίας
+                })
+                .catch((error) => {
+                    alert("Λάθος email ή κωδικός. Δοκιμάστε ξανά.");
+                });
+        });
+
+        // 3. ΕΙΣΟΔΟΣ ΜΕ GOOGLE
+        document.getElementById('googleLoginBtn').addEventListener('click', () => {
+            signInWithPopup(auth, googleProvider)
+                .then((result) => {
+                    window.location.href = "index.html"; // Πάει στην κύρια σελίδα παραγγελίας
+                })
+                .catch((error) => {
+                    alert("Η σύνδεση με Google ακυρώθηκε ή απέτυχε.");
+                });
+        });
+
+        // 4. ΕΛΕΓΧΟΣ: Αν είναι ήδη συνδεδεμένος, τον πάμε κατευθείαν στην παραγγελία!
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Αν ο χρήστης είναι ήδη logged in, μην του δείχνεις το login, πήγαινέ τον στο app
+                window.location.href = "index.html";
+            }
+        });
+    </script>
+</body>
+</html>
