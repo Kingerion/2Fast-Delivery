@@ -377,9 +377,10 @@
         }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
-    <script type="module">
+        <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
@@ -392,20 +393,54 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // 1. Ελέγχει αν είναι συνδεδεμένος. Αν ΟΧΙ, τον πετάει στο login!
-        onAuthStateChanged(auth, (user) => {
+        // 1. Έλεγχος Σύνδεσης & Αυτόματη Συμπλήρωση
+        onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.replace("login.html");
+            } else {
+                if (user.displayName && !document.getElementById('deliveryName').value) {
+                    document.getElementById('deliveryName').value = user.displayName;
+                }
+
+                // Τραβάμε τα αποθηκευμένα στοιχεία από τη Βάση
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.name) document.getElementById('deliveryName').value = data.name;
+                    if (data.phone) document.getElementById('deliveryPhone').value = data.phone;
+                    if (data.address) document.getElementById('end').value = data.address; // Φορτώνει Διεύθυνση
+                    if (data.notes) document.getElementById('deliveryNote').value = data.notes; // Φορτώνει Όροφο/Κουδούνι
+                    
+                    // Αν φορτώσει διεύθυνση, δοκιμάζει να υπολογίσει τη διαδρομή (αν έχει μπει και η αφετηρία)
+                    if (data.address && typeof calc === 'function') {
+                        setTimeout(calc, 500);
+                    }
+                }
             }
         });
 
-        // 2. Λειτουργία Κουμπιού Αποσύνδεσης
+        // 2. Αποθήκευση ΟΛΩΝ των στοιχείων στη Βάση
+        window.saveDeliveryData = function(name, phone, address, notes) {
+            const user = auth.currentUser;
+            if (user) {
+                setDoc(doc(db, "users", user.uid), {
+                    name: name,
+                    phone: phone,
+                    address: address,
+                    notes: notes,
+                    email: user.email
+                }, { merge: true }).catch(err => console.log("Firestore Error:", err));
+            }
+        };
+
+        // 3. Αποσύνδεση
         window.logoutUser = function() {
             signOut(auth).then(() => {
                 window.location.replace("login.html");
-            }).catch((error) => {
-                alert("Σφάλμα αποσύνδεσης!");
             });
         }
     </script>
