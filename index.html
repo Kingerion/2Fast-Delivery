@@ -188,10 +188,12 @@
         </div>
     </footer>
 
-    <div class="support-menu" id="supportMenu">
+        <div class="support-menu" id="supportMenu">
         <a href="https://wa.me/306934021792" class="support-item" target="_blank">🟢 WhatsApp Support</a>
         <a href="mailto:2fastdelivery1@gmail.com" class="support-item">📧 Αποστολή Email</a>
+        <a href="#" onclick="logoutUser()" class="support-item" style="color: red;">🔴 Αποσύνδεση</a>
     </div>
+
     <div class="support-fab" onclick="toggleSupport()">🎧</div>
 
     <div id="termsModal" class="modal">
@@ -375,5 +377,37 @@
         }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
+            authDomain: "fast-delivery-8227d.firebaseapp.com",
+            projectId: "fast-delivery-8227d",
+            storageBucket: "fast-delivery-8227d.firebasestorage.app",
+            messagingSenderId: "751019896171",
+            appId: "1:751019896171:web:44530a82b4f016fb1ef02e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // 1. Ελέγχει αν είναι συνδεδεμένος. Αν ΟΧΙ, τον πετάει στο login!
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.replace("login.html");
+            }
+        });
+
+        // 2. Λειτουργία Κουμπιού Αποσύνδεσης
+        window.logoutUser = function() {
+            signOut(auth).then(() => {
+                window.location.replace("login.html");
+            }).catch((error) => {
+                alert("Σφάλμα αποσύνδεσης!");
+            });
+        }
+    </script>
 </body>
 </html>
