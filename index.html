@@ -345,65 +345,33 @@
             }
         }
 
-        function submitOrder() {
-            if (calculatedPrice == 0) { alert("📍 Παρακαλώ επιλέξτε διευθύνσεις παραλαβής και παράδοσης!"); return; }
-
-            const rawNotes = document.getElementById('deliveryNote').value.trim();
-            if (rawNotes === "") {
-                alert("⚠️ Παρακαλώ συμπληρώστε τα Σχόλια Παράδοσης (Όροφος, Κουδούνι) για να διευκολύνετε τον οδηγό!");
-                document.getElementById('deliveryNote').style.borderColor = "red";
-                document.getElementById('deliveryNote').focus();
-                return; 
-            } else {
-                document.getElementById('deliveryNote').style.borderColor = "#E2E8F0"; 
-            }
-
-            const btn = document.getElementById('sendBtn');
-            btn.innerText = "Αποστολή... ⏳";
-            btn.disabled = true;
-
-            const payment = document.getElementById('paymentMethod').value;
-            const combinedNotes = "ΠΛΗΡΩΜΗ: " + payment + " | ΣΧΟΛΙΑ: " + rawNotes;
+               function submitOrder() {
+            if (calculatedPrice == 0) return alert("📍 Επιλέξτε διευθύνσεις!");
+            const notes = document.getElementById('deliveryNote').value.trim();
+            if (notes === "") return alert("⚠️ Γράψτε Όροφο ή Κουδούνι στα σχόλια!");
+            
+            document.getElementById('sendBtn').innerText = "Αποστολή... ⏳";
+            document.getElementById('sendBtn').disabled = true;
 
             const payload = {
-                startAddr: document.getElementById('start').value,
-                endAddr: document.getElementById('end').value,
-                price: calculatedPrice,
-                pickupName: document.getElementById('pickupName').value,
-                pickupPhone: document.getElementById('pickupPhone').value,
-                pickupTime: document.getElementById('pickupTime').value,
-                deliveryName: document.getElementById('deliveryName').value,
-                deliveryPhone: document.getElementById('deliveryPhone').value,
-                deliveryDate: document.getElementById('deliveryDate').value,
-                deliveryTime: document.getElementById('deliveryTime').value,
-                notes: combinedNotes
+                startAddr: document.getElementById('start').value, endAddr: document.getElementById('end').value,
+                price: calculatedPrice, pickupName: document.getElementById('pickupName').value, pickupPhone: document.getElementById('pickupPhone').value,
+                pickupTime: document.getElementById('pickupTime').value, deliveryName: document.getElementById('deliveryName').value,
+                deliveryPhone: document.getElementById('deliveryPhone').value, deliveryDate: document.getElementById('deliveryDate').value,
+                deliveryTime: document.getElementById('deliveryTime').value, notes: "ΠΛΗΡΩΜΗ: " + document.getElementById('paymentMethod').value + " | ΣΧΟΛΙΑ: " + notes
             };
 
-            // --- Αποθήκευση στη Βάση (Firestore) ---
             if (window.saveDeliveryData) window.saveDeliveryData(payload.deliveryName, payload.deliveryPhone, payload.endAddr, notes, calculatedPrice);
 
-            }
-
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
-            .then(response => response.text())
-            .then(data => {
-                if(data.includes("Success")) {
-                    alert("✅ Η παραγγελία σας καταχωρήθηκε επιτυχώς!");
-                    window.location.reload();
-                } else {
-                    alert("⚠️ Σφάλμα Συστήματος.");
-                    btn.innerText = "Ολοκληρωση Παραγγελιας"; btn.disabled = false;
-                }
-            })
-            .catch(error => { alert("❌ Σφάλμα σύνδεσης."); btn.innerText = "Ολοκληρωση Παραγγελιας"; btn.disabled = false; });
+            .then(response => response.text()).then(data => { alert("✅ Η παραγγελία καταχωρήθηκε επιτυχώς!"); window.location.reload(); });
         }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
 
-        <script type="module">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // ΠΡΟΣΘΗΚΗ: collection και addDoc για να γράφουμε τις παραγγελίες
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const app = initializeApp({ apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w", authDomain: "fast-delivery-8227d.firebaseapp.com", projectId: "fast-delivery-8227d", storageBucket: "fast-delivery-8227d.firebasestorage.app" });
@@ -416,7 +384,6 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // ΕΛΕΓΧΟΣ ΜΠΛΟΚΑΡΙΣΜΑΤΟΣ
                     if (data.isBlocked) {
                         alert("⛔ Ο λογαριασμός σας έχει ανασταλεί. Παρακαλώ επικοινωνήστε με την υποστήριξη.");
                         signOut(auth).then(() => { window.location.replace("login.html"); });
@@ -434,11 +401,8 @@
         window.saveDeliveryData = async function(name, phone, address, notes, price) {
             if (auth.currentUser) {
                 const uid = auth.currentUser.uid;
-                
-                // 1. Αποθηκεύει τα στοιχεία (Όνομα, Τηλέφωνο κλπ)
                 await setDoc(doc(db, "users", uid), { name: name, phone: phone, address: address, notes: notes, email: auth.currentUser.email }, { merge: true });
                 
-                // 2. ΝΕΟ: Αποθηκεύει την παραγγελία στο Ιστορικό του πελάτη!
                 if (price) {
                     try {
                         await addDoc(collection(db, "users", uid, "orders"), {
@@ -452,6 +416,5 @@
         };
         window.logoutUser = function() { signOut(auth); }
     </script>
-
 </body>
 </html>
