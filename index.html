@@ -438,6 +438,15 @@
                 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                   
+              // --- ΝΕΟΣ ΕΛΕΓΧΟΣ ΜΠΛΟΚΑΡΙΣΜΑΤΟΣ ---
+                    if (data.isBlocked) {
+                        alert("⛔ Ο λογαριασμός σας έχει ανασταλεί. Παρακαλώ επικοινωνήστε με την υποστήριξη.");
+                        signOut(auth).then(() => { window.location.replace("login.html"); });
+                        return;
+                    }
+                    // ------------------------------------
+
                     if (data.name) document.getElementById('deliveryName').value = data.name;
                     if (data.phone) document.getElementById('deliveryPhone').value = data.phone;
                     if (data.address) document.getElementById('end').value = data.address;
