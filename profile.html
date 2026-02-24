@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1E293B">
+    <title>Το Προφίλ μου | 2Fast Delivery</title>
+    
+    <style>
+        :root { --primary: #FF5722; --secondary: #1E293B; --bg: #F1F5F9; --card: #FFFFFF; --text: #334155; --border: #E2E8F0; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+        
+        .app-header { background: var(--secondary); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .app-header h1 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .back-btn { background: rgba(255,255,255,0.1); color: white; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: bold; }
+        
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+        .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
+        .title { color: var(--secondary); font-weight: 800; font-size: 15px; text-transform: uppercase; margin-bottom: 18px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 6px; text-transform: uppercase; }
+        input, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; box-sizing: border-box; background: #F8FAFC; transition: 0.3s; color: var(--text); font-family: inherit; }
+        input:focus, textarea:focus { border-color: var(--primary); background: #fff; outline: none; }
+        
+        .btn-update { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-update:active { transform: scale(0.98); }
+        
+        .history-item { border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 10px; background: #F8FAFC; }
+        .h-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #64748b; font-weight: bold; }
+        .h-price { color: var(--primary); font-size: 16px; font-weight: 900; }
+        .h-route { font-size: 14px; font-weight: 600; color: var(--secondary); line-height: 1.4; }
+        
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; color: var(--secondary); }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay">⏳ Φόρτωση Προφίλ...</div>
+    <header class="app-header">
+        <h1>👤 Το Προφίλ μου</h1>
+        <a href="index.html" class="back-btn">🔙 Επιστροφή</a>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="title">⚙️ Προσωπικα Στοιχεία</div>
+            <div class="input-group">
+                <label>Ονοματεπώνυμο</label>
+                <input type="text" id="profName" placeholder="Το όνομά σας">
+            </div>
+            <div class="input-group">
+                <label>Τηλέφωνο Επικοινωνίας</label>
+                <input type="tel" id="profPhone" placeholder="Το κινητό σας">
+            </div>
+            <div class="input-group">
+                <label>Email (Μη επεξεργάσιμο)</label>
+                <input type="email" id="profEmail" readonly style="opacity: 0.6; cursor: not-allowed;">
+            </div>
+            <div class="input-group">
+                <label>Προεπιλεγμένη Διεύθυνση Παράδοσης</label>
+                <input type="text" id="profAddress" placeholder="Οδός & Αριθμός">
+            </div>
+            <div class="input-group">
+                <label>Σχόλια (Όροφος, Κουδούνι)</label>
+                <textarea id="profNotes" rows="2" placeholder="π.χ. 2ος όροφος, Κουδούνι Παπαδόπουλος"></textarea>
+            </div>
+            <button class="btn-update" onclick="updateProfile()" id="updateBtn">💾 Αποθηκευση Αλλαγων</button>
+        </div>
+
+        <div class="card">
+            <div class="title">📦 Ιστορικό Παραγγελιών</div>
+            <div id="orderHistoryList">
+                <div style="text-align: center; color: #94a3b8; padding: 20px; font-size: 14px;">
+                    Αναζήτηση παραγγελιών...
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="logoutUser()" style="width: 100%; padding: 15px; background: transparent; color: #ef4444; border: 2px solid #ef4444; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+            🔴 Αποσύνδεση
+        </button>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const app = initializeApp({
+            apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
+            authDomain: "fast-delivery-8227d.firebaseapp.com",
+            projectId: "fast-delivery-8227d",
+            storageBucket: "fast-delivery-8227d.firebasestorage.app"
+        });
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserUid = null;
+
+        // 1. ΕΛΕΓΧΟΣ ΣΥΝΔΕΣΗΣ & ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.replace("login.html");
+            } else {
+                currentUserUid = user.uid;
+                document.getElementById('profEmail').value = user.email || "Δεν βρέθηκε email";
+                
+                // Τραβάμε τα στοιχεία του προφίλ
+                try {
+                    const docSnap = await getDoc(doc(db, "users", user.uid));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.name || data.n) document.getElementById('profName').value = data.name || data.n;
+                        if (data.phone || data.p) document.getElementById('profPhone').value = data.phone || data.p;
+                        if (data.address || data.a) document.getElementById('profAddress').value = data.address || data.a;
+                        if (data.notes || data.txt) document.getElementById('profNotes').value = data.notes || data.txt;
+                    }
+                } catch (e) { console.log("Σφάλμα φόρτωσης προφίλ:", e); }
+                
+                // Κρύβουμε το loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                // Φορτώνουμε το ιστορικό
+                loadOrderHistory(user.uid);
+            }
+        });
+
+        // 2. ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ (Ενημέρωση Προφίλ)
+        window.updateProfile = async function() {
+            if (!currentUserUid) return;
+            const btn = document.getElementById('updateBtn');
+            btn.innerText = "Αποθήκευση... ⏳";
+            
+            const newName = document.getElementById('profName').value;
+            const newPhone = document.getElementById('profPhone').value;
+            const newAddress = document.getElementById('profAddress').value;
+            const newNotes = document.getElementById('profNotes').value;
+
+            try {
+                // Χρησιμοποιούμε merge: true για να ΜΗΝ σβήσουμε αν είναι μπλοκαρισμένος κλπ
+                await setDoc(doc(db, "users", currentUserUid), {
+                    name: newName,
+                    phone: newPhone,
+                    address: newAddress,
+                    notes: newNotes
+                }, { merge: true });
+                
+                alert("✅ Τα στοιχεία σας ενημερώθηκαν επιτυχώς!");
+                btn.innerText = "💾 Αποθηκευση Αλλαγων";
+            } catch (error) {
+                alert("❌ Σφάλμα αποθήκευσης: " + error.message);
+                btn.innerText = "💾 Αποθηκευση Αλλαγων";
+            }
+        };
+
+        // 3. ΦΟΡΤΩΣΗ ΙΣΤΟΡΙΚΟΥ ΠΑΡΑΓΓΕΛΙΩΝ
+        async function loadOrderHistory(uid) {
+            const historyList = document.getElementById('orderHistoryList');
+            try {
+                // Ψάχνει στον υπο-φάκελο "orders" του συγκεκριμένου χρήστη
+                const q = query(collection(db, "users", uid, "orders"), orderBy("timestamp", "desc"), limit(10));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    historyList.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">Δεν έχετε κάνει ακόμα παραγγελίες.</div>';
+                    return;
+                }
+
+                let html = "";
+                querySnapshot.forEach((docSnap) => {
+                    const order = docSnap.data();
+                    const dateObj = order.timestamp ? new Date(order.timestamp.toMillis()) : new Date();
+                    const dateStr = dateObj.toLocaleDateString("el-GR") + " - " + dateObj.toLocaleTimeString("el-GR", {hour: '2-digit', minute:'2-digit'});
+                    
+                    html += `
+                        <div class="history-item">
+                            <div class="h-header">
+                                <span>📅 ${dateStr}</span>
+                                <span class="h-price">${order.price}</span>
+                            </div>
+                            <div class="h-route">📍 ${order.destination}</div>
+                        </div>
+                    `;
+                });
+                historyList.innerHTML = html;
+            } catch (e) {
+                console.log("Σφάλμα ιστορικού:", e);
+                historyList.innerHTML = '<div style="color: red; font-size: 13px;">Δεν ήταν δυνατή η φόρτωση του ιστορικού.</div>';
+            }
+        }
+
+        // 4. ΑΠΟΣΥΝΔΕΣΗ
+        window.logoutUser = function() {
+            signOut(auth).then(() => { window.location.replace("login.html"); });
+        }
+    </script>
+</body>
+</html>
