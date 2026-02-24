@@ -380,13 +380,8 @@
             };
 
             // --- Αποθήκευση στη Βάση (Firestore) ---
-            if (window.saveDeliveryData) {
-                window.saveDeliveryData(
-                    payload.deliveryName, 
-                    payload.deliveryPhone,
-                    document.getElementById('end').value,
-                    document.getElementById('deliveryNote').value
-                );
+            if (window.saveDeliveryData) window.saveDeliveryData(payload.deliveryName, payload.deliveryPhone, payload.endAddr, notes, calculatedPrice);
+
             }
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
@@ -405,80 +400,57 @@
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
 
-    <script type="module">
+        <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // ΠΡΟΣΘΗΚΗ: collection και addDoc για να γράφουμε τις παραγγελίες
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
-            authDomain: "fast-delivery-8227d.firebaseapp.com",
-            projectId: "fast-delivery-8227d",
-            storageBucket: "fast-delivery-8227d.firebasestorage.app",
-            messagingSenderId: "751019896171",
-            appId: "1:751019896171:web:44530a82b4f016fb1ef02e"
-        };
+        const app = initializeApp({ apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w", authDomain: "fast-delivery-8227d.firebaseapp.com", projectId: "fast-delivery-8227d", storageBucket: "fast-delivery-8227d.firebasestorage.app" });
+        const auth = getAuth(app); const db = getFirestore(app);
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // 1. Έλεγχος Σύνδεσης & Αυτόματη Συμπλήρωση
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.replace("login.html");
-            } else {
-                if (user.displayName && !document.getElementById('deliveryName').value) {
-                    document.getElementById('deliveryName').value = user.displayName;
-                }
-
-                // Τραβάμε τα αποθηκευμένα στοιχεία από τη Βάση
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-                
+            if (!user) { window.location.replace("login.html"); } else {
+                if (user.displayName && !document.getElementById('deliveryName').value) document.getElementById('deliveryName').value = user.displayName;
+                const docSnap = await getDoc(doc(db, "users", user.uid));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                   
-              // --- ΝΕΟΣ ΕΛΕΓΧΟΣ ΜΠΛΟΚΑΡΙΣΜΑΤΟΣ ---
+                    
+                    // ΕΛΕΓΧΟΣ ΜΠΛΟΚΑΡΙΣΜΑΤΟΣ
                     if (data.isBlocked) {
                         alert("⛔ Ο λογαριασμός σας έχει ανασταλεί. Παρακαλώ επικοινωνήστε με την υποστήριξη.");
                         signOut(auth).then(() => { window.location.replace("login.html"); });
                         return;
                     }
-                    // ------------------------------------
 
                     if (data.name) document.getElementById('deliveryName').value = data.name;
                     if (data.phone) document.getElementById('deliveryPhone').value = data.phone;
-                    if (data.address) document.getElementById('end').value = data.address;
+                    if (data.address) { document.getElementById('end').value = data.address; setTimeout(calc, 500); }
                     if (data.notes) document.getElementById('deliveryNote').value = data.notes;
-                    
-                    if (data.address && typeof calc === 'function') {
-                        setTimeout(calc, 500);
-                    }
                 }
             }
         });
 
-        // 2. Αποθήκευση ΟΛΩΝ των στοιχείων στη Βάση
-        window.saveDeliveryData = function(name, phone, address, notes) {
-            const user = auth.currentUser;
-            if (user) {
-                setDoc(doc(db, "users", user.uid), {
-                    name: name,
-                    phone: phone,
-                    address: address,
-                    notes: notes,
-                    email: user.email
-                }, { merge: true }).catch(err => console.log("Firestore Error:", err));
+        window.saveDeliveryData = async function(name, phone, address, notes, price) {
+            if (auth.currentUser) {
+                const uid = auth.currentUser.uid;
+                
+                // 1. Αποθηκεύει τα στοιχεία (Όνομα, Τηλέφωνο κλπ)
+                await setDoc(doc(db, "users", uid), { name: name, phone: phone, address: address, notes: notes, email: auth.currentUser.email }, { merge: true });
+                
+                // 2. ΝΕΟ: Αποθηκεύει την παραγγελία στο Ιστορικό του πελάτη!
+                if (price) {
+                    try {
+                        await addDoc(collection(db, "users", uid, "orders"), {
+                            price: price + " €",
+                            destination: address,
+                            timestamp: new Date()
+                        });
+                    } catch (e) { console.log("Σφάλμα αποθήκευσης ιστορικού:", e); }
+                }
             }
         };
-
-        // 3. Αποσύνδεση
-        window.logoutUser = function() {
-            signOut(auth).then(() => {
-                window.location.replace("login.html");
-            });
-        }
+        window.logoutUser = function() { signOut(auth); }
     </script>
 </body>
 </html>
