@@ -115,36 +115,46 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="title">🏠 Στοιχεία Παράδοσης</div>
+                <div class="card">
+            <h3>📦 ΣΤΟΙΧΕΙΑ ΠΑΡΑΛΑΒΗΣ <span style="color:red">*</span></h3>
             <div class="input-group">
-                <input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο (Παραλήπτης)">
+                <input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)" required>
             </div>
-            <div class="input-group">
-                <input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη">
-            </div>
-            <div class="row" style="margin-bottom: 16px;">
-                <div class="input-group">
-                    <input type="text" id="deliveryDate" placeholder="Ημερομηνία" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
-                </div>
-                <div class="input-group">
-                    <input type="text" id="deliveryTime" placeholder="Ώρα (π.χ. 15:00)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ</div>
-                <textarea id="deliveryNote" rows="3" placeholder="Υποχρεωτικό πεδίο: Γράψτε Όροφο, Κουδούνι, ή Οδηγίες..."></textarea>
-            </div>
-
-            <div class="input-group" style="margin-bottom: 0;">
-                <div class="title" style="font-size: 11px; margin-bottom: 5px;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
-                <select id="paymentMethod">
-                    <option value="Μετρητά">💵 Πληρωμή: Μετρητά</option>
-                    <option value="Κάρτα (POS)">💳 Πληρωμή: Κάρτα (POS)</option>
-                </select>
+            <div class="flex-row">
+                <input type="tel" id="pickupPhone" placeholder="Τηλέφωνο (Υποχρεωτικό)" required>
+                <input type="text" id="pickupTime" placeholder="Ώρα (π.χ. 14:30) - Προαιρετικό">
             </div>
         </div>
+
+        <div class="card">
+            <h3>🏠 ΣΤΟΙΧΕΙΑ ΠΑΡΑΔΟΣΗΣ <span style="color:red">*</span></h3>
+            <div class="input-group">
+                <input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο Παραλήπτη" required>
+            </div>
+            <div class="input-group">
+                <input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη (Υποχρεωτικό)" required>
+            </div>
+            <div class="flex-row">
+                <input type="text" id="deliveryDate" placeholder="Ημερομηνία - Προαιρετικό" onfocus="(this.type='date')" onblur="(this.type='text')">
+                <input type="text" id="deliveryTime" placeholder="Ώρα (π.χ. 15:00) - Προαιρετικό">
+            </div>
+            
+            <div class="input-group" style="margin-top: 15px;">
+                <label style="font-weight: bold; color: var(--secondary);">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ <span style="color:red">*</span></label>
+                <textarea id="deliveryNote" rows="4" required style="font-family: inherit; white-space: pre-wrap;">Όροφος : 
+Κουδούνι : </textarea>
+            </div>
+
+            <div class="input-group">
+                <label style="font-weight: bold; color: var(--secondary);">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ <span style="color:red">*</span></label>
+                <select id="paymentMethod" required style="width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; background: #F8FAFC;">
+                    <option value="" disabled selected>-- Επιλέξτε Τρόπο Πληρωμής --</option>
+                    <option value="Μετρητά">💵 Πληρωμή: Μετρητά</option>
+                    <option value="Κάρτα (POS)">💳 Πληρωμή: Κάρτα (POS)</option>
+                </byte>
+            </div>
+        </div>
+
 
         <button id="sendBtn" onclick="submitOrder()">Ολοκληρωση Παραγγελιας</button>
 
