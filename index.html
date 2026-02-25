@@ -355,12 +355,31 @@
             }
         }
 
-               function submitOrder() {
-            if (calculatedPrice == 0) return alert("📍 Επιλέξτε διευθύνσεις!");
-            const notes = document.getElementById('deliveryNote').value.trim();
-            if (notes === "") return alert("⚠️ Γράψτε Όροφο ή Κουδούνι στα σχόλια!");
+                       function submitOrder() {
+            // 1. Έλεγχος Διευθύνσεων
+            if (calculatedPrice == 0) { alert("📍 Παρακαλώ επιλέξτε διευθύνσεις παραλαβής και παράδοσης!"); return; }
             
-            document.getElementById('sendBtn').innerText = "Αποστολή... ⏳";
+            // 2. Έλεγχος Υποχρεωτικών Πεδίων (Ονόματα, Τηλέφωνα)
+            if (!document.getElementById('pickupName').value.trim() || !document.getElementById('pickupPhone').value.trim()) { alert("⚠️ Συμπληρώστε Όνομα & Τηλέφωνο Αποστολέα!"); return; }
+            if (!document.getElementById('deliveryName').value.trim() || !document.getElementById('deliveryPhone').value.trim()) { alert("⚠️ Συμπληρώστε Όνομα & Τηλέφωνο Παραλήπτη!"); return; }
+
+            // 3. Έλεγχος Τρόπου Πληρωμής
+            const payment = document.getElementById('paymentMethod').value;
+            if (!payment) { alert("⚠️ Παρακαλώ επιλέξτε Τρόπο Πληρωμής!"); return; }
+
+            // 4. Έλεγχος Σχολίων (να μην έχουν μείνει μόνο οι τίτλοι)
+            const rawNotes = document.getElementById('deliveryNote').value.trim();
+            if (rawNotes.length < 25 || !rawNotes.includes(":")) { // Ένας απλός έλεγχος αν έγραψε κάτι παραπάνω από το προκαθορισμένο
+                 alert("⚠️ Παρακαλώ συμπληρώστε τον Όροφο και το Κουδούνι στα Σχόλια!");
+                 document.getElementById('deliveryNote').focus();
+                 return;
+            }
+
+            // Αν περάσουν όλοι οι έλεγχοι, προχωράμε...
+            const btn = document.getElementById('sendBtn');
+            btn.innerText = "Αποστολή... ⏳";
+            // ... (ο υπόλοιπος κώδικας παραμένει ίδιος από εδώ και κάτω)
+
             document.getElementById('sendBtn').disabled = true;
 
             const payload = {
