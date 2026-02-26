@@ -161,25 +161,50 @@
             });
         }
 
-        function submitOrder() {
-            if (calculatedPrice == 0) return alert("📍 Επιλέξτε διευθύνσεις!");
+                function submitOrder() {
+            if (calculatedPrice == 0) return alert("📍 Επιλέξτε διευθύνσεις παραλαβής και παράδοσης!");
+            
             const btn = document.getElementById('sendBtn');
-            btn.innerText = "Αποστολή... ⏳"; btn.disabled = true;
+            btn.innerText = "Αποστολή... ⏳"; 
+            btn.disabled = true;
 
             const payload = {
-                startAddr: document.getElementById('start').value, endAddr: document.getElementById('end').value,
-                price: calculatedPrice, pickupName: document.getElementById('pickupName').value, pickupPhone: document.getElementById('pickupPhone').value,
-                pickupTime: document.getElementById('pickupTime').value, deliveryName: document.getElementById('deliveryName').value,
-                deliveryPhone: document.getElementById('deliveryPhone').value, deliveryDate: document.getElementById('deliveryDate').value,
-                deliveryTime: document.getElementById('deliveryTime').value, notes: "ΠΛΗΡΩΜΗ: " + document.getElementById('paymentMethod').value + " | " + document.getElementById('deliveryNote').value
+                startAddr: document.getElementById('start').value, 
+                endAddr: document.getElementById('end').value,
+                price: calculatedPrice, 
+                pickupName: document.getElementById('pickupName').value, 
+                pickupPhone: document.getElementById('pickupPhone').value,
+                pickupTime: document.getElementById('pickupTime').value, 
+                deliveryName: document.getElementById('deliveryName').value,
+                deliveryPhone: document.getElementById('deliveryPhone').value, 
+                deliveryDate: document.getElementById('deliveryDate').value,
+                deliveryTime: document.getElementById('deliveryTime').value, 
+                notes: "ΠΛΗΡΩΜΗ: " + document.getElementById('paymentMethod').value + " | " + document.getElementById('deliveryNote').value
             };
 
-            if (window.saveDeliveryData) window.saveDeliveryData(payload.deliveryName, payload.deliveryPhone, payload.endAddr, payload.notes, calculatedPrice);
+            // Αποθήκευση στο προφίλ του χρήστη
+            if (window.saveDeliveryData) {
+                window.saveDeliveryData(payload.deliveryName, payload.deliveryPhone, payload.endAddr, payload.notes, calculatedPrice);
+            }
 
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', cache: 'no-cache', body: JSON.stringify(payload) })
-            .then(() => { alert("✅ Η παραγγελία στάλθηκε!"); window.location.reload(); })
-            .catch(() => { alert("⚠️ Πρόβλημα σύνδεσης!"); btn.disabled = false; btn.innerText = "ΟΛΟΚΛΗΡΩΣΗ ΠΑΡΑΓΓΕΛΙΑΣ"; });
+            // Η σωστή αποστολή που διαβάζει το Shipday
+            fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload) 
+            })
+            .then(response => response.text())
+            .then(data => { 
+                alert("✅ Η παραγγελία στάλθηκε με επιτυχία στο Shipday!"); 
+                window.location.reload(); 
+            })
+            .catch(error => { 
+                alert("⚠️ Πρόβλημα σύνδεσης. Παρακαλώ δοκιμάστε ξανά!"); 
+                btn.disabled = false; 
+                btn.innerText = "ΟΛΟΚΛΗΡΩΣΗ ΠΑΡΑΓΓΕΛΙΑΣ"; 
+            });
         }
+
     </script>
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
