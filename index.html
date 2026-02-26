@@ -15,14 +15,16 @@
         
         .header { display: flex; justify-content: center; align-items: center; background: var(--secondary); color: white; padding: 15px; font-size: 22px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; position: relative; }
         
+        /* ΚΟΥΜΠΙΑ ΚΑΤΩ ΑΠΟ ΤΟ ΧΑΡΤΗ */
         .action-row { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 20px 5px 20px; }
         .action-btn { display: flex; align-items: center; gap: 6px; padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-family: inherit; }
         .btn-profile { background: var(--card); color: var(--secondary); border: 1.5px solid var(--border); }
-        .btn-support { background: #25D366; color: white; border: none; cursor: pointer; position: relative; }
+        .btn-support { background: #25D366; color: white; border: none; cursor: pointer; }
         
-        .support-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: var(--card); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); border: 1px solid var(--border); z-index: 100; min-width: 180px; overflow: hidden; }
+        /* ΤΟ ΜΙΚΡΟ ΜΕΝΟΥ ΥΠΟΣΤΗΡΙΞΗΣ (ΓΙΑ WHATSAPP/EMAIL) */
+        .support-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: var(--card); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); border: 1px solid var(--border); z-index: 100; min-width: 180px; overflow: hidden; text-align: left; }
         .support-menu.active { display: flex; flex-direction: column; }
-        .support-item { padding: 12px 15px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--border); text-align: left; }
+        .support-item { padding: 12px 15px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--border); }
         .support-item:last-child { border-bottom: none; }
 
         .container { flex: 1; padding: 0 20px 30px 20px; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; }
@@ -44,6 +46,7 @@
         .btn-submit:active { transform: scale(0.98); }
         .btn-submit:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
 
+        /* FOOTER ΣΤΟ ΤΕΛΟΣ ΤΗΣ ΣΕΛΙΔΑΣ */
         .footer { background: var(--secondary); color: white; padding: 30px 20px; margin-top: auto; border-top-left-radius: 20px; border-top-right-radius: 20px; }
         .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 800px; margin: 0 auto; }
         .footer-col h4 { color: var(--primary); font-size: 14px; text-transform: uppercase; margin-bottom: 12px; font-weight: 800; letter-spacing: 0.5px; }
@@ -53,8 +56,11 @@
 </head>
 <body>
     <div class="install-banner" id="installBanner" style="display: none;">
-        <div class="install-text"><strong>📲 Εγκατάσταση Εφαρμογής</strong><br>Προσθήκη στην Αρχική Οθόνη για άμεση πρόσβαση.</div>
-        <button class="install-close" onclick="this.parentElement.style.display='none'">×</button>
+        <div class="install-text">
+            <strong>📲 Εγκαταστήστε την εφαρμογή μας!</strong><br>
+            Πατήστε τις ρυθμίσεις (⋮) και επιλέξτε <b>"Προσθήκη στην Αρχική Οθόνη"</b>.
+        </div>
+        <button class="install-close" onclick="document.getElementById('installBanner').style.display='none'">×</button>
     </div>
 
     <header class="header">🚀 2FAST DELIVERY</header>
@@ -62,20 +68,29 @@
 
     <div class="action-row">
         <div style="position: relative;">
-            <button onclick="document.getElementById('supportMenu').classList.toggle('active')" class="action-btn btn-support">🎧 Υποστήριξη</button>
+            <button onclick="document.getElementById('supportMenu').classList.toggle('active')" class="action-btn btn-support">
+                🎧 Υποστήριξη
+            </button>
             <div class="support-menu" id="supportMenu">
                 <a href="https://wa.me/306934021792" class="support-item" target="_blank">🟢 WhatsApp Support</a>
                 <a href="mailto:2fastdelivery1@gmail.com" class="support-item" style="color: #3b82f6;">✉️ Email Support</a>
             </div>
         </div>
-        <a href="profile.html" class="action-btn btn-profile">👤 Προφίλ</a>
+        <a href="profile.html" class="action-btn btn-profile">
+            👤 Προφίλ
+        </a>
     </div>
 
     <div class="container">
         <div class="card" style="margin-top: -10px; position: relative; z-index: 10;">
             <div class="title">📍 Σημεία Διαδρομής <span class="req">*</span></div>
-            <div class="input-group"><input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" required></div>
-            <div class="input-group"><input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" required></div>
+            <div class="input-group">
+                <input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" required>
+            </div>
+            <div class="input-group" style="margin-bottom: 0;">
+                <input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" required>
+            </div>
+            
             <div class="price-box">
                 <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #cbd5e1;">Κοστος Αποστολης</div>
                 <div class="price-amount" id="price">0.00 €</div>
@@ -85,34 +100,44 @@
 
         <div class="card">
             <div class="title">📦 ΣΤΟΙΧΕΙΑ ΠΑΡΑΛΑΒΗΣ <span class="req">*</span></div>
-            <div class="input-group"><input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία" required></div>
+            <div class="input-group">
+                <input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)" required>
+            </div>
             <div class="flex-row">
-                <input type="tel" id="pickupPhone" placeholder="Τηλέφωνο" required>
-                <input type="text" id="pickupTime" placeholder="Ώρα (Προαιρετικό)">
+                <input type="tel" id="pickupPhone" placeholder="Τηλέφωνο Αποστολέα" required>
+                <input type="text" id="pickupTime" placeholder="Ώρα (π.χ. 14:30) - Προαιρετικό">
             </div>
         </div>
 
         <div class="card">
             <div class="title">🏠 ΣΤΟΙΧΕΙΑ ΠΑΡΑΔΟΣΗΣ <span class="req">*</span></div>
-            <div class="input-group"><input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο Παραλήπτη" required></div>
-            <div class="input-group"><input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη" required></div>
-            <div class="flex-row">
-                <input type="text" id="deliveryDate" placeholder="Ημερομηνία" onfocus="(this.type='date')" onblur="(this.type='text')">
-                <input type="text" id="deliveryTime" placeholder="Ώρα (Προαιρετικό)">
+            <div class="input-group">
+                <input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο Παραλήπτη" required>
             </div>
             <div class="input-group">
+                <input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη" required>
+            </div>
+            <div class="flex-row">
+                <input type="text" id="deliveryDate" placeholder="Ημερομηνία - Προαιρετικό" onfocus="(this.type='date')" onblur="(this.type='text')">
+                <input type="text" id="deliveryTime" placeholder="Ώρα (π.χ. 15:00) - Προαιρετικό">
+            </div>
+            
+            <div class="input-group" style="margin-top: 15px;">
                 <label style="font-size: 12px; font-weight: bold; color: var(--secondary); margin-bottom: 5px; display: block;">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ <span class="req">*</span></label>
-                <textarea id="deliveryNote" rows="3" required>Όροφος : 
+                <textarea id="deliveryNote" rows="3" required style="font-family: inherit; white-space: pre-wrap;">Όροφος : 
 Κουδούνι : </textarea>
             </div>
-            <div class="input-group">
-                <select id="paymentMethod" required>
-                    <option value="" disabled selected>-- Τρόπος Πληρωμής --</option>
-                    <option value="Μετρητά">💵 Μετρητά</option>
-                    <option value="Κάρτα (POS)">💳 Κάρτα (POS)</option>
+
+            <div class="input-group" style="margin-top: 20px;">
+                <label style="font-size: 12px; font-weight: bold; color: var(--secondary); margin-bottom: 5px; display: block;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ <span class="req">*</span></label>
+                <select id="paymentMethod" required style="font-weight: 500;">
+                    <option value="" disabled selected>-- Επιλέξτε Τρόπο Πληρωμής --</option>
+                    <option value="Μετρητά">💵 Πληρωμή: Μετρητά</option>
+                    <option value="Κάρτα (POS)">💳 Πληρωμή: Κάρτα (POS)</option>
                 </select>
             </div>
         </div>
+
         <button class="btn-submit" id="sendBtn" onclick="submitOrder()">ΟΛΟΚΛΗΡΩΣΗ ΠΑΡΑΓΓΕΛΙΑΣ</button>
     </div>
 
@@ -120,103 +145,119 @@
         <div class="footer-grid">
             <div class="footer-col">
                 <h4>ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ</h4>
-                <p>Η <strong>2Fast Delivery</strong> προσφέρει άμεσες λύσεις ταχυμεταφορών για κάθε σας ανάγκη.</p>
+                <p>Η <strong>2Fast Delivery</strong> είναι η σύγχρονη λύση στις ταχυμεταφορές. Πέρα από απλά δέματα, αναλαμβάνουμε να σας φέρουμε ό,τι χρειάζεστε: από <strong>φάρμακα</strong> και <strong>είδη περιπτέρου</strong>, μέχρι εξυπηρέτηση επιχειρήσεων.</p>
+            </div>
+            <div class="footer-col">
+                <h4>ΤΙ ΠΡΟΣΦΕΡΟΥΜΕ</h4>
+                <ul>
+                    <li>🚀 Άμεση παραλαβή και παράδοση</li>
+                    <li>💊 Θελήματα Φαρμακείου & Περιπτέρου</li>
+                    <li>🛍️ Εξυπηρέτηση επιχειρήσεων & ιδιωτών</li>
+                    <li>🎧 Ζωντανή υποστήριξη πελατών</li>
+                </ul>
             </div>
             <div class="footer-col">
                 <h4>ΕΠΙΚΟΙΝΩΝΙΑ</h4>
                 <ul>
-                    <li>📞 6934021792</li>
-                    <li>✉️ 2fastdelivery1@gmail.com</li>
-                    <li>🕒 Δευτέρα - Σάββατο</li>
+                    <li>📞 Τηλέφωνο: 6934021792</li>
+                    <li>✉️ Email: 2fastdelivery1@gmail.com</li>
+                    <li>🕒 Ωράριο: Δευτέρα - Σάββατο</li>
                 </ul>
             </div>
         </div>
     </footer>
 
     <script>
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS && !window.navigator.standalone) { document.getElementById('installBanner').style.display = 'flex'; }
+
+        // Κλείνει το μενού υποστήριξης αν πατήσεις αλλού στην οθόνη
+        document.addEventListener('click', function(event) {
+            var menu = document.getElementById('supportMenu');
+            var btn = document.querySelector('.btn-support');
+            if (menu && btn && !btn.contains(event.target) && !menu.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwc8G9tP4w-R58r5_O2zR9N9bX4K4dF1l_Z5uX3P_l2zS2QYfXp0X7K8D5J2Wk/exec';
-        let map, directionsService, directionsRenderer, calculatedPrice = 0;
+        let map, directionsService, directionsRenderer;
+        let startAutocomplete, endAutocomplete;
+        let calculatedPrice = 0;
 
         function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), { center: {lat: 37.9429, lng: 23.6439}, zoom: 12, disableDefaultUI: true });
+            map = new google.maps.Map(document.getElementById('map'), { center: {lat: 37.9429, lng: 23.6439}, zoom: 12, disableDefaultUI: true, styles: [{"featureType":"poi","elementType":"labels","stylers":[{"visibility":"off"}]}] });
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: '#FF5722', strokeWeight: 5 } });
-            const sA = new google.maps.places.Autocomplete(document.getElementById('start'));
-            const eA = new google.maps.places.Autocomplete(document.getElementById('end'));
-            sA.addListener('place_changed', calc); eA.addListener('place_changed', calc);
+            directionsRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: '#FF5722', strokeOpacity: 0.8, strokeWeight: 5 } });
+
+            startAutocomplete = new google.maps.places.Autocomplete(document.getElementById('start'));
+            endAutocomplete = new google.maps.places.Autocomplete(document.getElementById('end'));
+
+            startAutocomplete.addListener('place_changed', calc);
+            endAutocomplete.addListener('place_changed', calc);
         }
 
         function calc() {
-            const s = document.getElementById('start').value, e = document.getElementById('end').value;
-            if (!s || !e) return;
-            directionsService.route({ origin: s, destination: e, travelMode: 'DRIVING' }, (res, status) => {
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            if (!start || !end) return;
+
+            directionsService.route({ origin: start, destination: end, travelMode: 'DRIVING' }, (response, status) => {
                 if (status === 'OK') {
-                    directionsRenderer.setDirections(res);
-                    const d = res.routes[0].legs[0].distance.value / 1000;
-                    let p = 3.50; if (d > 2) p += (d - 2) * 0.70;
+                    directionsRenderer.setDirections(response);
+                    const distKm = response.routes[0].legs[0].distance.value / 1000;
+                    const mins = response.routes[0].legs[0].duration.value / 60;
+                    
+                    let p = 3.50; 
+                    if (distKm > 2) p += (distKm - 2) * 0.70;
                     calculatedPrice = p.toFixed(2);
+                    
                     document.getElementById('price').innerText = calculatedPrice + ' €';
-                    document.getElementById('distance').innerText = d.toFixed(1) + ' χλμ - ~' + Math.round(res.routes[0].legs[0].duration.value / 60) + ' λεπτά';
+                    document.getElementById('distance').innerText = distKm.toFixed(1) + ' χλμ απόσταση - ~' + Math.round(mins) + ' λεπτά';
                 }
             });
         }
 
-                        kupTime').value, 
-                deliveryName: document.getElementById('deliveryName').value,
-                deliveryPhone: document.getElementById('deliveryPhone').value, 
-                deliveryDate: document.getElementById('deliveryDate').value,
-                deliveryTime: document.getElementById('deliveryTime').value, 
-                notes: "ΠΛΗΡΩΜΗ: " + document.getElementById('paymentMethod').value + " | " + document.getElementById('deliveryNote').value
-            };
-
-            
         function submitOrder() {
-            if (calculatedPrice == 0) return alert("📍 Επιλέξτε διευθύνσεις παραλαβής και παράδοσης!");
+            if (calculatedPrice == 0) return alert("📍 Παρακαλώ επιλέξτε διευθύνσεις παραλαβής και παράδοσης!");
             
-            const btn = document.getElementById('sendBtn');
-            btn.innerText = "Αποστολή... ⏳"; 
-            btn.disabled = true;
-
-            const payload = {
-                startAddr: document.getElementById('start').value, 
-                endAddr: document.getElementById('end').value,
-                price: calculatedPrice, 
-                pickupName: document.getElementById('pickupName').value, 
-                pickupPhone: document.getElementById('pickupPhone').value,
-                pickupTime: document.getElementById('pickupTime').value, 
-                deliveryName: document.getElementById('deliveryName').value,
-                deliveryPhone: document.getElementById('deliveryPhone').value, 
-                deliveryDate: document.getElementById('deliveryDate').value,
-                deliveryTime: document.getElementById('deliveryTime').value, 
-                notes: "ΠΛΗΡΩΜΗ: " + document.getElementById('paymentMethod').value + " | " + document.getElementById('deliveryNote').value
-            };
-
-            // Αποθήκευση στο προφίλ του χρήστη
-            if (window.saveDeliveryData) {
-                window.saveDeliveryData(payload.deliveryName, payload.deliveryPhone, payload.endAddr, payload.notes, calculatedPrice);
+            if (!document.getElementById('pickupName').value.trim() || !document.getElementById('pickupPhone').value.trim()) {
+                return alert("⚠️ Συμπληρώστε Όνομα και Τηλέφωνο Αποστολέα!");
+            }
+            if (!document.getElementById('deliveryName').value.trim() || !document.getElementById('deliveryPhone').value.trim()) {
+                return alert("⚠️ Συμπληρώστε Όνομα και Τηλέφωνο Παραλήπτη!");
             }
 
-            // Ο ΑΥΘΕΝΤΙΚΟΣ ΤΡΟΠΟΣ που έστελνε τα δεδομένα τέλεια στο Shipday
-            fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            })
-            .then(response => response.text())
-            .then(data => { 
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
-            })
-            .catch(error => { 
-                // Εδώ είναι η μαγεία: Αγνοούμε το "σκάλωμα" της Google (CORS) 
-                // και ξεμπλοκάρουμε την οθόνη, γιατί ξέρουμε ότι το Shipday πήρε τα δεδομένα!
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
-            });
+            const payment = document.getElementById('paymentMethod').value;
+            if (!payment) return alert("⚠️ Παρακαλώ επιλέξτε Τρόπο Πληρωμής!");
+
+            const rawNotes = document.getElementById('deliveryNote').value.trim();
+            if (rawNotes.length < 25) { 
+                alert("⚠️ Παρακαλώ συμπληρώστε τον Όροφο και το Κουδούνι στα Σχόλια!");
+                document.getElementById('deliveryNote').focus();
+                return;
+            }
+
+            const btn = document.getElementById('sendBtn');
+            btn.innerText = "Αποστολή... ⏳";
+            btn.disabled = true;
+
+            const combinedNotes = "ΠΛΗΡΩΜΗ: " + payment + " | ΣΧΟΛΙΑ: " + rawNotes;
+
+            const payload = {
+                startAddr: document.getElementById('start').value, endAddr: document.getElementById('end').value,
+                price: calculatedPrice, pickupName: document.getElementById('pickupName').value, pickupPhone: document.getElementById('pickupPhone').value,
+                pickupTime: document.getElementById('pickupTime').value, deliveryName: document.getElementById('deliveryName').value,
+                deliveryPhone: document.getElementById('deliveryPhone').value, deliveryDate: document.getElementById('deliveryDate').value,
+                deliveryTime: document.getElementById('deliveryTime').value, notes: combinedNotes
+            };
+
+            if (window.saveDeliveryData) window.saveDeliveryData(payload.deliveryName, payload.deliveryPhone, payload.endAddr, rawNotes, calculatedPrice);
+
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(response => response.text()).then(data => { alert("✅ Η παραγγελία καταχωρήθηκε επιτυχώς!"); window.location.reload(); });
         }
-
-
     </script>
-
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
 
     <script type="module">
@@ -228,27 +269,27 @@
         const auth = getAuth(app); const db = getFirestore(app);
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.replace("login.html"); } 
-            else {
+            if (!user) { window.location.replace("login.html"); } else {
+                if (user.displayName && !document.getElementById('deliveryName').value) document.getElementById('deliveryName').value = user.displayName;
                 const docSnap = await getDoc(doc(db, "users", user.uid));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.isBlocked) { alert("⛔ Λογαριασμός κλειστός."); signOut(auth).then(() => window.location.replace("login.html")); return; }
-                    document.getElementById('deliveryName').value = data.name || "";
-                    document.getElementById('deliveryPhone').value = data.phone || "";
+                    if (data.isBlocked) { alert("⛔ Ο λογαριασμός σας έχει ανασταλεί. Παρακαλώ επικοινωνήστε με την υποστήριξη."); signOut(auth).then(() => { window.location.replace("login.html"); }); return; }
+                    if (data.name) document.getElementById('deliveryName').value = data.name;
+                    if (data.phone) document.getElementById('deliveryPhone').value = data.phone;
+                    if (data.address) { document.getElementById('end').value = data.address; setTimeout(calc, 500); }
+                    if (data.notes) document.getElementById('deliveryNote').value = data.notes;
                 }
             }
         });
 
-        window.saveDeliveryData = async function(n, p, a, nt, pr) {
+        window.saveDeliveryData = async function(name, phone, address, notes, price) {
             if (auth.currentUser) {
                 const uid = auth.currentUser.uid;
-                await setDoc(doc(db, "users", uid), { name: n, phone: p, address: a, notes: nt }, { merge: true });
-                await addDoc(collection(db, "users", uid, "orders"), { price: pr + " €", destination: a, timestamp: new Date() });
+                await setDoc(doc(db, "users", uid), { name: name, phone: phone, address: address, notes: notes, email: auth.currentUser.email }, { merge: true });
+                if (price) { try { await addDoc(collection(db, "users", uid, "orders"), { price: price + " €", destination: address, timestamp: new Date() }); } catch (e) { console.log(e); } }
             }
         };
     </script>
-
-    <script type="text/javascript">window.$crisp=[];window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();</script>
 </body>
 </html>
