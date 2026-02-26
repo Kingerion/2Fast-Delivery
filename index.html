@@ -91,10 +91,10 @@
             </div>
             <div class="row">
                 <div class="input-group">
-                    <input type="text" id="pickupDate" placeholder="Ημερομηνία" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
+                    <input type="text" id="pickupDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
                 </div>
                 <div class="input-group">
-                    <input type="text" id="pickupTime" placeholder="Ώρα (π.χ. 14:30)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
+                    <input type="text" id="pickupTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
                 </div>
             </div>
         </div>
@@ -109,10 +109,10 @@
             </div>
             <div class="row" style="margin-bottom: 16px;">
                 <div class="input-group">
-                    <input type="text" id="deliveryDate" placeholder="Ημερομηνία" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
+                    <input type="text" id="deliveryDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
                 </div>
                 <div class="input-group">
-                    <input type="text" id="deliveryTime" placeholder="Ώρα (π.χ. 15:00)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
+                    <input type="text" id="deliveryTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
                 </div>
             </div>
             
@@ -220,7 +220,7 @@
                 return true;
             }
 
-            // ΕΛΕΓΧΟΣ ΟΛΩΝ ΤΩΝ ΥΠΟΧΡΕΩΤΙΚΩΝ ΠΕΔΙΩΝ
+            // ΕΛΕΓΧΟΣ ΜΟΝΟ ΤΩΝ ΥΠΟΧΡΕΩΤΙΚΩΝ ΠΕΔΙΩΝ (Ημερομηνία/Ώρα εξαιρέθηκαν)
             let isValid = true;
             
             if (calculatedPrice == 0) { 
@@ -235,14 +235,9 @@
 
             isValid = checkField('pickupName') && isValid;
             isValid = checkField('pickupPhone') && isValid;
-            isValid = checkField('pickupDate') && isValid;
-            isValid = checkField('pickupTime') && isValid;
             
             isValid = checkField('deliveryName') && isValid;
             isValid = checkField('deliveryPhone') && isValid;
-            isValid = checkField('deliveryDate') && isValid;
-            isValid = checkField('deliveryTime') && isValid;
-            
             isValid = checkField('deliveryNote') && isValid;
             
             const paymentEl = document.getElementById('paymentMethod');
@@ -271,8 +266,8 @@
                 price: calculatedPrice,
                 pickupName: document.getElementById('pickupName').value,
                 pickupPhone: document.getElementById('pickupPhone').value,
-                pickupDate: document.getElementById('pickupDate').value, // Στέλνουμε ΞΕΧΩΡΙΣΤΑ την Ημερομηνία!
-                pickupTime: document.getElementById('pickupTime').value, // Η ώρα μένει πεντακάθαρη όπως πριν!
+                pickupDate: document.getElementById('pickupDate').value,
+                pickupTime: document.getElementById('pickupTime').value,
                 deliveryName: document.getElementById('deliveryName').value,
                 deliveryPhone: document.getElementById('deliveryPhone').value,
                 deliveryDate: document.getElementById('deliveryDate').value,
