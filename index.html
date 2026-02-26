@@ -34,9 +34,8 @@
         .row .input-group { flex: 1; margin-bottom: 0; }
         .required::after { content: " *"; color: red; font-size: 18px;}
         
-        /* Ρύθμιση για το Crisp ώστε να μην καλύπτει περιεχόμενο στο κινητό όταν είναι πάνω δεξιά */
         @media screen and (max-width: 768px) {
-            .card:nth-child(2) { margin-top: 30px; } /* Δίνει λίγο χώρο στη 2η κάρτα (Παραλαβή) */
+            .card:nth-child(2) { margin-top: 15px; } 
         }
     </style>
 </head>
@@ -64,9 +63,18 @@
 
     <div id="map"></div>
 
+    <div style="display: flex; justify-content: flex-end; gap: 10px; padding: 15px 15px 0 15px; max-width: 600px; margin: 0 auto;">
+        <button onclick="$crisp.push(['do', 'chat:open'])" style="background: #3b82f6; color: white; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(59,130,246,0.3); font-family: inherit;">
+            💬 Chat
+        </button>
+        <a href="profile.html" style="background: var(--card); color: var(--secondary); padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            👤 Προφίλ
+        </a>
+    </div>
+
     <div class="container">
         
-        <div class="card" style="margin-top: -30px; position: relative; z-index: 10;">
+        <div class="card" style="margin-top: 10px; position: relative; z-index: 10;">
             <div class="title required">📍 Σημεία Διαδρομής</div>
             <div class="input-group">
                 <input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
@@ -138,14 +146,14 @@
     <script type="text/javascript">
         window.$crisp=[];
         window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";
-        // Ρύθμιση για να εμφανίζεται πάνω δεξιά (Top Right)
-        $crisp.push(["set", "chat:position", ["right", "top"]]); 
+        // Κρύβουμε το default ενοχλητικό συννεφάκι του Crisp για να χρησιμοποιούμε το δικό μας κουμπί "Chat"!
+        $crisp.push(["config", "hide:on:mobile", true]);
+        $crisp.push(["config", "hide:on:desktop", true]);
         
         (function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
     </script>
 
     <script>
-        // Διαχείριση του Banner Εγκατάστασης
         if (!localStorage.getItem('hideAppBanner')) {
             document.getElementById('installBanner').style.display = 'flex';
         }
@@ -158,7 +166,6 @@
         let map, dirService, dirRenderer, startAuto, endAuto;
         let calculatedPrice = 0;
 
-        // Το δικό σου SCRIPT_URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
 
         function initMap() {
@@ -208,7 +215,6 @@
         }
 
         function submitOrder() {
-            // Βοηθητική συνάρτηση για έλεγχο πεδίων
             function checkField(id, errorMsg) {
                 const el = document.getElementById(id);
                 if (!el.value.trim()) {
@@ -220,7 +226,6 @@
                 return true;
             }
 
-            // ΕΛΕΓΧΟΣ ΜΟΝΟ ΤΩΝ ΥΠΟΧΡΕΩΤΙΚΩΝ ΠΕΔΙΩΝ (Ημερομηνία/Ώρα εξαιρέθηκαν)
             let isValid = true;
             
             if (calculatedPrice == 0) { 
@@ -275,7 +280,6 @@
                 notes: combinedNotes
             };
 
-            // Η αποστολή (Αυθεντικός τρόπος + Catch για να μην κολλάει η οθόνη)
             fetch(SCRIPT_URL, { 
                 method: 'POST', 
                 body: JSON.stringify(payload) 
