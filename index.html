@@ -15,17 +15,10 @@
         
         .header { display: flex; justify-content: center; align-items: center; background: var(--secondary); color: white; padding: 15px; font-size: 22px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; position: relative; }
         
-        /* ΚΟΥΜΠΙΑ ΚΑΤΩ ΑΠΟ ΤΟ ΧΑΡΤΗ */
         .action-row { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 20px 5px 20px; }
-        .action-btn { display: flex; align-items: center; gap: 6px; padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-family: inherit; }
+        .action-btn { display: flex; align-items: center; gap: 6px; padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .btn-profile { background: var(--card); color: var(--secondary); border: 1.5px solid var(--border); }
-        .btn-support { background: #25D366; color: white; border: none; cursor: pointer; }
-        
-        /* ΤΟ ΜΙΚΡΟ ΜΕΝΟΥ ΥΠΟΣΤΗΡΙΞΗΣ (ΓΙΑ WHATSAPP/EMAIL) */
-        .support-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: var(--card); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); border: 1px solid var(--border); z-index: 100; min-width: 180px; overflow: hidden; text-align: left; }
-        .support-menu.active { display: flex; flex-direction: column; }
-        .support-item { padding: 12px 15px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--border); }
-        .support-item:last-child { border-bottom: none; }
+        .btn-support { background: #25D366; color: white; border: none; }
 
         .container { flex: 1; padding: 0 20px 30px 20px; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
@@ -45,13 +38,6 @@
         .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; box-shadow: 0 4px 15px rgba(255,87,34,0.3); }
         .btn-submit:active { transform: scale(0.98); }
         .btn-submit:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
-
-        /* FOOTER ΣΤΟ ΤΕΛΟΣ ΤΗΣ ΣΕΛΙΔΑΣ */
-        .footer { background: var(--secondary); color: white; padding: 30px 20px; margin-top: auto; border-top-left-radius: 20px; border-top-right-radius: 20px; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 800px; margin: 0 auto; }
-        .footer-col h4 { color: var(--primary); font-size: 14px; text-transform: uppercase; margin-bottom: 12px; font-weight: 800; letter-spacing: 0.5px; }
-        .footer-col p, .footer-col ul { font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0; padding: 0; list-style: none; }
-        .footer-col ul li { margin-bottom: 8px; display: flex; align-items: flex-start; gap: 6px; }
     </style>
 </head>
 <body>
@@ -64,18 +50,13 @@
     </div>
 
     <header class="header">🚀 2FAST DELIVERY</header>
+
     <div id="map" style="height: 40vh; width: 100%; position: relative;"></div>
 
     <div class="action-row">
-        <div style="position: relative;">
-            <button onclick="document.getElementById('supportMenu').classList.toggle('active')" class="action-btn btn-support">
-                🎧 Υποστήριξη
-            </button>
-            <div class="support-menu" id="supportMenu">
-                <a href="https://wa.me/306934021792" class="support-item" target="_blank">🟢 WhatsApp Support</a>
-                <a href="mailto:2fastdelivery1@gmail.com" class="support-item" style="color: #3b82f6;">✉️ Email Support</a>
-            </div>
-        </div>
+        <a href="https://wa.me/306934021792" target="_blank" class="action-btn btn-support">
+            🎧 Υποστήριξη
+        </a>
         <a href="profile.html" class="action-btn btn-profile">
             👤 Προφίλ
         </a>
@@ -97,7 +78,6 @@
                 <div class="price-details" id="distance">Επιλέξτε διευθύνσεις στο χάρτη</div>
             </div>
         </div>
-
         <div class="card">
             <div class="title">📦 ΣΤΟΙΧΕΙΑ ΠΑΡΑΛΑΒΗΣ <span class="req">*</span></div>
             <div class="input-group">
@@ -140,45 +120,9 @@
 
         <button class="btn-submit" id="sendBtn" onclick="submitOrder()">ΟΛΟΚΛΗΡΩΣΗ ΠΑΡΑΓΓΕΛΙΑΣ</button>
     </div>
-
-    <footer class="footer">
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ</h4>
-                <p>Η <strong>2Fast Delivery</strong> είναι η σύγχρονη λύση στις ταχυμεταφορές. Πέρα από απλά δέματα, αναλαμβάνουμε να σας φέρουμε ό,τι χρειάζεστε: από <strong>φάρμακα</strong> και <strong>είδη περιπτέρου</strong>, μέχρι εξυπηρέτηση επιχειρήσεων.</p>
-            </div>
-            <div class="footer-col">
-                <h4>ΤΙ ΠΡΟΣΦΕΡΟΥΜΕ</h4>
-                <ul>
-                    <li>🚀 Άμεση παραλαβή και παράδοση</li>
-                    <li>💊 Θελήματα Φαρμακείου & Περιπτέρου</li>
-                    <li>🛍️ Εξυπηρέτηση επιχειρήσεων & ιδιωτών</li>
-                    <li>🎧 Ζωντανή υποστήριξη πελατών</li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>ΕΠΙΚΟΙΝΩΝΙΑ</h4>
-                <ul>
-                    <li>📞 Τηλέφωνο: 6934021792</li>
-                    <li>✉️ Email: 2fastdelivery1@gmail.com</li>
-                    <li>🕒 Ωράριο: Δευτέρα - Σάββατο</li>
-                </ul>
-            </div>
-        </div>
-    </footer>
-
     <script>
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (isIOS && !window.navigator.standalone) { document.getElementById('installBanner').style.display = 'flex'; }
-
-        // Κλείνει το μενού υποστήριξης αν πατήσεις αλλού στην οθόνη
-        document.addEventListener('click', function(event) {
-            var menu = document.getElementById('supportMenu');
-            var btn = document.querySelector('.btn-support');
-            if (menu && btn && !btn.contains(event.target) && !menu.contains(event.target)) {
-                menu.classList.remove('active');
-            }
-        });
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwc8G9tP4w-R58r5_O2zR9N9bX4K4dF1l_Z5uX3P_l2zS2QYfXp0X7K8D5J2Wk/exec';
         let map, directionsService, directionsRenderer;
@@ -217,7 +161,6 @@
                 }
             });
         }
-
         function submitOrder() {
             if (calculatedPrice == 0) return alert("📍 Παρακαλώ επιλέξτε διευθύνσεις παραλαβής και παράδοσης!");
             
