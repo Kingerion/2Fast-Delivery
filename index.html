@@ -278,7 +278,47 @@
         }
     </script>
 
-<script type="text/javascript">window.$crisp=[];window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();</script>
+        // Τέλος της συνάρτησης submitOrder
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const app = initializeApp({ apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w", authDomain: "fast-delivery-8227d.firebaseapp.com", projectId: "fast-delivery-8227d", storageBucket: "fast-delivery-8227d.firebasestorage.app" });
+        const auth = getAuth(app); const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace("login.html"); } else {
+                if (user.displayName && !document.getElementById('deliveryName').value) document.getElementById('deliveryName').value = user.displayName;
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.isBlocked) { alert("⛔ Ο λογαριασμός σας έχει ανασταλεί."); signOut(auth).then(() => { window.location.replace("login.html"); }); return; }
+                    if (data.name) document.getElementById('deliveryName').value = data.name;
+                    if (data.phone) document.getElementById('deliveryPhone').value = data.phone;
+                    if (data.address) { document.getElementById('end').value = data.address; setTimeout(calc, 500); }
+                    if (data.notes) document.getElementById('deliveryNote').value = data.notes;
+                }
+            }
+        });
+
+        window.saveDeliveryData = async function(name, phone, address, notes, price) {
+            if (auth.currentUser) {
+                const uid = auth.currentUser.uid;
+                await setDoc(doc(db, "users", uid), { name: name, phone: phone, address: address, notes: notes, email: auth.currentUser.email }, { merge: true });
+                if (price) { try { await addDoc(collection(db, "users", uid, "orders"), { price: price + " €", destination: address, timestamp: new Date() }); } catch (e) { console.log(e); } }
+            }
+        };
+    </script>
+
+    <script type="text/javascript">window.$crisp=[];window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();</script>
+
+</body>
+</html>
 
 </body>
 </html>
