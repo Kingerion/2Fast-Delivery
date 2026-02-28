@@ -8,7 +8,7 @@
     
     <style>
         :root { --primary: #FF5722; --secondary: #1E293B; --bg: #F1F5F9; --card: #FFFFFF; --text: #334155; --border: #E2E8F0; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
         
         /* BANNER ΕΓΚΑΤΑΣΤΑΣΗΣ */
         .install-banner { background: var(--primary); color: white; padding: 12px 15px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -18,7 +18,13 @@
         .app-header { background: var(--secondary); padding: 15px; text-align: center; position: relative; z-index: 20; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .app-header img { max-height: 50px; width: auto; object-fit: contain; }
         #map { height: 32vh; min-height: 220px; width: 100%; background: #e0e0e0; }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+        
+        /* ΜΕΝΟΥ ΔΡΑΣΕΩΝ (Κάτω από τον χάρτη) */
+        .action-bar { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 15px 0 15px; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .btn-chat { background: #3b82f6; color: white; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(59,130,246,0.3); font-family: inherit; }
+        .btn-profile { background: var(--card); color: var(--secondary); padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        .container { flex: 1; padding: 15px; max-width: 600px; margin: 0 auto; padding-bottom: 40px; width: 100%; box-sizing: border-box; }
         .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
         .title { color: var(--secondary); font-weight: 800; font-size: 14px; text-transform: uppercase; margin-bottom: 18px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
         .input-group { margin-bottom: 16px; }
@@ -34,8 +40,20 @@
         .row .input-group { flex: 1; margin-bottom: 0; }
         .required::after { content: " *"; color: red; font-size: 18px;}
         
+        /* ΕΠΑΓΓΕΛΜΑΤΙΚΟ FOOTER */
+        .footer { background: var(--secondary); color: white; padding: 40px 20px 20px; margin-top: auto; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 800px; margin: 0 auto; }
+        .footer-col h4 { color: var(--primary); font-size: 14px; text-transform: uppercase; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.5px; }
+        .footer-col p { font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0; }
+        .footer-col ul { margin: 0; padding: 0; list-style: none; font-size: 13px; color: #cbd5e1; }
+        .footer-col ul li { margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; }
+        .footer-col a { color: #cbd5e1; text-decoration: none; transition: 0.3s; }
+        .footer-col a:hover { color: white; text-decoration: underline; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 30px; padding-top: 20px; text-align: center; font-size: 12px; color: #94a3b8; }
+
         @media screen and (max-width: 768px) {
             .card:nth-child(2) { margin-top: 15px; } 
+            .footer { padding: 30px 20px 20px; }
         }
     </style>
 </head>
@@ -44,7 +62,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-2MFNJRKE78');
 </script>
 <body>
@@ -52,7 +69,7 @@
     <div class="install-banner" id="installBanner" style="display: none;">
         <div class="install-text">
             <strong>📲 Εγκαταστήστε την εφαρμογή μας!</strong><br>
-            Πατήστε τις ρυθμίσεις του browser (⋮ ή το εικονίδιο κοινοποίησης) και επιλέξτε <b>"Προσθήκη στην Αρχική Οθόνη"</b> για πιο γρήγορες παραγγελίες.
+            Πατήστε τις ρυθμίσεις (⋮) και επιλέξτε <b>"Προσθήκη στην Αρχική Οθόνη"</b>.
         </div>
         <button class="install-close" onclick="closeInstallBanner()">×</button>
     </div>
@@ -63,18 +80,13 @@
 
     <div id="map"></div>
 
-    <div style="display: flex; justify-content: flex-end; gap: 10px; padding: 15px 15px 0 15px; max-width: 600px; margin: 0 auto;">
-        <button onclick="$crisp.push(['do', 'chat:open'])" style="background: #3b82f6; color: white; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(59,130,246,0.3); font-family: inherit;">
-            💬 Chat
-        </button>
-        <a href="profile.html" style="background: var(--card); color: var(--secondary); padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-            👤 Προφίλ
-        </a>
+    <div class="action-bar">
+        <button class="btn-chat" onclick="$crisp.push(['do', 'chat:open'])">💬 Chat</button>
+        <a href="profile.html" class="btn-profile">👤 Προφίλ</a>
     </div>
 
     <div class="container">
-        
-        <div class="card" style="margin-top: 10px; position: relative; z-index: 10;">
+        <div class="card" style="margin-top: 10px;">
             <div class="title required">📍 Σημεία Διαδρομής</div>
             <div class="input-group">
                 <input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
@@ -140,13 +152,39 @@
         </div>
 
         <button id="sendBtn" onclick="submitOrder()">Ολοκληρωση Παραγγελιας</button>
-
     </div>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ</h4>
+                <p>Η <strong>2Fast Delivery</strong> είναι η σύγχρονη λύση στις ταχυμεταφορές. Αναλαμβάνουμε να μεταφέρουμε τα δέματά σας ή να σας εξυπηρετήσουμε με αγορές από το φαρμακείο και το περίπτερο, άμεσα και με ασφάλεια.</p>
+            </div>
+            <div class="footer-col">
+                <h4>ΕΠΙΚΟΙΝΩΝΙΑ & ΩΡΑΡΙΟ</h4>
+                <ul>
+                    <li>📞 Τηλέφωνο: <a href="tel:+306934021792">6934021792</a></li>
+                    <li>✉️ Email: <a href="mailto:2fastdelivery1@gmail.com">2fastdelivery1@gmail.com</a></li>
+                    <li>🕒 Ωράριο: Κάθε μέρα, 08:00 - 24:00</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>ΝΟΜΙΚΑ & ΟΡΟΙ</h4>
+                <ul>
+                    <li>📄 <a href="terms.html">Όροι & Προϋποθέσεις</a></li>
+                    <li>🔒 <a href="privacy.html">Πολιτική Απορρήτου</a></li>
+                    <li>🍪 <a href="cookies.html">Πολιτική Cookies</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 2Fast Delivery. Με την επιφύλαξη παντός δικαιώματος.
+        </div>
+    </footer>
 
     <script type="text/javascript">
         window.$crisp=[];
         window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";
-        // Κρύβουμε το default ενοχλητικό συννεφάκι του Crisp για να χρησιμοποιούμε το δικό μας κουμπί "Chat"!
         $crisp.push(["config", "hide:on:mobile", true]);
         $crisp.push(["config", "hide:on:desktop", true]);
         
@@ -240,7 +278,6 @@
 
             isValid = checkField('pickupName') && isValid;
             isValid = checkField('pickupPhone') && isValid;
-            
             isValid = checkField('deliveryName') && isValid;
             isValid = checkField('deliveryPhone') && isValid;
             isValid = checkField('deliveryNote') && isValid;
