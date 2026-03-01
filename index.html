@@ -10,7 +10,6 @@
         :root { --primary: #FF5722; --secondary: #1E293B; --bg: #F1F5F9; --card: #FFFFFF; --text: #334155; --border: #E2E8F0; }
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* BANNER ΕΓΚΑΤΑΣΤΑΣΗΣ */
         .install-banner { background: var(--primary); color: white; padding: 12px 15px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .install-text { flex: 1; line-height: 1.4; }
         .install-close { background: none; border: none; color: white; font-size: 22px; font-weight: bold; cursor: pointer; padding-left: 10px; }
@@ -19,12 +18,26 @@
         .app-header img { max-height: 50px; width: auto; object-fit: contain; }
         #map { height: 32vh; min-height: 220px; width: 100%; background: #e0e0e0; }
         
-        /* ΜΕΝΟΥ ΔΡΑΣΕΩΝ (Κάτω από τον χάρτη) */
-        .action-bar { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 15px 0 15px; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .action-bar { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 15px 0 15px; max-width: 950px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .btn-chat { background: #3b82f6; color: white; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(59,130,246,0.3); font-family: inherit; }
         .btn-profile { background: var(--card); color: var(--secondary); padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        .container { flex: 1; padding: 15px; max-width: 600px; margin: 0 auto; padding-bottom: 40px; width: 100%; box-sizing: border-box; }
+        /* ΔΙΑΤΑΞΗ: SIDEBAR (Αριστερά) + ΦΟΡΜΑ (Δεξιά) */
+        .main-wrapper { display: flex; flex-direction: row; gap: 20px; max-width: 950px; margin: 15px auto 40px auto; padding: 0 15px; align-items: flex-start; width: 100%; box-sizing: border-box; }
+        
+        /* SIDEBAR ΦΑΡΜΑΚΕΙΩΝ */
+        .sidebar { width: 320px; background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); box-sizing: border-box; flex-shrink: 0; }
+        .sidebar h3 { margin-top: 0; color: var(--secondary); font-size: 16px; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+        .btn-pharmacy { width: 100%; padding: 14px; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 15px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s; }
+        .btn-pharmacy:active { transform: scale(0.97); }
+        .pharmacy-list { max-height: 400px; overflow-y: auto; margin-top: 10px; }
+        .pharmacy-item { padding: 12px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; background: #f8fafc; }
+        .pharmacy-item:hover { border-color: #10b981; background: #ecfdf5; }
+        .pharmacy-name { font-weight: bold; color: var(--secondary); font-size: 13px; margin-bottom: 4px; }
+        .pharmacy-address { color: #64748b; font-size: 11px; }
+
+        /* ΦΟΡΜΑ ΠΑΡΑΓΓΕΛΙΑΣ */
+        .container { flex: 1; max-width: 600px; width: 100%; }
         .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
         .title { color: var(--secondary); font-weight: 800; font-size: 14px; text-transform: uppercase; margin-bottom: 18px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
         .input-group { margin-bottom: 16px; }
@@ -40,7 +53,7 @@
         .row .input-group { flex: 1; margin-bottom: 0; }
         .required::after { content: " *"; color: red; font-size: 18px;}
         
-        /* ΕΠΑΓΓΕΛΜΑΤΙΚΟ FOOTER */
+        /* FOOTER */
         .footer { background: var(--secondary); color: white; padding: 40px 20px 20px; margin-top: auto; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
         .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 800px; margin: 0 auto; }
         .footer-col h4 { color: var(--primary); font-size: 14px; text-transform: uppercase; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.5px; }
@@ -51,8 +64,10 @@
         .footer-col a:hover { color: white; text-decoration: underline; }
         .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 30px; padding-top: 20px; text-align: center; font-size: 12px; color: #94a3b8; }
 
+        /* Κινητό: Η στήλη των φαρμακείων μπαίνει ΠΑΝΩ από τη φόρμα */
         @media screen and (max-width: 768px) {
-            .card:nth-child(2) { margin-top: 15px; } 
+            .main-wrapper { flex-direction: column; margin-top: 10px; }
+            .sidebar { width: 100%; order: -1; } 
             .footer { padding: 30px 20px 20px; }
         }
     </style>
@@ -67,10 +82,7 @@
 <body>
 
     <div class="install-banner" id="installBanner" style="display: none;">
-        <div class="install-text">
-            <strong>📲 Εγκαταστήστε την εφαρμογή μας!</strong><br>
-            Πατήστε τις ρυθμίσεις (⋮) και επιλέξτε <b>"Προσθήκη στην Αρχική Οθόνη"</b>.
-        </div>
+        <div class="install-text"><strong>📲 Εγκαταστήστε την εφαρμογή μας!</strong><br>Πατήστε τις ρυθμίσεις (⋮) και επιλέξτε <b>"Προσθήκη στην Αρχική Οθόνη"</b>.</div>
         <button class="install-close" onclick="closeInstallBanner()">×</button>
     </div>
 
@@ -85,76 +97,84 @@
         <a href="profile.html" class="btn-profile">👤 Προφίλ</a>
     </div>
 
-    <div class="container">
-        <div class="card" style="margin-top: 10px;">
-            <div class="title required">📍 Σημεία Διαδρομής</div>
-            <div class="input-group">
-                <input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
-            </div>
-            <div class="input-group" style="margin-bottom: 25px;">
-                <input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
-            </div>
-            <div class="price-box" id="priceBox">
-                <div style="font-size: 12px; opacity: 0.8; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Κοστος Αποστολης</div>
-                <div class="price-val" id="priceDisplay">0.00 €</div>
-                <div class="price-dist" id="distDisplay">Επιλέξτε διευθύνσεις στο χάρτη</div>
-            </div>
+    <div class="main-wrapper">
+        
+        <div class="sidebar">
+            <h3>💊 Εφημερεύοντα Φαρμακεία</h3>
+            <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.4;">Μετακινήστε τον χάρτη στην περιοχή σας και βρείτε ποια φαρμακεία είναι <b>ανοιχτά τώρα</b>.</p>
+            <button class="btn-pharmacy" id="btnPharmacy" onclick="searchPharmacies()">🔍 Εύρεση Φαρμακείων</button>
+            <div class="pharmacy-list" id="pharmacyList"></div>
         </div>
 
-        <div class="card">
-            <div class="title required">📦 Στοιχεία Παραλαβής</div>
-            <div class="input-group">
-                <input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)">
-            </div>
-            <div class="input-group">
-                <input type="tel" id="pickupPhone" placeholder="Τηλέφωνο Αποστολέα">
-            </div>
-            <div class="row">
+        <div class="container">
+            <div class="card">
+                <div class="title required">📍 Σημεία Διαδρομής</div>
                 <div class="input-group">
-                    <input type="text" id="pickupDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
+                    <input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
+                </div>
+                <div class="input-group" style="margin-bottom: 25px;">
+                    <input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
+                </div>
+                <div class="price-box" id="priceBox">
+                    <div style="font-size: 12px; opacity: 0.8; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Κοστος Αποστολης</div>
+                    <div class="price-val" id="priceDisplay">0.00 €</div>
+                    <div class="price-dist" id="distDisplay">Επιλέξτε διευθύνσεις στο χάρτη</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="title required">📦 Στοιχεία Παραλαβής</div>
+                <div class="input-group">
+                    <input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)">
                 </div>
                 <div class="input-group">
-                    <input type="text" id="pickupTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
+                    <input type="tel" id="pickupPhone" placeholder="Τηλέφωνο Αποστολέα">
+                </div>
+                <div class="row">
+                    <div class="input-group">
+                        <input type="text" id="pickupDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="pickupTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
+                    </div>
                 </div>
             </div>
+
+            <div class="card">
+                <div class="title required">🏠 Στοιχεία Παράδοσης</div>
+                <div class="input-group">
+                    <input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο (Παραλήπτης)">
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη">
+                </div>
+                <div class="row" style="margin-bottom: 16px;">
+                    <div class="input-group">
+                        <input type="text" id="deliveryDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="deliveryTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ</div>
+                    <textarea id="deliveryNote" rows="3" placeholder="Γράψτε Όροφο, Κουδούνι, ή Οδηγίες..."></textarea>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0;">
+                    <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
+                    <select id="paymentMethod">
+                        <option value="" disabled selected>-- Επιλέξτε Τρόπο Πληρωμής --</option>
+                        <option value="Μετρητά">💵 Πληρωμή: Μετρητά</option>
+                        <option value="Κάρτα (POS)">💳 Πληρωμή: Κάρτα (POS)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="sendBtn" onclick="submitOrder()">Ολοκληρωση Παραγγελιας</button>
         </div>
-
-        <div class="card">
-            <div class="title required">🏠 Στοιχεία Παράδοσης</div>
-            <div class="input-group">
-                <input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο (Παραλήπτης)">
-            </div>
-            <div class="input-group">
-                <input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη">
-            </div>
-            <div class="row" style="margin-bottom: 16px;">
-                <div class="input-group">
-                    <input type="text" id="deliveryDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
-                </div>
-                <div class="input-group">
-                    <input type="text" id="deliveryTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ</div>
-                <textarea id="deliveryNote" rows="3" placeholder="Γράψτε Όροφο, Κουδούνι, ή Οδηγίες..."></textarea>
-            </div>
-
-            <div class="input-group" style="margin-bottom: 0;">
-                <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
-                <select id="paymentMethod">
-                    <option value="" disabled selected>-- Επιλέξτε Τρόπο Πληρωμής --</option>
-                    <option value="Μετρητά">💵 Πληρωμή: Μετρητά</option>
-                    <option value="Κάρτα (POS)">💳 Πληρωμή: Κάρτα (POS)</option>
-                </select>
-            </div>
-        </div>
-
-        <button id="sendBtn" onclick="submitOrder()">Ολοκληρωση Παραγγελιας</button>
-    </div>
-
-    <footer class="footer">
+    </div> <footer class="footer">
         <div class="footer-grid">
             <div class="footer-col">
                 <h4>ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ</h4>
@@ -178,9 +198,7 @@
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom">
-            &copy; 2026 2Fast Delivery. Με την επιφύλαξη παντός δικαιώματος.
-        </div>
+        <div class="footer-bottom">&copy; 2026 2Fast Delivery. Με την επιφύλαξη παντός δικαιώματος.</div>
     </footer>
 
     <script type="text/javascript">
@@ -188,7 +206,6 @@
         window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";
         $crisp.push(["config", "hide:on:mobile", true]);
         $crisp.push(["config", "hide:on:desktop", true]);
-        
         (function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
     </script>
 
@@ -202,16 +219,17 @@
         }
 
         const MAX_KM = 35;
-        let map, dirService, dirRenderer, startAuto, endAuto;
+        let map, dirService, dirRenderer, startAuto, endAuto, placesService;
         let calculatedPrice = 0;
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
 
         function initMap() {
             try {
-                map = new google.maps.Map(document.getElementById('map'), { zoom: 13, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true });
+                map = new google.maps.Map(document.getElementById('map'), { zoom: 14, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true });
                 dirService = new google.maps.DirectionsService();
                 dirRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: "#1E293B", strokeWeight: 6 } });
+                placesService = new google.maps.places.PlacesService(map);
                 initAuto();
             } catch (e) { console.error("Map:", e); }
         }
@@ -223,6 +241,62 @@
             startAuto.addListener("place_changed", calc);
             endAuto.addListener("place_changed", calc);
         }
+
+        /* --- ΝΕΑ ΣΥΝΑΡΤΗΣΗ: ΑΝΑΖΗΤΗΣΗ ΦΑΡΜΑΚΕΙΩΝ --- */
+        function searchPharmacies() {
+            const btn = document.getElementById('btnPharmacy');
+            const list = document.getElementById('pharmacyList');
+            btn.innerText = "Αναζήτηση... ⏳";
+            list.innerHTML = "";
+
+            const request = {
+                location: map.getCenter(),
+                radius: 3000, // Ψάχνει σε ακτίνα 3χλμ
+                type: ['pharmacy'],
+                openNow: true // Φέρνει ΜΟΝΟ όσα είναι ανοιχτά τώρα!
+            };
+
+            placesService.nearbySearch(request, (results, status) => {
+                btn.innerText = "🔄 Ανανέωση Λίστας";
+                
+                if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+                    // Δείχνουμε τα πρώτα 8 αποτελέσματα
+                    const topResults = results.slice(0, 8);
+                    topResults.forEach(place => {
+                        const div = document.createElement('div');
+                        div.className = 'pharmacy-item';
+                        // Όταν το πατήσει, καλεί την selectPharmacy
+                        div.onclick = () => selectPharmacy(place.name, place.vicinity);
+                        div.innerHTML = `<div class="pharmacy-name">💊 ${place.name}</div><div class="pharmacy-address">${place.vicinity}</div>`;
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerHTML = "<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>Δεν βρέθηκαν ανοιχτά φαρμακεία κοντά. Μετακινήστε τον χάρτη σε άλλη περιοχή και ξαναπατήστε.</div>";
+                }
+            });
+        }
+
+        function selectPharmacy(name, address) {
+            const startInput = document.getElementById('start');
+            const pickupNameInput = document.getElementById('pickupName');
+            
+            // Συμπληρώνει αυτόματα διεύθυνση ΚΑΙ Όνομα!
+            startInput.value = name + ", " + address;
+            pickupNameInput.value = name;
+            
+            // Κοκκινίζει θετικά (πράσινο) για να δει ότι μπήκε
+            startInput.style.borderColor = "#10b981";
+            pickupNameInput.style.borderColor = "#10b981";
+            
+            alert("✅ Το φαρμακείο προστέθηκε στο Σημείο Παραλαβής! Συμπληρώστε τώρα το 'Προς' (τη διεύθυνσή σας).");
+            
+            // Αν έχει βάλει ήδη το "Προς", ας υπολογίσει τιμή
+            calc();
+            
+            // Κάνει scroll προς τη φόρμα για ευκολία
+            startInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        /* ------------------------------------------- */
 
         function calc() {
             const start = document.getElementById('start').value;
@@ -242,12 +316,10 @@
                             else { price += 3.5 * 0.50; rem -= 3.5; let rate = 0.60; while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; } }
                         }
                         calculatedPrice = price.toFixed(2);
-                        document.getElementById('priceDisplay').innerText = calculatedPrice + " €";
+                        document.getElementById('priceDisplay').innerTex = calculatedPrice + " €";
                         document.getElementById('distDisplay').innerText = txt + " απόσταση • ~" + res.routes[0].legs[0].duration.text;
                         
-                        if (typeof gtag === 'function') {
-                            gtag('event', 'delivery_quote', { 'currency': 'EUR', 'value': parseFloat(calculatedPrice) });
-                        }
+                        if (typeof gtag === 'function') { gtag('event', 'delivery_quote', { 'currency': 'EUR', 'value': parseFloat(calculatedPrice) }); }
                     }
                 });
             }
@@ -256,26 +328,14 @@
         function submitOrder() {
             function checkField(id, errorMsg) {
                 const el = document.getElementById(id);
-                if (!el.value.trim()) {
-                    el.style.borderColor = "red";
-                    el.placeholder = errorMsg || "Υποχρεωτικό πεδίο!";
-                    return false;
-                }
-                el.style.borderColor = "#E2E8F0"; 
-                return true;
+                if (!el.value.trim()) { el.style.borderColor = "red"; el.placeholder = errorMsg || "Υποχρεωτικό πεδίο!"; return false; }
+                el.style.borderColor = "#E2E8F0"; return true;
             }
 
             let isValid = true;
             
-            if (calculatedPrice == 0) { 
-                alert("📍 Παρακαλώ επιλέξτε διευθύνσεις διαδρομής!"); 
-                document.getElementById('start').style.borderColor = "red";
-                document.getElementById('end').style.borderColor = "red";
-                return; 
-            } else {
-                document.getElementById('start').style.borderColor = "#E2E8F0";
-                document.getElementById('end').style.borderColor = "#E2E8F0";
-            }
+            if (calculatedPrice == 0) { alert("📍 Παρακαλώ επιλέξτε διευθύνσεις διαδρομής!"); document.getElementById('start').style.borderColor = "red"; document.getElementById('end').style.borderColor = "red"; return; } 
+            else { document.getElementById('start').style.borderColor = "#E2E8F0"; document.getElementById('end').style.borderColor = "#E2E8F0"; }
 
             isValid = checkField('pickupName') && isValid;
             isValid = checkField('pickupPhone') && isValid;
@@ -284,17 +344,9 @@
             isValid = checkField('deliveryNote') && isValid;
             
             const paymentEl = document.getElementById('paymentMethod');
-            if (!paymentEl.value) {
-                paymentEl.style.borderColor = "red";
-                isValid = false;
-            } else {
-                paymentEl.style.borderColor = "#E2E8F0";
-            }
+            if (!paymentEl.value) { paymentEl.style.borderColor = "red"; isValid = false; } else { paymentEl.style.borderColor = "#E2E8F0"; }
 
-            if (!isValid) {
-                alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία (με κόκκινο περίγραμμα)!");
-                return;
-            }
+            if (!isValid) { alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία (με κόκκινο περίγραμμα)!"); return; }
 
             const btn = document.getElementById('sendBtn');
             btn.innerText = "Αποστολή... ⏳";
@@ -318,19 +370,10 @@
                 notes: combinedNotes
             };
 
-            fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            })
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(response => response.text())
-            .then(data => { 
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
-            })
-            .catch(error => { 
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
-            });
+            .then(data => { alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); window.location.reload(); })
+            .catch(error => { alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); window.location.reload(); });
         }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
