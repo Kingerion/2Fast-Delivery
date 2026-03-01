@@ -24,11 +24,13 @@
 
         .main-wrapper { display: flex; flex-direction: row; gap: 20px; max-width: 950px; margin: 15px auto 40px auto; padding: 0 15px; align-items: flex-start; width: 100%; box-sizing: border-box; }
         
-        /* SIDEBAR ΕΠΙΛΟΓΗΣ Β (Ένα κουμπί) */
+        /* SIDEBAR (Με τα 2 νέα κουμπιά) */
         .sidebar { width: 320px; background: var(--card); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); box-sizing: border-box; flex-shrink: 0; }
         .sidebar h3 { margin-top: 0; color: var(--secondary); font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-        .btn-pharmacy { width: 100%; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); transition: 0.2s; display: block; text-align: center; text-decoration: none; box-sizing: border-box; }
+        .btn-pharmacy { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s; display: block; text-align: center; text-decoration: none; box-sizing: border-box; line-height: 1.3; }
         .btn-pharmacy:active { transform: scale(0.97); }
+        .btn-pharmacy.blue { background: #3b82f6; box-shadow: 0 4px 10px rgba(59,130,246,0.3); margin-top: 10px; }
+        .btn-pharmacy span { font-size: 11px; font-weight: normal; opacity: 0.9; }
 
         .container { flex: 1; max-width: 600px; width: 100%; }
         .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
@@ -93,12 +95,17 @@
         <div class="sidebar">
             <h3>💊 Εφημερεύοντα Φαρμακεία</h3>
             <p style="font-size: 13px; color: #64748b; margin: 0; line-height: 1.5;">
-                Χρειάζεστε φάρμακα ή είδη πρώτης ανάγκης; Πατήστε στο παρακάτω link για να βρείτε το εφημερεύον φαρμακείο της περιοχής σας.
+                Επιλέξτε τον σύλλογο της περιοχής σας για να βρείτε το επίσημο εφημερεύον φαρμακείο.
                 <br><br>
                 Μόλις βρείτε τη διεύθυνση, αντιγράψτε την στο πεδίο <b>"Από"</b> της παραγγελίας!
             </p>
-            <a href="https://fsa-efimeries.gr/" target="_blank" class="btn-pharmacy">
-                🔗 Φαρμακευτικός Σύλλογος
+            <a href="https://piraeus.efhmeries.gr/" target="_blank" class="btn-pharmacy">
+                🔗 Φαρμ. Σύλλογος Πειραιά<br>
+                <span>(Πειραιάς, Νίκαια, Κορυδαλλός κλπ)</span>
+            </a>
+            <a href="https://fsa-efimeries.gr/" target="_blank" class="btn-pharmacy blue">
+                🔗 Φαρμ. Σύλλογος Αττικής<br>
+                <span>(Αθήνα και προάστια)</span>
             </a>
         </div>
 
