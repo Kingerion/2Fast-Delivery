@@ -2,195 +2,284 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1E293B">
     <title>Το Προφίλ μου | 2Fast Delivery</title>
     
     <style>
         :root { --primary: #FF5722; --secondary: #1E293B; --bg: #F1F5F9; --card: #FFFFFF; --text: #334155; --border: #E2E8F0; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
         
-        .app-header { background: var(--secondary); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .app-header h1 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
-        .back-btn { background: rgba(255,255,255,0.1); color: white; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: bold; }
+        .app-header { background: var(--secondary); padding: 15px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 20; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); color: white; font-weight: bold; }
+        .back-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 5px; }
         
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
-        .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
-        .title { color: var(--secondary); font-weight: 800; font-size: 15px; text-transform: uppercase; margin-bottom: 18px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .container { padding: 20px 15px; max-width: 600px; margin: 0 auto; }
+        
+        .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); }
+        .title { color: var(--secondary); font-weight: 800; font-size: 14px; text-transform: uppercase; margin-bottom: 18px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         
         .input-group { margin-bottom: 16px; }
-        .input-group label { display: block; font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 6px; text-transform: uppercase; }
-        input, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; box-sizing: border-box; background: #F8FAFC; transition: 0.3s; color: var(--text); font-family: inherit; }
-        input:focus, textarea:focus { border-color: var(--primary); background: #fff; outline: none; }
+        .input-label { font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 6px; text-transform: uppercase; }
+        input, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; box-sizing: border-box; background: #F8FAFC; transition: all 0.3s ease; font-family: inherit; color: var(--text); }
+        input:focus, textarea:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15); }
+        input[readonly] { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+
+        .btn-save { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3); text-transform: uppercase; }
+        .btn-save:active { transform: scale(0.97); }
         
-        .btn-update { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
-        .btn-update:active { transform: scale(0.98); }
-        
-        .history-item { border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 10px; background: #F8FAFC; }
-        .h-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #64748b; font-weight: bold; }
-        .h-price { color: var(--primary); font-size: 16px; font-weight: 900; }
-        .h-route { font-size: 14px; font-weight: 600; color: var(--secondary); line-height: 1.4; }
-        
-        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; color: var(--secondary); }
+        .btn-logout { width: 100%; padding: 14px; background: white; color: #ef4444; border: 2px solid #ef4444; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-logout:active { background: #fef2f2; }
+
+        .btn-google { width: 100%; padding: 16px; background: #4285F4; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3); display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        .order-item { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .order-info { font-size: 12px; color: #64748b; line-height: 1.5; }
+        .order-price { font-weight: bold; color: var(--primary); font-size: 14px; }
+        .order-date { color: var(--secondary); font-weight: bold; margin-bottom: 4px; }
+
+        /* Προκαθορισμένα κρυφά τμήματα */
+        #profileContent { display: none; }
+        #loginContent { display: none; text-align: center; margin-top: 50px; }
+        .loader { text-align: center; margin-top: 50px; font-weight: bold; color: var(--secondary); }
     </style>
 </head>
 <body>
-    <div id="loadingOverlay">⏳ Φόρτωση Προφίλ...</div>
-    <header class="app-header">
-        <h1>👤 Το Προφίλ μου</h1>
-        <a href="index.html" class="back-btn">🔙 Επιστροφή</a>
-    </header>
+
+    <div class="app-header">
+        <div>👤 Το Προφίλ μου</div>
+        <a href="index.html" class="back-btn">⬅️ Επιστροφή</a>
+    </div>
 
     <div class="container">
-        <div class="card">
-            <div class="title">⚙️ Προσωπικα Στοιχεία</div>
-            <div class="input-group">
-                <label>Ονοματεπώνυμο</label>
-                <input type="text" id="profName" placeholder="Το όνομά σας">
+        <div id="loader" class="loader">Φόρτωση δεδομένων... ⏳</div>
+
+        <div id="loginContent">
+            <div class="card">
+                <h2 style="color: var(--secondary); margin-top: 0;">Καλώς ήρθατε!</h2>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 25px;">Συνδεθείτε για να αποθηκεύσετε τις διευθύνσεις σας και να βλέπετε το ιστορικό των παραγγελιών σας.</p>
+                <button class="btn-google" onclick="signInWithGoogle()">
+                    <span style="background: white; border-radius: 50%; padding: 4px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px;">G</span>
+                    Σύνδεση με Google
+                </button>
             </div>
-            <div class="input-group">
-                <label>Τηλέφωνο Επικοινωνίας</label>
-                <input type="tel" id="profPhone" placeholder="Το κινητό σας">
-            </div>
-            <div class="input-group">
-                <label>Email (Μη επεξεργάσιμο)</label>
-                <input type="email" id="profEmail" readonly style="opacity: 0.6; cursor: not-allowed;">
-            </div>
-            <div class="input-group">
-                <label>Προεπιλεγμένη Διεύθυνση Παράδοσης</label>
-                <input type="text" id="profAddress" placeholder="Οδός & Αριθμός">
-            </div>
-            <div class="input-group">
-                <label>Σχόλια (Όροφος, Κουδούνι)</label>
-                <textarea id="profNotes" rows="2" placeholder="π.χ. 2ος όροφος, Κουδούνι Παπαδόπουλος"></textarea>
-            </div>
-            <button class="btn-update" onclick="updateProfile()" id="updateBtn">💾 Αποθηκευση Αλλαγων</button>
         </div>
 
-        <div class="card">
-            <div class="title">📦 Ιστορικό Παραγγελιών</div>
-            <div id="orderHistoryList">
-                <div style="text-align: center; color: #94a3b8; padding: 20px; font-size: 14px;">
-                    Αναζήτηση παραγγελιών...
+        <div id="profileContent">
+            <div class="card">
+                <div class="title">⚙️ ΠΡΟΣΩΠΙΚΑ ΣΤΟΙΧΕΙΑ</div>
+                
+                <div class="input-group">
+                    <div class="input-label">Ονοματεπωνυμο</div>
+                    <input type="text" id="pName" placeholder="π.χ. Γιώργος Παπαδόπουλος">
+                </div>
+                
+                <div class="input-group">
+                    <div class="input-label">Τηλεφωνο Επικοινωνιας</div>
+                    <input type="tel" id="pPhone" placeholder="π.χ. 6900000000">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">Email (Μη επεξεργασιμο)</div>
+                    <input type="email" id="pEmail" readonly>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">Προεπιλεγμενη Διευθυνση Παραδοσης</div>
+                    <input type="text" id="pAddress" placeholder="Οδός Αριθμός, Περιοχή">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">Σχολια (Οροφος, Κουδουνι)</div>
+                    <textarea id="pNotes" rows="2" placeholder="π.χ. 1ος όροφος, Κουδούνι: Παπαδόπουλος"></textarea>
+                </div>
+
+                <button class="btn-save" id="saveBtn" onclick="saveProfile()">💾 ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ</button>
+            </div>
+
+            <div class="card">
+                <div class="title">📦 ΙΣΤΟΡΙΚΟ ΠΑΡΑΓΓΕΛΙΩΝ</div>
+                <div id="ordersList">
+                    <div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 10px;">Δεν υπάρχουν παλαιότερες παραγγελίες.</div>
                 </div>
             </div>
-        </div>
-        
-        <button onclick="logoutUser()" style="width: 100%; padding: 15px; background: transparent; color: #ef4444; border: 2px solid #ef4444; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px;">
-            🔴 Αποσύνδεση
-        </button>
-    </div>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const app = initializeApp({
+            <button class="btn-logout" onclick="signOut()">🔴 Αποσύνδεση</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ΣΥΝΔΕΣΗ ΜΕ ΤΟ FIREBASE ΣΟΥ
+        const firebaseConfig = {
             apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
             authDomain: "fast-delivery-8227d.firebaseapp.com",
             projectId: "fast-delivery-8227d",
-            storageBucket: "fast-delivery-8227d.firebasestorage.app"
-        });
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUserUid = null;
-
-        // 1. ΕΛΕΓΧΟΣ ΣΥΝΔΕΣΗΣ & ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.replace("login.html");
-            } else {
-                currentUserUid = user.uid;
-                document.getElementById('profEmail').value = user.email || "Δεν βρέθηκε email";
-                
-                // Τραβάμε τα στοιχεία του προφίλ
-                try {
-                    const docSnap = await getDoc(doc(db, "users", user.uid));
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data.name || data.n) document.getElementById('profName').value = data.name || data.n;
-                        if (data.phone || data.p) document.getElementById('profPhone').value = data.phone || data.p;
-                        if (data.address || data.a) document.getElementById('profAddress').value = data.address || data.a;
-                        if (data.notes || data.txt) document.getElementById('profNotes').value = data.notes || data.txt;
-                    }
-                } catch (e) { console.log("Σφάλμα φόρτωσης προφίλ:", e); }
-                
-                // Κρύβουμε το loading
-                document.getElementById('loadingOverlay').style.display = 'none';
-                
-                // Φορτώνουμε το ιστορικό
-                loadOrderHistory(user.uid);
-            }
-        });
-
-        // 2. ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ (Ενημέρωση Προφίλ)
-        window.updateProfile = async function() {
-            if (!currentUserUid) return;
-            const btn = document.getElementById('updateBtn');
-            btn.innerText = "Αποθήκευση... ⏳";
-            
-            const newName = document.getElementById('profName').value;
-            const newPhone = document.getElementById('profPhone').value;
-            const newAddress = document.getElementById('profAddress').value;
-            const newNotes = document.getElementById('profNotes').value;
-
-            try {
-                // Χρησιμοποιούμε merge: true για να ΜΗΝ σβήσουμε αν είναι μπλοκαρισμένος κλπ
-                await setDoc(doc(db, "users", currentUserUid), {
-                    name: newName,
-                    phone: newPhone,
-                    address: newAddress,
-                    notes: newNotes
-                }, { merge: true });
-                
-                alert("✅ Τα στοιχεία σας ενημερώθηκαν επιτυχώς!");
-                btn.innerText = "💾 Αποθηκευση Αλλαγων";
-            } catch (error) {
-                alert("❌ Σφάλμα αποθήκευσης: " + error.message);
-                btn.innerText = "💾 Αποθηκευση Αλλαγων";
-            }
+            storageBucket: "fast-delivery-8227d.firebasestorage.app",
+            messagingSenderId: "751019896171",
+            appId: "1:751019896171:web:44530a82b4f016fb1ef02e"
         };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let currentUserDocId = null;
 
-        // 3. ΦΟΡΤΩΣΗ ΙΣΤΟΡΙΚΟΥ ΠΑΡΑΓΓΕΛΙΩΝ
-        async function loadOrderHistory(uid) {
-            const historyList = document.getElementById('orderHistoryList');
+        // ΕΛΕΓΧΟΣ ΚΑΤΑΣΤΑΣΗΣ ΣΥΝΔΕΣΗΣ
+        auth.onAuthStateChanged(user => {
+            document.getElementById('loader').style.display = 'none';
+            if (user) {
+                document.getElementById('loginContent').style.display = 'none';
+                document.getElementById('profileContent').style.display = 'block';
+                document.getElementById('pEmail').value = user.email;
+                loadUserData(user);
+            } else {
+                document.getElementById('profileContent').style.display = 'none';
+                document.getElementById('loginContent').style.display = 'block';
+                // Καθαρισμός τοπικής μνήμης κατά την αποσύνδεση
+                localStorage.removeItem('userProfile');
+            }
+        });
+
+        // ΣΥΝΔΕΣΗ ΜΕ GOOGLE
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("Login Failed:", error);
+                alert("Σφάλμα σύνδεσης. Βεβαιωθείτε ότι έχετε ενεργοποιήσει το Google Sign-In στο Firebase Console!");
+            });
+        }
+
+        // ΑΠΟΣΥΝΔΕΣΗ
+        function signOut() {
+            auth.signOut();
+        }
+
+        // ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ ΑΠΟ FIRESTORE
+        async function loadUserData(user) {
             try {
-                // Ψάχνει στον υπο-φάκελο "orders" του συγκεκριμένου χρήστη
-                const q = query(collection(db, "users", uid, "orders"), orderBy("timestamp", "desc"), limit(10));
-                const querySnapshot = await getDocs(q);
+                // 1. Ψάχνουμε τον χρήστη με βάση το email
+                const usersRef = db.collection('users');
+                const snapshot = await usersRef.where('email', '==', user.email).get();
                 
-                if (querySnapshot.empty) {
-                    historyList.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">Δεν έχετε κάνει ακόμα παραγγελίες.</div>';
-                    return;
+                let phoneForOrders = null;
+
+                if (!snapshot.empty) {
+                    // Ο χρήστης υπάρχει! Φέρνουμε τα στοιχεία
+                    const doc = snapshot.docs[0];
+                    currentUserDocId = doc.id;
+                    const data = doc.data();
+                    
+                    document.getElementById('pName').value = data.name || user.displayName || '';
+                    document.getElementById('pPhone').value = data.phone || '';
+                    document.getElementById('pAddress').value = data.address || '';
+                    document.getElementById('pNotes').value = data.notes || '';
+                    
+                    phoneForOrders = data.phone;
+
+                    // Αποθήκευση τοπικά για να τα βρίσκει αμέσως η φόρμα του index.html
+                    localStorage.setItem('userProfile', JSON.stringify({
+                        name: data.name, phone: data.phone, address: data.address, notes: data.notes
+                    }));
+                } else {
+                    // Νέος χρήστης! Δημιουργούμε άδειο προφίλ στο Firebase
+                    const newDoc = await usersRef.add({
+                        email: user.email,
+                        name: user.displayName || '',
+                        phone: '',
+                        address: '',
+                        notes: '',
+                        isBlocked: false
+                    });
+                    currentUserDocId = newDoc.id;
+                    document.getElementById('pName').value = user.displayName || '';
                 }
 
-                let html = "";
-                querySnapshot.forEach((docSnap) => {
-                    const order = docSnap.data();
-                    const dateObj = order.timestamp ? new Date(order.timestamp.toMillis()) : new Date();
-                    const dateStr = dateObj.toLocaleDateString("el-GR") + " - " + dateObj.toLocaleTimeString("el-GR", {hour: '2-digit', minute:'2-digit'});
-                    
-                    html += `
-                        <div class="history-item">
-                            <div class="h-header">
-                                <span>📅 ${dateStr}</span>
-                                <span class="h-price">${order.price}</span>
-                            </div>
-                            <div class="h-route">📍 ${order.destination}</div>
-                        </div>
-                    `;
-                });
-                historyList.innerHTML = html;
-            } catch (e) {
-                console.log("Σφάλμα ιστορικού:", e);
-                historyList.innerHTML = '<div style="color: red; font-size: 13px;">Δεν ήταν δυνατή η φόρτωση του ιστορικού.</div>';
+                // 2. Φόρτωση Ιστορικού (ψάχνουμε παραγγελίες με αυτό το τηλέφωνο)
+                if (phoneForOrders) {
+                    loadOrders(phoneForOrders);
+                }
+            } catch (error) {
+                console.error("Error loading profile:", error);
             }
         }
 
-        // 4. ΑΠΟΣΥΝΔΕΣΗ
-        window.logoutUser = function() {
-            signOut(auth).then(() => { window.location.replace("login.html"); });
+        // ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ ΣΤΟ FIRESTORE
+        async function saveProfile() {
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "Αποθήκευση... ⏳";
+            
+            const newData = {
+                name: document.getElementById('pName').value.trim(),
+                phone: document.getElementById('pPhone').value.trim(),
+                address: document.getElementById('pAddress').value.trim(),
+                notes: document.getElementById('pNotes').value.trim(),
+                email: document.getElementById('pEmail').value
+            };
+
+            if (!newData.phone) {
+                alert("Το τηλέφωνο είναι υποχρεωτικό για να βλέπετε τις παραγγελίες σας!");
+                btn.innerText = "💾 ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ";
+                return;
+            }
+
+            try {
+                if (currentUserDocId) {
+                    await db.collection('users').doc(currentUserDocId).set(newData, { merge: true });
+                    
+                    // Ενημέρωση τοπικής μνήμης για το index.html
+                    localStorage.setItem('userProfile', JSON.stringify(newData));
+                    
+                    alert("✅ Το προφίλ ενημερώθηκε επιτυχώς!");
+                    // Ανανέωση των παραγγελιών με το νέο τηλέφωνο
+                    loadOrders(newData.phone);
+                }
+            } catch (error) {
+                console.error("Save Error:", error);
+                alert("Σφάλμα κατά την αποθήκευση.");
+            }
+            btn.innerText = "💾 ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ";
+        }
+
+        // ΦΟΡΤΩΣΗ ΠΑΡΑΓΓΕΛΙΩΝ (Από το Firestore)
+        async function loadOrders(phone) {
+            try {
+                const ordersRef = db.collection('orders');
+                const snapshot = await ordersRef.where('customerPhone', '==', phone).get();
+                
+                const listEl = document.getElementById('ordersList');
+                listEl.innerHTML = "";
+
+                if (snapshot.empty) {
+                    listEl.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 10px;">Δεν υπάρχουν παραγγελίες με αυτό το τηλέφωνο.</div>';
+                    return;
+                }
+
+                // Παίρνουμε τα δεδομένα και τα ταξινομούμε από το πιο πρόσφατο στο πιο παλιό
+                let orders = [];
+                snapshot.forEach(doc => orders.push(doc.data()));
+                orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                orders.forEach(order => {
+                    // Αν δεν έχει displayDate (από παλιό κώδικα), του φτιάχνουμε μία πρόχειρη
+                    const showDate = order.displayDate || "Πρόσφατη Παραγγελία";
+                    
+                    const div = document.createElement('div');
+                    div.className = 'order-item';
+                    div.innerHTML = `
+                        <div class="order-info">
+                            <div class="order-date">📅 ${showDate}</div>
+                            <div>📍 ${order.address}</div>
+                        </div>
+                        <div class="order-price">${order.price} €</div>
+                    `;
+                    listEl.appendChild(div);
+                });
+            } catch (error) {
+                console.error("Orders Error:", error);
+            }
         }
     </script>
 </body>
