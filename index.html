@@ -187,6 +187,7 @@
     </script>
 
     <script>
+        // Εμφάνιση banner εγκατάστασης
         if (!localStorage.getItem('hideAppBanner')) {
             document.getElementById('installBanner').style.display = 'flex';
         }
@@ -194,6 +195,20 @@
             localStorage.setItem('hideAppBanner', 'true');
             document.getElementById('installBanner').style.display = 'none';
         }
+
+        // ΛΥΣΗ 1: Φόρτωση Προφίλ κατά το άνοιγμα
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                const profileStr = localStorage.getItem('userProfile');
+                if (profileStr) {
+                    const profile = JSON.parse(profileStr);
+                    if (profile.name) document.getElementById('deliveryName').value = profile.name;
+                    if (profile.phone) document.getElementById('deliveryPhone').value = profile.phone;
+                    if (profile.address) document.getElementById('end').value = profile.address;
+                    if (profile.notes) document.getElementById('deliveryNote').value = profile.notes;
+                }
+            } catch (e) { console.error("Profile Error:", e); }
+        });
 
         const MAX_KM = 35;
         let map, dirService, dirRenderer, startAuto, endAuto;
@@ -207,15 +222,31 @@
                 dirService = new google.maps.DirectionsService();
                 dirRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: "#1E293B", strokeWeight: 6 } });
                 initAuto();
+                
+                // Υπολογισμός αν έχει μπει ήδη διεύθυνση από το Προφίλ
+                setTimeout(() => { if(document.getElementById('end').value) calc(); }, 1000);
             } catch (e) { console.error("Map Error:", e); }
         }
 
         function initAuto() {
-            const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name"] };
+            const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name", "formatted_address"] };
             startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
             endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
-            startAuto.addListener("place_changed", calc);
-            endAuto.addListener("place_changed", calc);
+            
+            // ΛΥΣΗ 3: Προτίμηση στις κοντινές διευθύνσεις (Αττική/Πειραιάς)
+            startAuto.bindTo('bounds', map);
+            endAuto.bindTo('bounds', map);
+
+            startAuto.addListener("place_changed", () => {
+                const place = startAuto.getPlace();
+                if(place.formatted_address) document.getElementById('start').value = place.formatted_address;
+                calc();
+            });
+            endAuto.addListener("place_changed", () => {
+                const place = endAuto.getPlace();
+                if(place.formatted_address) document.getElementById('end').value = place.formatted_address;
+                calc();
+            });
         }
 
         function calc() {
@@ -243,6 +274,20 @@
                     }
                 });
             }
+        }
+
+        // Συνάρτηση για αποθήκευση στο ιστορικό
+        function saveToHistory() {
+            try {
+                let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+                const newOrder = {
+                    date: new Date().toLocaleDateString('el-GR') + ' - ' + new Date().toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'}),
+                    address: document.getElementById('end').value,
+                    price: calculatedPrice
+                };
+                history.unshift(newOrder); // Μπαίνει πρώτη στη λίστα
+                localStorage.setItem('orderHistory', JSON.stringify(history));
+            } catch(e) { console.error("History Error", e); }
         }
 
         function submitOrder() {
@@ -292,8 +337,16 @@
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(response => response.text())
-            .then(data => { alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); window.location.reload(); })
-            .catch(error => { alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); window.location.reload(); });
+            .then(data => { 
+                saveToHistory(); // ΛΥΣΗ 2
+                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
+                window.location.reload(); 
+            })
+            .catch(error => { 
+                saveToHistory(); // ΛΥΣΗ 2
+                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
+                window.location.reload(); 
+            });
         }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
