@@ -24,15 +24,12 @@
 
         .main-wrapper { display: flex; flex-direction: row; gap: 20px; max-width: 950px; margin: 15px auto 40px auto; padding: 0 15px; align-items: flex-start; width: 100%; box-sizing: border-box; }
         
-        .sidebar { width: 320px; background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); box-sizing: border-box; flex-shrink: 0; }
-        .sidebar h3 { margin-top: 0; color: var(--secondary); font-size: 16px; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        .btn-pharmacy { width: 100%; padding: 14px; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 15px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s; }
+        /* SIDEBAR ΕΠΙΛΟΓΗΣ Β (Χωρίς JS αναζήτηση) */
+        .sidebar { width: 320px; background: var(--card); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); box-sizing: border-box; flex-shrink: 0; }
+        .sidebar h3 { margin-top: 0; color: var(--secondary); font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .btn-pharmacy { width: 100%; padding: 14px; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s; display: block; text-align: center; text-decoration: none; box-sizing: border-box; }
         .btn-pharmacy:active { transform: scale(0.97); }
-        .pharmacy-list { max-height: 400px; overflow-y: auto; margin-top: 10px; }
-        .pharmacy-item { padding: 12px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; background: #f8fafc; }
-        .pharmacy-item:hover { border-color: #10b981; background: #ecfdf5; }
-        .pharmacy-name { font-weight: bold; color: var(--secondary); font-size: 13px; margin-bottom: 4px; }
-        .pharmacy-address { color: #64748b; font-size: 11px; }
+        .btn-pharmacy.blue { background: #3b82f6; box-shadow: 0 4px 10px rgba(59,130,246,0.3); margin-top: 10px; }
 
         .container { flex: 1; max-width: 600px; width: 100%; }
         .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
@@ -93,11 +90,20 @@
     </div>
 
     <div class="main-wrapper">
+        
         <div class="sidebar">
             <h3>💊 Εφημερεύοντα Φαρμακεία</h3>
-            <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.4;">Μετακινήστε τον χάρτη στην περιοχή σας και βρείτε ποια φαρμακεία είναι <b>ανοιχτά τώρα</b>.</p>
-            <button class="btn-pharmacy" id="btnPharmacy" onclick="searchPharmacies()">🔍 Εύρεση Φαρμακείων</button>
-            <div class="pharmacy-list" id="pharmacyList"></div>
+            <p style="font-size: 13px; color: #64748b; margin: 0; line-height: 1.5;">
+                Χρειάζεστε φάρμακα ή είδη πρώτης ανάγκης; Πατήστε σε ένα από τα παρακάτω links για να βρείτε το εφημερεύον φαρμακείο της περιοχής σας.
+                <br><br>
+                Μόλις βρείτε τη διεύθυνση, αντιγράψτε την στο πεδίο <b>"Από"</b> της παραγγελίας!
+            </p>
+            <a href="https://www.vrisko.gr/efimerievonta-farmakeia" target="_blank" class="btn-pharmacy">
+                🔗 Αναζήτηση στο Vrisko.gr
+            </a>
+            <a href="https://www.fsa.gr/duties.asp" target="_blank" class="btn-pharmacy blue">
+                🔗 Φαρμακευτικός Σύλλογος
+            </a>
         </div>
 
         <div class="container">
@@ -194,7 +200,7 @@
         }
 
         const MAX_KM = 35;
-        let map, dirService, dirRenderer, startAuto, endAuto, placesService;
+        let map, dirService, dirRenderer, startAuto, endAuto;
         let calculatedPrice = 0;
 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
@@ -204,7 +210,6 @@
                 map = new google.maps.Map(document.getElementById('map'), { zoom: 14, center: { lat: 37.9429, lng: 23.6470 }, disableDefaultUI: true });
                 dirService = new google.maps.DirectionsService();
                 dirRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: "#1E293B", strokeWeight: 6 } });
-                placesService = new google.maps.places.PlacesService(map);
                 initAuto();
             } catch (e) { console.error("Map Error:", e); }
         }
@@ -215,60 +220,6 @@
             endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
             startAuto.addListener("place_changed", calc);
             endAuto.addListener("place_changed", calc);
-        }
-
-        /* --- ΑΝΑΖΗΤΗΣΗ ΦΑΡΜΑΚΕΙΩΝ ΜΕ ΕΛΕΓΧΟ ΣΦΑΛΜΑΤΩΝ --- */
-        function searchPharmacies() {
-            const btn = document.getElementById('btnPharmacy');
-            const list = document.getElementById('pharmacyList');
-            btn.innerText = "Αναζήτηση... ⏳";
-            list.innerHTML = "";
-
-            try {
-                const request = {
-                    location: map.getCenter(),
-                    radius: 3000, // Ψάχνει σε ακτίνα 3χλμ
-                    type: ['pharmacy'],
-                    openNow: true // Φέρνει ΜΟΝΟ όσα είναι ανοιχτά τώρα!
-                };
-
-                placesService.nearbySearch(request, (results, status) => {
-                    btn.innerText = "🔄 Ανανέωση Λίστας";
-                    
-                    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-                        const topResults = results.slice(0, 8);
-                        topResults.forEach(place => {
-                            const div = document.createElement('div');
-                            div.className = 'pharmacy-item';
-                            div.onclick = () => selectPharmacy(place.name, place.vicinity);
-                            div.innerHTML = `<div class="pharmacy-name">💊 ${place.name}</div><div class="pharmacy-address">${place.vicinity}</div>`;
-                            list.appendChild(div);
-                        });
-                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-                        list.innerHTML = "<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>Δεν βρέθηκαν ανοιχτά φαρμακεία κοντά. Μετακινήστε τον χάρτη!</div>";
-                    } else {
-                        list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Σφάλμα Google: <b>${status}</b>.<br>Παρακαλώ ενεργοποιήστε το <b>Places API</b> στο Google Cloud Console.</div>`;
-                    }
-                });
-            } catch (error) {
-                btn.innerText = "🔍 Εύρεση Φαρμακείων";
-                list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Προέκυψε σφάλμα συστήματος. Δοκιμάστε ξανά.</div>`;
-            }
-        }
-
-        function selectPharmacy(name, address) {
-            const startInput = document.getElementById('start');
-            const pickupNameInput = document.getElementById('pickupName');
-            
-            startInput.value = name + ", " + address;
-            pickupNameInput.value = name;
-            
-            startInput.style.borderColor = "#10b981";
-            pickupNameInput.style.borderColor = "#10b981";
-            
-            alert("✅ Το φαρμακείο προστέθηκε στο Σημείο Παραλαβής! Συμπληρώστε τώρα το 'Προς' (τη διεύθυνσή σας).");
-            calc();
-            startInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function calc() {
