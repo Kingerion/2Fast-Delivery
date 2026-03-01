@@ -242,61 +242,46 @@
             endAuto.addListener("place_changed", calc);
         }
 
-        /* --- ΝΕΑ ΣΥΝΑΡΤΗΣΗ: ΑΝΑΖΗΤΗΣΗ ΦΑΡΜΑΚΕΙΩΝ --- */
+                /* --- ΝΕΑ ΣΥΝΑΡΤΗΣΗ: ΑΝΑΖΗΤΗΣΗ ΦΑΡΜΑΚΕΙΩΝ ΜΕ ΕΛΕΓΧΟ ΣΦΑΛΜΑΤΟΣ --- */
         function searchPharmacies() {
             const btn = document.getElementById('btnPharmacy');
             const list = document.getElementById('pharmacyList');
             btn.innerText = "Αναζήτηση... ⏳";
             list.innerHTML = "";
 
-            const request = {
-                location: map.getCenter(),
-                radius: 3000, // Ψάχνει σε ακτίνα 3χλμ
-                type: ['pharmacy'],
-                openNow: true // Φέρνει ΜΟΝΟ όσα είναι ανοιχτά τώρα!
-            };
+            try {
+                const request = {
+                    location: map.getCenter(),
+                    radius: 3000, // Ψάχνει σε ακτίνα 3χλμ
+                    type: ['pharmacy'],
+                    openNow: true // Φέρνει ΜΟΝΟ όσα είναι ανοιχτά τώρα!
+                };
 
-            placesService.nearbySearch(request, (results, status) => {
-                btn.innerText = "🔄 Ανανέωση Λίστας";
-                
-                if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-                    // Δείχνουμε τα πρώτα 8 αποτελέσματα
-                    const topResults = results.slice(0, 8);
-                    topResults.forEach(place => {
-                        const div = document.createElement('div');
-                        div.className = 'pharmacy-item';
-                        // Όταν το πατήσει, καλεί την selectPharmacy
-                        div.onclick = () => selectPharmacy(place.name, place.vicinity);
-                        div.innerHTML = `<div class="pharmacy-name">💊 ${place.name}</div><div class="pharmacy-address">${place.vicinity}</div>`;
-                        list.appendChild(div);
-                    });
-                } else {
-                    list.innerHTML = "<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>Δεν βρέθηκαν ανοιχτά φαρμακεία κοντά. Μετακινήστε τον χάρτη σε άλλη περιοχή και ξαναπατήστε.</div>";
-                }
-            });
+                placesService.nearbySearch(request, (results, status) => {
+                    btn.innerText = "🔍 Εύρεση Φαρμακείων"; // Επαναφορά του κουμπιού
+                    
+                    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+                        const topResults = results.slice(0, 8);
+                        topResults.forEach(place => {
+                            const div = document.createElement('div');
+                            div.className = 'pharmacy-item';
+                            div.onclick = () => selectPharmacy(place.name, place.vicinity);
+                            div.innerHTML = `<div class="pharmacy-name">💊 ${place.name}</div><div class="pharmacy-address">${place.vicinity}</div>`;
+                            list.appendChild(div);
+                        });
+                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                        list.innerHTML = "<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>Δεν βρέθηκαν ανοιχτά φαρμακεία κοντά. Μετακινήστε τον χάρτη!</div>";
+                    } else {
+                        // Αν η Google ρίξει "άκυρο", θα δούμε το γιατί!
+                        list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Σφάλμα Google: <b>${status}</b>.<br>Πρέπει να ενεργοποιήσεις το <b>Places API</b> στο Google Cloud!</div>`;
+                    }
+                });
+            } catch (error) {
+                btn.innerText = "🔍 Εύρεση Φαρμακείων";
+                list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Προέκυψε σφάλμα: ${error.message}</div>`;
+            }
         }
-
-        function selectPharmacy(name, address) {
-            const startInput = document.getElementById('start');
-            const pickupNameInput = document.getElementById('pickupName');
-            
-            // Συμπληρώνει αυτόματα διεύθυνση ΚΑΙ Όνομα!
-            startInput.value = name + ", " + address;
-            pickupNameInput.value = name;
-            
-            // Κοκκινίζει θετικά (πράσινο) για να δει ότι μπήκε
-            startInput.style.borderColor = "#10b981";
-            pickupNameInput.style.borderColor = "#10b981";
-            
-            alert("✅ Το φαρμακείο προστέθηκε στο Σημείο Παραλαβής! Συμπληρώστε τώρα το 'Προς' (τη διεύθυνσή σας).");
-            
-            // Αν έχει βάλει ήδη το "Προς", ας υπολογίσει τιμή
-            calc();
-            
-            // Κάνει scroll προς τη φόρμα για ευκολία
-            startInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        /* ------------------------------------------- */
+ ------------------------------------------- */
 
         function calc() {
             const start = document.getElementById('start').value;
