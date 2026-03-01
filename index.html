@@ -22,10 +22,8 @@
         .btn-chat { background: #3b82f6; color: white; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(59,130,246,0.3); font-family: inherit; }
         .btn-profile { background: var(--card); color: var(--secondary); padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        /* ΔΙΑΤΑΞΗ: SIDEBAR (Αριστερά) + ΦΟΡΜΑ (Δεξιά) */
         .main-wrapper { display: flex; flex-direction: row; gap: 20px; max-width: 950px; margin: 15px auto 40px auto; padding: 0 15px; align-items: flex-start; width: 100%; box-sizing: border-box; }
         
-        /* SIDEBAR ΦΑΡΜΑΚΕΙΩΝ */
         .sidebar { width: 320px; background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); box-sizing: border-box; flex-shrink: 0; }
         .sidebar h3 { margin-top: 0; color: var(--secondary); font-size: 16px; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
         .btn-pharmacy { width: 100%; padding: 14px; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 15px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s; }
@@ -36,7 +34,6 @@
         .pharmacy-name { font-weight: bold; color: var(--secondary); font-size: 13px; margin-bottom: 4px; }
         .pharmacy-address { color: #64748b; font-size: 11px; }
 
-        /* ΦΟΡΜΑ ΠΑΡΑΓΓΕΛΙΑΣ */
         .container { flex: 1; max-width: 600px; width: 100%; }
         .card { background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
         .title { color: var(--secondary); font-weight: 800; font-size: 14px; text-transform: uppercase; margin-bottom: 18px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
@@ -53,7 +50,6 @@
         .row .input-group { flex: 1; margin-bottom: 0; }
         .required::after { content: " *"; color: red; font-size: 18px;}
         
-        /* FOOTER */
         .footer { background: var(--secondary); color: white; padding: 40px 20px 20px; margin-top: auto; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
         .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 800px; margin: 0 auto; }
         .footer-col h4 { color: var(--primary); font-size: 14px; text-transform: uppercase; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.5px; }
@@ -64,7 +60,6 @@
         .footer-col a:hover { color: white; text-decoration: underline; }
         .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 30px; padding-top: 20px; text-align: center; font-size: 12px; color: #94a3b8; }
 
-        /* Κινητό: Η στήλη των φαρμακείων μπαίνει ΠΑΝΩ από τη φόρμα */
         @media screen and (max-width: 768px) {
             .main-wrapper { flex-direction: column; margin-top: 10px; }
             .sidebar { width: 100%; order: -1; } 
@@ -98,7 +93,6 @@
     </div>
 
     <div class="main-wrapper">
-        
         <div class="sidebar">
             <h3>💊 Εφημερεύοντα Φαρμακεία</h3>
             <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.4;">Μετακινήστε τον χάρτη στην περιοχή σας και βρείτε ποια φαρμακεία είναι <b>ανοιχτά τώρα</b>.</p>
@@ -109,12 +103,8 @@
         <div class="container">
             <div class="card">
                 <div class="title required">📍 Σημεία Διαδρομής</div>
-                <div class="input-group">
-                    <input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
-                </div>
-                <div class="input-group" style="margin-bottom: 25px;">
-                    <input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password">
-                </div>
+                <div class="input-group"><input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password"></div>
+                <div class="input-group" style="margin-bottom: 25px;"><input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password"></div>
                 <div class="price-box" id="priceBox">
                     <div style="font-size: 12px; opacity: 0.8; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Κοστος Αποστολης</div>
                     <div class="price-val" id="priceDisplay">0.00 €</div>
@@ -124,37 +114,21 @@
 
             <div class="card">
                 <div class="title required">📦 Στοιχεία Παραλαβής</div>
-                <div class="input-group">
-                    <input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)">
-                </div>
-                <div class="input-group">
-                    <input type="tel" id="pickupPhone" placeholder="Τηλέφωνο Αποστολέα">
-                </div>
+                <div class="input-group"><input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)"></div>
+                <div class="input-group"><input type="tel" id="pickupPhone" placeholder="Τηλέφωνο Αποστολέα"></div>
                 <div class="row">
-                    <div class="input-group">
-                        <input type="text" id="pickupDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
-                    </div>
-                    <div class="input-group">
-                        <input type="text" id="pickupTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
-                    </div>
+                    <div class="input-group"><input type="text" id="pickupDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'"></div>
+                    <div class="input-group"><input type="text" id="pickupTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'"></div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="title required">🏠 Στοιχεία Παράδοσης</div>
-                <div class="input-group">
-                    <input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο (Παραλήπτης)">
-                </div>
-                <div class="input-group">
-                    <input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη">
-                </div>
+                <div class="input-group"><input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο (Παραλήπτης)"></div>
+                <div class="input-group"><input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη"></div>
                 <div class="row" style="margin-bottom: 16px;">
-                    <div class="input-group">
-                        <input type="text" id="deliveryDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'">
-                    </div>
-                    <div class="input-group">
-                        <input type="text" id="deliveryTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'">
-                    </div>
+                    <div class="input-group"><input type="text" id="deliveryDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'"></div>
+                    <div class="input-group"><input type="text" id="deliveryTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'"></div>
                 </div>
                 
                 <div class="input-group">
@@ -174,7 +148,9 @@
 
             <button id="sendBtn" onclick="submitOrder()">Ολοκληρωση Παραγγελιας</button>
         </div>
-    </div> <footer class="footer">
+    </div> 
+
+    <footer class="footer">
         <div class="footer-grid">
             <div class="footer-col">
                 <h4>ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ</h4>
@@ -199,7 +175,8 @@
             </div>
         </div>
         <div class="footer-bottom">&copy; 2026 2Fast Delivery. Με την επιφύλαξη παντός δικαιώματος.</div>
-    </footer>    <script type="text/javascript">
+    </footer>
+    <script type="text/javascript">
         window.$crisp=[];
         window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";
         $crisp.push(["config", "hide:on:mobile", true]);
