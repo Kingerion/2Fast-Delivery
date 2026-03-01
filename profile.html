@@ -38,8 +38,7 @@
         .order-date { color: var(--secondary); font-weight: bold; margin-bottom: 4px; }
 
         /* Προκαθορισμένα κρυφά τμήματα */
-        #profileContent { display: none; }
-        #loginContent { display: none; text-align: center; margin-top: 50px; }
+        #profileContent, #loginContent, #verifyContent { display: none; }
         .loader { text-align: center; margin-top: 50px; font-weight: bold; color: var(--secondary); }
     </style>
 </head>
@@ -56,11 +55,41 @@
         <div id="loginContent">
             <div class="card">
                 <h2 style="color: var(--secondary); margin-top: 0;">Καλώς ήρθατε!</h2>
-                <p style="color: #64748b; font-size: 14px; margin-bottom: 25px;">Συνδεθείτε για να αποθηκεύσετε τις διευθύνσεις σας και να βλέπετε το ιστορικό των παραγγελιών σας.</p>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Συνδεθείτε ή κάντε εγγραφή για να αποθηκεύσετε τις διευθύνσεις σας.</p>
+
+                <div class="input-group">
+                    <input type="email" id="authEmail" placeholder="Το Email σας">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="authPassword" placeholder="Κωδικός (τουλ. 6 χαρακτήρες)">
+                </div>
+                
+                <button class="btn-save" onclick="loginWithEmail()" style="margin-bottom: 10px;">🔑 Σύνδεση</button>
+                <button class="btn-logout" onclick="registerWithEmail()" style="margin-top: 0; margin-bottom: 20px; color: var(--secondary); border-color: var(--secondary);">📝 Νέα Εγγραφή</button>
+                
+                <div style="text-align: center; margin-bottom: 15px; color: #94a3b8; font-size: 12px; text-transform: uppercase;">Ή γρήγορη είσοδος με:</div>
+
                 <button class="btn-google" onclick="signInWithGoogle()">
-                    <span style="background: white; border-radius: 50%; padding: 4px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px;">G</span>
+                    <span style="background: white; border-radius: 50%; padding: 4px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: #4285F4;">G</span>
                     Σύνδεση με Google
                 </button>
+            </div>
+        </div>
+
+        <div id="verifyContent">
+            <div class="card" style="text-align: center;">
+                <h2 style="color: var(--primary); margin-top: 0;">📧 Επιβεβαίωση Email</h2>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                    Έχουμε στείλει ένα link επιβεβαίωσης στο:<br>
+                    <strong id="verifyEmailText" style="color: var(--secondary); font-size: 16px;"></strong>
+                </p>
+                <p style="color: #64748b; font-size: 13px; margin-bottom: 25px; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                    Παρακαλώ ανοίξτε τα email σας (ή τον φάκελο Spam), πατήστε το link για να επιβεβαιώσετε τον λογαριασμό σας και μετά πατήστε το κουμπί παρακάτω.
+                </p>
+                
+                <button class="btn-save" onclick="checkVerification()" style="margin-bottom: 15px;">🔄 Το πάτησα! (Ανανέωση)</button>
+                <button class="btn-logout" onclick="resendVerification()" style="margin-bottom: 15px; margin-top:0;">📩 Ξανά αποστολή Email</button>
+                <button class="btn-logout" onclick="signOut()" style="border: none; color: #94a3b8;">Άκυρο (Αποσύνδεση)</button>
             </div>
         </div>
 
@@ -99,7 +128,7 @@
             <div class="card">
                 <div class="title">📦 ΙΣΤΟΡΙΚΟ ΠΑΡΑΓΓΕΛΙΩΝ</div>
                 <div id="ordersList">
-                    <div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 10px;">Δεν υπάρχουν παλαιότερες παραγγελίες.</div>
+                    <div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 10px;">Δεν υπάρχουν παραγγελίες με το τρέχον τηλέφωνο.</div>
                 </div>
             </div>
 
@@ -112,7 +141,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // ΣΥΝΔΕΣΗ ΜΕ ΤΟ FIREBASE ΣΟΥ
         const firebaseConfig = {
             apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
             authDomain: "fast-delivery-8227d.firebaseapp.com",
@@ -127,47 +155,102 @@
         
         let currentUserDocId = null;
 
-        // ΕΛΕΓΧΟΣ ΚΑΤΑΣΤΑΣΗΣ ΣΥΝΔΕΣΗΣ
+        // ΚΥΡΙΟΣ ΕΛΕΓΧΟΣ ΚΑΤΑΣΤΑΣΗΣ ΧΡΗΣΤΗ
         auth.onAuthStateChanged(user => {
             document.getElementById('loader').style.display = 'none';
             if (user) {
-                document.getElementById('loginContent').style.display = 'none';
-                document.getElementById('profileContent').style.display = 'block';
-                document.getElementById('pEmail').value = user.email;
-                loadUserData(user);
+                // Έλεγχος αν έχει επιβεβαιώσει το email του
+                if (user.emailVerified) {
+                    showSection('profileContent');
+                    document.getElementById('pEmail').value = user.email;
+                    loadUserData(user);
+                } else {
+                    showSection('verifyContent');
+                    document.getElementById('verifyEmailText').innerText = user.email;
+                }
             } else {
-                document.getElementById('profileContent').style.display = 'none';
-                document.getElementById('loginContent').style.display = 'block';
-                // Καθαρισμός τοπικής μνήμης κατά την αποσύνδεση
+                showSection('loginContent');
                 localStorage.removeItem('userProfile');
             }
         });
 
-        // ΣΥΝΔΕΣΗ ΜΕ GOOGLE
+        // ΕΝΑΛΛΑΓΗ ΟΘΟΝΩΝ
+        function showSection(sectionId) {
+            document.getElementById('loginContent').style.display = 'none';
+            document.getElementById('profileContent').style.display = 'none';
+            document.getElementById('verifyContent').style.display = 'none';
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        // 1. ΕΓΓΡΑΦΗ ΜΕ EMAIL
+        function registerWithEmail() {
+            const email = document.getElementById('authEmail').value.trim();
+            const pass = document.getElementById('authPassword').value;
+            if (!email || pass.length < 6) {
+                alert("Παρακαλώ εισάγετε σωστό email και κωδικό (τουλάχιστον 6 χαρακτήρες).");
+                return;
+            }
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then((userCredential) => {
+                    // Στέλνουμε το email επιβεβαίωσης αμέσως
+                    userCredential.user.sendEmailVerification().then(() => {
+                        alert("✅ Η εγγραφή πέτυχε! Σας στείλαμε email επιβεβαίωσης.");
+                    });
+                })
+                .catch(error => alert("Σφάλμα Εγγραφής: " + error.message));
+        }
+
+        // 2. ΣΥΝΔΕΣΗ ΜΕ EMAIL
+        function loginWithEmail() {
+            const email = document.getElementById('authEmail').value.trim();
+            const pass = document.getElementById('authPassword').value;
+            if (!email || !pass) return;
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(error => alert("Λάθος email ή κωδικός. Δοκιμάστε ξανά."));
+        }
+
+        // 3. ΣΥΝΔΕΣΗ ΜΕ GOOGLE
         function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(error => {
-                console.error("Login Failed:", error);
-                alert("Σφάλμα σύνδεσης. Βεβαιωθείτε ότι έχετε ενεργοποιήσει το Google Sign-In στο Firebase Console!");
-            });
+            auth.signInWithPopup(provider).catch(error => alert("Σφάλμα σύνδεσης Google."));
         }
 
         // ΑΠΟΣΥΝΔΕΣΗ
-        function signOut() {
-            auth.signOut();
+        function signOut() { auth.signOut(); }
+
+        // ΕΛΕΓΧΟΣ ΑΝ ΠΑΤΗΣΕ ΤΟ LINK (Refresh του User)
+        function checkVerification() {
+            if (auth.currentUser) {
+                auth.currentUser.reload().then(() => {
+                    if (auth.currentUser.emailVerified) {
+                        alert("✅ Το email σας επιβεβαιώθηκε!");
+                        showSection('profileContent');
+                        document.getElementById('pEmail').value = auth.currentUser.email;
+                        loadUserData(auth.currentUser);
+                    } else {
+                        alert("⚠️ Το email δεν έχει επιβεβαιωθεί ακόμα. Ελέγξτε τα εισερχόμενα ή τα Spam σας.");
+                    }
+                });
+            }
+        }
+
+        // ΞΑΝΑ-ΑΠΟΣΤΟΛΗ EMAIL
+        function resendVerification() {
+            if (auth.currentUser) {
+                auth.currentUser.sendEmailVerification().then(() => {
+                    alert("📩 Το email στάλθηκε ξανά! Ελέγξτε τα εισερχόμενά σας.");
+                }).catch(e => alert("Παρακαλώ περιμένετε λίγο πριν ζητήσετε νέο email."));
+            }
         }
 
         // ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ ΑΠΟ FIRESTORE
         async function loadUserData(user) {
             try {
-                // 1. Ψάχνουμε τον χρήστη με βάση το email
                 const usersRef = db.collection('users');
                 const snapshot = await usersRef.where('email', '==', user.email).get();
-                
                 let phoneForOrders = null;
 
                 if (!snapshot.empty) {
-                    // Ο χρήστης υπάρχει! Φέρνουμε τα στοιχεία
                     const doc = snapshot.docs[0];
                     currentUserDocId = doc.id;
                     const data = doc.data();
@@ -178,32 +261,15 @@
                     document.getElementById('pNotes').value = data.notes || '';
                     
                     phoneForOrders = data.phone;
-
-                    // Αποθήκευση τοπικά για να τα βρίσκει αμέσως η φόρμα του index.html
-                    localStorage.setItem('userProfile', JSON.stringify({
-                        name: data.name, phone: data.phone, address: data.address, notes: data.notes
-                    }));
+                    localStorage.setItem('userProfile', JSON.stringify({ name: data.name, phone: data.phone, address: data.address, notes: data.notes }));
                 } else {
-                    // Νέος χρήστης! Δημιουργούμε άδειο προφίλ στο Firebase
-                    const newDoc = await usersRef.add({
-                        email: user.email,
-                        name: user.displayName || '',
-                        phone: '',
-                        address: '',
-                        notes: '',
-                        isBlocked: false
-                    });
+                    const newDoc = await usersRef.add({ email: user.email, name: user.displayName || '', phone: '', address: '', notes: '', isBlocked: false });
                     currentUserDocId = newDoc.id;
                     document.getElementById('pName').value = user.displayName || '';
                 }
 
-                // 2. Φόρτωση Ιστορικού (ψάχνουμε παραγγελίες με αυτό το τηλέφωνο)
-                if (phoneForOrders) {
-                    loadOrders(phoneForOrders);
-                }
-            } catch (error) {
-                console.error("Error loading profile:", error);
-            }
+                if (phoneForOrders) loadOrders(phoneForOrders);
+            } catch (error) { console.error("Error loading profile:", error); }
         }
 
         // ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ ΣΤΟ FIRESTORE
@@ -228,27 +294,18 @@
             try {
                 if (currentUserDocId) {
                     await db.collection('users').doc(currentUserDocId).set(newData, { merge: true });
-                    
-                    // Ενημέρωση τοπικής μνήμης για το index.html
                     localStorage.setItem('userProfile', JSON.stringify(newData));
-                    
                     alert("✅ Το προφίλ ενημερώθηκε επιτυχώς!");
-                    // Ανανέωση των παραγγελιών με το νέο τηλέφωνο
                     loadOrders(newData.phone);
                 }
-            } catch (error) {
-                console.error("Save Error:", error);
-                alert("Σφάλμα κατά την αποθήκευση.");
-            }
+            } catch (error) { alert("Σφάλμα κατά την αποθήκευση."); }
             btn.innerText = "💾 ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ";
         }
 
-        // ΦΟΡΤΩΣΗ ΠΑΡΑΓΓΕΛΙΩΝ (Από το Firestore)
+        // ΦΟΡΤΩΣΗ ΠΑΡΑΓΓΕΛΙΩΝ
         async function loadOrders(phone) {
             try {
-                const ordersRef = db.collection('orders');
-                const snapshot = await ordersRef.where('customerPhone', '==', phone).get();
-                
+                const snapshot = await db.collection('orders').where('customerPhone', '==', phone).get();
                 const listEl = document.getElementById('ordersList');
                 listEl.innerHTML = "";
 
@@ -257,29 +314,21 @@
                     return;
                 }
 
-                // Παίρνουμε τα δεδομένα και τα ταξινομούμε από το πιο πρόσφατο στο πιο παλιό
                 let orders = [];
                 snapshot.forEach(doc => orders.push(doc.data()));
                 orders.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 orders.forEach(order => {
-                    // Αν δεν έχει displayDate (από παλιό κώδικα), του φτιάχνουμε μία πρόχειρη
                     const showDate = order.displayDate || "Πρόσφατη Παραγγελία";
-                    
                     const div = document.createElement('div');
                     div.className = 'order-item';
                     div.innerHTML = `
-                        <div class="order-info">
-                            <div class="order-date">📅 ${showDate}</div>
-                            <div>📍 ${order.address}</div>
-                        </div>
+                        <div class="order-info"><div class="order-date">📅 ${showDate}</div><div>📍 ${order.address}</div></div>
                         <div class="order-price">${order.price} €</div>
                     `;
                     listEl.appendChild(div);
                 });
-            } catch (error) {
-                console.error("Orders Error:", error);
-            }
+            } catch (error) { console.error("Orders Error:", error); }
         }
     </script>
 </body>
