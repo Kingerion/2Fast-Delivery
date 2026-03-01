@@ -199,9 +199,7 @@
             </div>
         </div>
         <div class="footer-bottom">&copy; 2026 2Fast Delivery. Με την επιφύλαξη παντός δικαιώματος.</div>
-    </footer>
-
-    <script type="text/javascript">
+    </footer>    <script type="text/javascript">
         window.$crisp=[];
         window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";
         $crisp.push(["config", "hide:on:mobile", true]);
@@ -231,7 +229,7 @@
                 dirRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: "#1E293B", strokeWeight: 6 } });
                 placesService = new google.maps.places.PlacesService(map);
                 initAuto();
-            } catch (e) { console.error("Map:", e); }
+            } catch (e) { console.error("Map Error:", e); }
         }
 
         function initAuto() {
@@ -242,7 +240,7 @@
             endAuto.addListener("place_changed", calc);
         }
 
-                /* --- ΝΕΑ ΣΥΝΑΡΤΗΣΗ: ΑΝΑΖΗΤΗΣΗ ΦΑΡΜΑΚΕΙΩΝ ΜΕ ΕΛΕΓΧΟ ΣΦΑΛΜΑΤΟΣ --- */
+        /* --- ΑΝΑΖΗΤΗΣΗ ΦΑΡΜΑΚΕΙΩΝ ΜΕ ΕΛΕΓΧΟ ΣΦΑΛΜΑΤΩΝ --- */
         function searchPharmacies() {
             const btn = document.getElementById('btnPharmacy');
             const list = document.getElementById('pharmacyList');
@@ -258,7 +256,7 @@
                 };
 
                 placesService.nearbySearch(request, (results, status) => {
-                    btn.innerText = "🔍 Εύρεση Φαρμακείων"; // Επαναφορά του κουμπιού
+                    btn.innerText = "🔄 Ανανέωση Λίστας";
                     
                     if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
                         const topResults = results.slice(0, 8);
@@ -272,16 +270,29 @@
                     } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
                         list.innerHTML = "<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>Δεν βρέθηκαν ανοιχτά φαρμακεία κοντά. Μετακινήστε τον χάρτη!</div>";
                     } else {
-                        // Αν η Google ρίξει "άκυρο", θα δούμε το γιατί!
-                        list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Σφάλμα Google: <b>${status}</b>.<br>Πρέπει να ενεργοποιήσεις το <b>Places API</b> στο Google Cloud!</div>`;
+                        list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Σφάλμα Google: <b>${status}</b>.<br>Παρακαλώ ενεργοποιήστε το <b>Places API</b> στο Google Cloud Console.</div>`;
                     }
                 });
             } catch (error) {
                 btn.innerText = "🔍 Εύρεση Φαρμακείων";
-                list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Προέκυψε σφάλμα: ${error.message}</div>`;
+                list.innerHTML = `<div style='font-size:13px; color:#ef4444; text-align:center; padding:10px;'>⚠️ Προέκυψε σφάλμα συστήματος. Δοκιμάστε ξανά.</div>`;
             }
         }
- ------------------------------------------- */
+
+        function selectPharmacy(name, address) {
+            const startInput = document.getElementById('start');
+            const pickupNameInput = document.getElementById('pickupName');
+            
+            startInput.value = name + ", " + address;
+            pickupNameInput.value = name;
+            
+            startInput.style.borderColor = "#10b981";
+            pickupNameInput.style.borderColor = "#10b981";
+            
+            alert("✅ Το φαρμακείο προστέθηκε στο Σημείο Παραλαβής! Συμπληρώστε τώρα το 'Προς' (τη διεύθυνσή σας).");
+            calc();
+            startInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
 
         function calc() {
             const start = document.getElementById('start').value;
@@ -301,7 +312,7 @@
                             else { price += 3.5 * 0.50; rem -= 3.5; let rate = 0.60; while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; } }
                         }
                         calculatedPrice = price.toFixed(2);
-                        document.getElementById('priceDisplay').innerTex = calculatedPrice + " €";
+                        document.getElementById('priceDisplay').innerText = calculatedPrice + " €";
                         document.getElementById('distDisplay').innerText = txt + " απόσταση • ~" + res.routes[0].legs[0].duration.text;
                         
                         if (typeof gtag === 'function') { gtag('event', 'delivery_quote', { 'currency': 'EUR', 'value': parseFloat(calculatedPrice) }); }
