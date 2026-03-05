@@ -340,19 +340,29 @@
                 deliveryDate: document.getElementById('deliveryDate').value,
                 deliveryTime: document.getElementById('deliveryTime').value,
                 notes: combinedNotes
+                paymentMethod: payment // ΠΡΟΣΘΕΣΑΜΕ ΑΥΤΗ ΤΗ ΓΡΑΜΜΗ
             };
 
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
-            .then(response => response.text())
-            .then(data => { 
-                saveToHistory(); // ΛΥΣΗ 2
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
+           // Αντικατέστησε αυτό το link με το νέο SCRIPT URL που πήρες από το Βήμα 1!
+            const NEW_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxj6Wf8Dk686D2B-1GfO6MrMtfl80JQHNo_unD1NPpgcHvYrSiizeTATlq4C3_7hpIr/exec";
+
+            fetch(NEW_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(response => response.json())
+            .then(data => {
+                saveOrderToFirebase(payload); 
+
+                if (payment === "Online (Viva Wallet)" && data.success && data.checkoutUrl) {
+                    // ΜΑΓΕΙΑ: Μεταφορά του πελάτη στη Viva!
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    alert("✅ Η παραγγελία καταχωρήθηκε με επιτυχία!");
+                    window.location.reload(); 
+                }
             })
-            .catch(error => { 
-                saveToHistory(); // ΛΥΣΗ 2
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
+            .catch(error => {
+                saveOrderToFirebase(payload);
+                alert("✅ Η παραγγελία καταχωρήθηκε!");
+                window.location.reload();
             });
         }
     </script>
