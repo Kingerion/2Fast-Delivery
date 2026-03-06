@@ -225,7 +225,7 @@
         
         // SCRIPT 2: ΓΙΑ ΤΗ VIVA WALLET (ΝΕΟ) 
         // 👇👇👇 ΠΡΟΣΟΧΗ: ΒΑΛΕ ΤΟ ΔΙΚΟ ΣΟΥ LINK ΑΝΑΜΕΣΑ ΣΤΑ ΑΥΤΑΚΙΑ: 👇👇👇
-        const VIVA_URL = "https://script.google.com/macros/s/AKfycbwr9B6IUNAXwJY_WpgciYmVLXOnnPSl-RCBlUJDM4cB0piVtlYCFU5zFErRwbde9K0Y/exec";
+        const VIVA_URL = "https://script.google.com/macros/s/AKfycbzrghnrsGf6U8fDomblov0KJvgo3uFAye41j0wr1-9iZMCBV0pGgrB5DJHIQWIhKJX_/exec";
 
         function initMap() {
             try {
@@ -320,8 +320,8 @@
             }).catch(e => console.error(e));
         }
 
-        function submitOrder() {
-            function checkField(id, errorMsg) {
+       function submitOrder() {
+            function checkField(id) {
                 const el = document.getElementById(id);
                 if (!el.value.trim()) { el.style.borderColor = "red"; return false; }
                 el.style.borderColor = "#E2E8F0"; return true;
@@ -339,11 +339,18 @@
             const paymentEl = document.getElementById('paymentMethod');
             if (!paymentEl.value) { paymentEl.style.borderColor = "red"; isValid = false; } else { paymentEl.style.borderColor = "#E2E8F0"; }
 
-            if (!isValid) { alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία (με κόκκινο περίγραμμα)!"); return; }
+            if (!isValid) { alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία!"); return; }
 
+            // Κλειδώνουμε το κουμπί
             const btn = document.getElementById('sendBtn');
             btn.innerText = "Επεξεργασία... ⏳";
             btn.disabled = true;
+
+            // Λειτουργία Ξεκλειδώματος (αν κάτι πάει στραβά δεν κολλάει!)
+            function resetBtn() {
+                btn.innerText = "Ολοκληρωση Παραγγελιας";
+                btn.disabled = false;
+            }
 
             const payment = paymentEl.value;
             const originalNotes = document.getElementById('deliveryNote').value.trim();
@@ -387,16 +394,16 @@
                             fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) });
                             window.location.href = data.checkoutUrl;
                         } else {
-                            alert("Σφάλμα Viva: " + (data.error || "Άγνωστο Πρόβλημα"));
-                            window.location.reload();
+                            alert("Σφάλμα από Viva Wallet: " + JSON.stringify(data.error));
+                            resetBtn();
                         }
                     } catch (e) {
-                        alert("Σφάλμα! Μήπως ξεχάσατε να βάλετε το σωστό VIVA_URL στον κώδικα;");
-                        window.location.reload();
+                        alert("Λάθος στο Link! Βεβαιώσου ότι έβαλες το σωστό VIVA_URL στον κώδικα.");
+                        resetBtn();
                     }
                 }).catch(err => {
-                    alert("Αποτυχία σύνδεσης με τον Server. Δοκιμάστε ξανά.");
-                    window.location.reload();
+                    alert("Δεν έγινε σύνδεση με τον Server. Δοκίμασε ξανά.");
+                    resetBtn();
                 });
             } else {
                 fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) })
