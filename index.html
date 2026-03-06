@@ -193,17 +193,21 @@
         (function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
     </script>
 
-    <script>
-        // Εμφάνιση banner εγκατάστασης
-        if (!localStorage.getItem('hideAppBanner')) {
-            document.getElementById('installBanner').style.display = 'flex';
-        }
-        function closeInstallBanner() {
-            localStorage.setItem('hideAppBanner', 'true');
-            document.getElementById('installBanner').style.display = 'none';
-        }
+   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
-        // ΛΥΣΗ 1: Φόρτωση Προφίλ κατά το άνοιγμα
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w",
+            authDomain: "fast-delivery-8227d.firebaseapp.com",
+            projectId: "fast-delivery-8227d",
+            storageBucket: "fast-delivery-8227d.firebasestorage.app",
+            messagingSenderId: "751019896171",
+            appId: "1:751019896171:web:44530a82b4f016fb1ef02e"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         window.addEventListener('DOMContentLoaded', () => {
             try {
                 const profileStr = localStorage.getItem('userProfile');
@@ -219,9 +223,15 @@
 
         const MAX_KM = 35;
         let map, dirService, dirRenderer, startAuto, endAuto;
-        let calculatedPrice = 0;
+        let calculatedDeliveryPrice = 0; 
+        let productValue = 0; 
+        let totalPrice = 0; 
 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
+        // SCRIPT 1: ΓΙΑ ΤΟ SHIPDAY (ΠΑΛΙΟ)
+        const SHIPDAY_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
+        
+        // SCRIPT 2: ΓΙΑ ΤΗ VIVA WALLET (ΝΕΟ)
+        const VIVA_URL = "ΒΑΛΕ_ΕΔΩ_ΤΟ_ΝΕΟ_LINK_ΠΟΥ_ΠΗΡΕΣ_ΑΠΟ_ΤΟ_ΒΗΜΑ_1";
 
         function initMap() {
             try {
@@ -229,29 +239,25 @@
                 dirService = new google.maps.DirectionsService();
                 dirRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: "#1E293B", strokeWeight: 6 } });
                 initAuto();
-                
-                // Υπολογισμός αν έχει μπει ήδη διεύθυνση από το Προφίλ
                 setTimeout(() => { if(document.getElementById('end').value) calc(); }, 1000);
-            } catch (e) { console.error("Map Error:", e); }
+            } catch (e) {}
         }
 
         function initAuto() {
             const opts = { componentRestrictions: { country: "gr" }, fields: ["geometry", "name", "formatted_address"] };
             startAuto = new google.maps.places.Autocomplete(document.getElementById('start'), opts);
             endAuto = new google.maps.places.Autocomplete(document.getElementById('end'), opts);
-            
-            // ΛΥΣΗ 3: Προτίμηση στις κοντινές διευθύνσεις (Αττική/Πειραιάς)
             startAuto.bindTo('bounds', map);
             endAuto.bindTo('bounds', map);
 
             startAuto.addListener("place_changed", () => {
-                const place = startAuto.getPlace();
-                if(place.formatted_address) document.getElementById('start').value = place.formatted_address;
+                const p = startAuto.getPlace();
+                if(p.formatted_address) document.getElementById('start').value = p.formatted_address;
                 calc();
             });
             endAuto.addListener("place_changed", () => {
-                const place = endAuto.getPlace();
-                if(place.formatted_address) document.getElementById('end').value = place.formatted_address;
+                const p = endAuto.getPlace();
+                if(p.formatted_address) document.getElementById('end').value = p.formatted_address;
                 calc();
             });
         }
@@ -265,7 +271,7 @@
                         dirRenderer.setDirections(res);
                         const km = res.routes[0].legs[0].distance.value / 1000;
                         const txt = res.routes[0].legs[0].distance.text;
-                        if (km > MAX_KM) { document.getElementById('priceDisplay').innerText = "🚫"; calculatedPrice = 0; return; }
+                        if (km > MAX_KM) { document.getElementById('totalValueDisplay').innerText = "🚫 Εκτός εμβέλειας"; calculatedDeliveryPrice = 0; updateTotal(); return; }
                         
                         let price = 3.00;
                         if (km > 0.5) {
@@ -273,41 +279,62 @@
                             if (rem <= 3.5) price += rem * 0.50;
                             else { price += 3.5 * 0.50; rem -= 3.5; let rate = 0.60; while(rem > 0) { price += (rem>=1?1:rem)*rate; rem--; rate+=0.10; } }
                         }
-                        calculatedPrice = price.toFixed(2);
-                        document.getElementById('priceDisplay').innerText = calculatedPrice + " €";
+                        calculatedDeliveryPrice = price;
                         document.getElementById('distDisplay').innerText = txt + " απόσταση • ~" + res.routes[0].legs[0].duration.text;
-                        
-                        if (typeof gtag === 'function') { gtag('event', 'delivery_quote', { 'currency': 'EUR', 'value': parseFloat(calculatedPrice) }); }
+                        updateTotal();
                     }
                 });
             }
         }
 
-        // Συνάρτηση για αποθήκευση στο ιστορικό
-        function saveToHistory() {
+        function updateTotal() {
+            productValue = parseFloat(document.getElementById('productValue').value) || 0;
+            totalPrice = calculatedDeliveryPrice + productValue;
+
+            document.getElementById('deliveryPriceDisplay').innerText = calculatedDeliveryPrice.toFixed(2);
+            document.getElementById('totalValueDisplay').innerText = totalPrice.toFixed(2) + " €";
+
+            if (productValue > 0) {
+                document.getElementById('productValueDisplay').style.display = 'block';
+                document.getElementById('prodValAmount').innerText = productValue.toFixed(2);
+            } else {
+                document.getElementById('productValueDisplay').style.display = 'none';
+            }
+        }
+
+        function saveOrderToFirebase(payload) {
+            let userPhone = "unknown";
             try {
+                const profileStr = localStorage.getItem('userProfile');
+                if (profileStr) { userPhone = JSON.parse(profileStr).phone || payload.deliveryPhone; } 
+                else { userPhone = payload.deliveryPhone; }
+            } catch(e) {}
+
+            const orderData = {
+                customerPhone: userPhone,
+                date: new Date().toISOString(),
+                displayDate: new Date().toLocaleDateString('el-GR') + ' - ' + new Date().toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'}),
+                address: payload.endAddr,
+                price: payload.price, 
+                status: "Νέα Παραγγελία"
+            };
+
+            db.collection("orders").add(orderData).then(() => {
                 let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
-                const newOrder = {
-                    date: new Date().toLocaleDateString('el-GR') + ' - ' + new Date().toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'}),
-                    address: document.getElementById('end').value,
-                    price: calculatedPrice
-                };
-                history.unshift(newOrder); // Μπαίνει πρώτη στη λίστα
+                history.unshift(orderData);
                 localStorage.setItem('orderHistory', JSON.stringify(history));
-            } catch(e) { console.error("History Error", e); }
+            }).catch(e => console.error(e));
         }
 
         function submitOrder() {
             function checkField(id, errorMsg) {
                 const el = document.getElementById(id);
-                if (!el.value.trim()) { el.style.borderColor = "red"; el.placeholder = errorMsg || "Υποχρεωτικό πεδίο!"; return false; }
+                if (!el.value.trim()) { el.style.borderColor = "red"; return false; }
                 el.style.borderColor = "#E2E8F0"; return true;
             }
 
             let isValid = true;
-            
-            if (calculatedPrice == 0) { alert("📍 Παρακαλώ επιλέξτε διευθύνσεις διαδρομής!"); document.getElementById('start').style.borderColor = "red"; document.getElementById('end').style.borderColor = "red"; return; } 
-            else { document.getElementById('start').style.borderColor = "#E2E8F0"; document.getElementById('end').style.borderColor = "#E2E8F0"; }
+            if (calculatedDeliveryPrice === 0) { alert("📍 Παρακαλώ επιλέξτε διευθύνσεις διαδρομής!"); return; } 
 
             isValid = checkField('pickupName') && isValid;
             isValid = checkField('pickupPhone') && isValid;
@@ -321,49 +348,62 @@
             if (!isValid) { alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία (με κόκκινο περίγραμμα)!"); return; }
 
             const btn = document.getElementById('sendBtn');
-            btn.innerText = "Αποστολή... ⏳";
+            btn.innerText = "Επεξεργασία... ⏳";
             btn.disabled = true;
 
             const payment = paymentEl.value;
-            const combinedNotes = "ΠΛΗΡΩΜΗ: " + payment + " | ΣΧΟΛΙΑ: " + document.getElementById('deliveryNote').value.trim();
+            const originalNotes = document.getElementById('deliveryNote').value.trim();
+            
+            let combinedNotes = "";
+            if (productValue > 0) {
+                combinedNotes = `[ΑΞΙΑ ΠΡΟΪΟΝΤΩΝ: ${productValue.toFixed(2)}€ | ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ: ${calculatedDeliveryPrice.toFixed(2)}€ | ΣΥΝΟΛΟ: ${totalPrice.toFixed(2)}€] | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${originalNotes}`;
+            } else {
+                combinedNotes = `[ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ: ${calculatedDeliveryPrice.toFixed(2)}€] | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${originalNotes}`;
+            }
 
             const payload = {
                 startAddr: document.getElementById('start').value,
                 endAddr: document.getElementById('end').value,
-                price: calculatedPrice,
+                price: totalPrice.toFixed(2), 
                 pickupName: document.getElementById('pickupName').value,
                 pickupPhone: document.getElementById('pickupPhone').value,
-                pickupDate: document.getElementById('pickupDate').value,
-                pickupTime: document.getElementById('pickupTime').value,
+                pickupDate: document.getElementById('pickupDate').value || '',
+                pickupTime: document.getElementById('pickupTime').value || '',
                 deliveryName: document.getElementById('deliveryName').value,
                 deliveryPhone: document.getElementById('deliveryPhone').value,
-                deliveryDate: document.getElementById('deliveryDate').value,
-                deliveryTime: document.getElementById('deliveryTime').value,
-                notes: combinedNotes
-                paymentMethod: payment // ΠΡΟΣΘΕΣΑΜΕ ΑΥΤΗ ΤΗ ΓΡΑΜΜΗ
+                deliveryDate: document.getElementById('deliveryDate').value || '',
+                deliveryTime: document.getElementById('deliveryTime').value || '',
+                notes: combinedNotes,
+                paymentMethod: payment 
             };
 
-           // Αντικατέστησε αυτό το link με το νέο SCRIPT URL που πήρες από το Βήμα 1!
-            const NEW_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxj6Wf8Dk686D2B-1GfO6MrMtfl80JQHNo_unD1NPpgcHvYrSiizeTATlq4C3_7hpIr/exec";
+            saveOrderToFirebase(payload);
 
-            fetch(NEW_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
-            .then(response => response.json())
-            .then(data => {
-                saveOrderToFirebase(payload); 
-
-                if (payment === "Online (Viva Wallet)" && data.success && data.checkoutUrl) {
-                    // ΜΑΓΕΙΑ: Μεταφορά του πελάτη στη Viva!
-                    window.location.href = data.checkoutUrl;
-                } else {
-                    alert("✅ Η παραγγελία καταχωρήθηκε με επιτυχία!");
-                    window.location.reload(); 
-                }
-            })
-            .catch(error => {
-                saveOrderToFirebase(payload);
-                alert("✅ Η παραγγελία καταχωρήθηκε!");
-                window.location.reload();
-            });
+            if (payment === "Online (Viva Wallet)") {
+                fetch(VIVA_URL, { method: 'POST', body: JSON.stringify(payload) })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.checkoutUrl) {
+                        fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) });
+                        window.location.href = data.checkoutUrl;
+                    } else {
+                        alert("Υπήρξε πρόβλημα με την τράπεζα. Δοκιμάστε ξανά.");
+                        window.location.reload();
+                    }
+                }).catch(err => {
+                    alert("Σφάλμα σύνδεσης. Δοκιμάστε ξανά.");
+                    window.location.reload();
+                });
+            } else {
+                fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) })
+                .then(() => {
+                    alert("✅ Η παραγγελία στάλθηκε με επιτυχία στον οδηγό!");
+                    window.location.reload();
+                }).catch(() => {
+                    alert("✅ Η παραγγελία στάλθηκε!");
+                    window.location.reload();
+                });
+            }
         }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
