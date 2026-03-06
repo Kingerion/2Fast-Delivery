@@ -24,11 +24,9 @@
 
         .main-wrapper { display: flex; flex-direction: row; gap: 20px; max-width: 950px; margin: 15px auto 40px auto; padding: 0 15px; align-items: flex-start; width: 100%; box-sizing: border-box; }
         
-        /* SIDEBAR (Με τα 2 νέα κουμπιά) */
         .sidebar { width: 320px; background: var(--card); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border); box-sizing: border-box; flex-shrink: 0; }
         .sidebar h3 { margin-top: 0; color: var(--secondary); font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         .btn-pharmacy { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s; display: block; text-align: center; text-decoration: none; box-sizing: border-box; line-height: 1.3; }
-        .btn-pharmacy:active { transform: scale(0.97); }
         .btn-pharmacy.blue { background: #3b82f6; box-shadow: 0 4px 10px rgba(59,130,246,0.3); margin-top: 10px; }
         .btn-pharmacy span { font-size: 11px; font-weight: normal; opacity: 0.9; }
 
@@ -38,9 +36,11 @@
         .input-group { margin-bottom: 16px; }
         input, textarea, select { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; box-sizing: border-box; background: #F8FAFC; transition: all 0.3s ease; font-family: inherit; color: var(--text); }
         input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15); }
+        
         .price-box { background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%); color: white; padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(30, 41, 59, 0.2); }
         .price-val { font-size: 42px; font-weight: 900; margin: 5px 0; color: #fff; }
         .price-dist { font-size: 14px; opacity: 0.8; font-weight: 500; }
+        
         #sendBtn { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 14px; font-size: 18px; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 20px rgba(255, 87, 34, 0.3); text-transform: uppercase; letter-spacing: 1px; }
         #sendBtn:active { transform: scale(0.97); }
         #sendBtn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; color: #94a3b8; }
@@ -53,7 +53,6 @@
         .footer-col h4 { color: var(--primary); font-size: 14px; text-transform: uppercase; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.5px; }
         .footer-col p { font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0; }
         .footer-col ul { margin: 0; padding: 0; list-style: none; font-size: 13px; color: #cbd5e1; }
-        .footer-col ul li { margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; }
         .footer-col a { color: #cbd5e1; text-decoration: none; transition: 0.3s; }
         .footer-col a:hover { color: white; text-decoration: underline; }
         .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 30px; padding-top: 20px; text-align: center; font-size: 12px; color: #94a3b8; }
@@ -91,32 +90,31 @@
     </div>
 
     <div class="main-wrapper">
-        
         <div class="sidebar">
             <h3>💊 Εφημερεύοντα Φαρμακεία</h3>
             <p style="font-size: 13px; color: #64748b; margin: 0; line-height: 1.5;">
-                Επιλέξτε τον σύλλογο της περιοχής σας για να βρείτε το επίσημο εφημερεύον φαρμακείο.
-                <br><br>
-                Μόλις βρείτε τη διεύθυνση, αντιγράψτε την στο πεδίο <b>"Από"</b> της παραγγελίας!
+                Επιλέξτε τον σύλλογο της περιοχής σας για να βρείτε το επίσημο εφημερεύον φαρμακείο. Μόλις βρείτε τη διεύθυνση, αντιγράψτε την στο <b>"Από"</b>!
             </p>
-            <a href="https://piraeus.efhmeries.gr/" target="_blank" class="btn-pharmacy">
-                🔗 Φαρμ. Σύλλογος Πειραιά<br>
-                <span>(Πειραιάς, Νίκαια, Κορυδαλλός κλπ)</span>
-            </a>
-            <a href="https://fsa-efimeries.gr/" target="_blank" class="btn-pharmacy blue">
-                🔗 Φαρμ. Σύλλογος Αττικής<br>
-                <span>(Αθήνα και προάστια)</span>
-            </a>
+            <a href="https://piraeus.efhmeries.gr/" target="_blank" class="btn-pharmacy">🔗 Φαρμ. Σύλλογος Πειραιά<br><span>(Πειραιάς, Νίκαια, Κορυδαλλός κλπ)</span></a>
+            <a href="https://fsa-efimeries.gr/" target="_blank" class="btn-pharmacy blue">🔗 Φαρμ. Σύλλογος Αττικής<br><span>(Αθήνα και προάστια)</span></a>
         </div>
 
         <div class="container">
             <div class="card">
-                <div class="title required">📍 Σημεία Διαδρομής</div>
+                <div class="title required">📍 Σημεία Διαδρομής & Προϊόντα</div>
                 <div class="input-group"><input type="text" id="start" placeholder="Από: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password"></div>
-                <div class="input-group" style="margin-bottom: 25px;"><input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password"></div>
+                <div class="input-group"><input type="text" id="end" placeholder="Προς: Οδός Αριθμός, Περιοχή" onblur="calc()" autocomplete="new-password"></div>
+                
+                <div class="input-group" style="margin-top: 20px; margin-bottom: 25px;">
+                    <div style="font-size: 11px; font-weight: bold; color: var(--primary); margin-bottom: 5px; text-transform: uppercase;">🛒 Αξια Προϊοντων (Προαιρετικο)</div>
+                    <input type="number" id="productValue" placeholder="π.χ. 15.50 (Αν θέλετε να αγοράσουμε κάτι)" step="0.1" min="0" oninput="updateTotal()">
+                </div>
+
                 <div class="price-box" id="priceBox">
-                    <div style="font-size: 12px; opacity: 0.8; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Κοστος Αποστολης</div>
-                    <div class="price-val" id="priceDisplay">0.00 €</div>
+                    <div style="font-size: 12px; opacity: 0.8; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Κοστος Μεταφορας: <span id="deliveryPriceDisplay">0.00</span> €</div>
+                    <div id="productValueDisplay" style="display:none; font-size: 14px; margin-top:8px; color:#a7f3d0;">+ Αξία Προϊόντων: <span id="prodValAmount">0.00</span> €</div>
+                    
+                    <div id="totalValueDisplay" style="font-size: 38px; font-weight: 900; margin: 10px 0; color: #fff;">0.00 €</div>
                     <div class="price-dist" id="distDisplay">Επιλέξτε διευθύνσεις στο χάρτη</div>
                 </div>
             </div>
@@ -126,8 +124,8 @@
                 <div class="input-group"><input type="text" id="pickupName" placeholder="Ονοματεπώνυμο / Εταιρεία (Αποστολέας)"></div>
                 <div class="input-group"><input type="tel" id="pickupPhone" placeholder="Τηλέφωνο Αποστολέα"></div>
                 <div class="row">
-                    <div class="input-group"><input type="text" id="pickupDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'"></div>
-                    <div class="input-group"><input type="text" id="pickupTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'"></div>
+                    <div class="input-group"><input type="text" id="pickupDate" placeholder="Ημερομηνία" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'"></div>
+                    <div class="input-group"><input type="text" id="pickupTime" placeholder="Ώρα" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'"></div>
                 </div>
             </div>
 
@@ -135,22 +133,18 @@
                 <div class="title required">🏠 Στοιχεία Παράδοσης</div>
                 <div class="input-group"><input type="text" id="deliveryName" placeholder="Ονοματεπώνυμο (Παραλήπτης)"></div>
                 <div class="input-group"><input type="tel" id="deliveryPhone" placeholder="Τηλέφωνο Παραλήπτη"></div>
-                <div class="row" style="margin-bottom: 16px;">
-                    <div class="input-group"><input type="text" id="deliveryDate" placeholder="Ημερομηνία (Προαιρετικό)" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'"></div>
-                    <div class="input-group"><input type="text" id="deliveryTime" placeholder="Ώρα (Προαιρετικό)" onfocus="(this.type='time')" onblur="if(!this.value) this.type='text'"></div>
-                </div>
                 
                 <div class="input-group">
-                    <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ</div>
+                    <div class="title required" style="font-size: 11px; margin-bottom: 5px; border:none; padding:0;">ΣΧΟΛΙΑ ΠΑΡΑΔΟΣΗΣ</div>
                     <textarea id="deliveryNote" rows="3" placeholder="Γράψτε Όροφο, Κουδούνι, ή Οδηγίες..."></textarea>
                 </div>
 
                 <div class="input-group" style="margin-bottom: 0;">
-                    <div class="title required" style="font-size: 11px; margin-bottom: 5px;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
+                    <div class="title required" style="font-size: 11px; margin-bottom: 5px; border:none; padding:0;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
                     <select id="paymentMethod">
                         <option value="" disabled selected>-- Επιλέξτε Τρόπο Πληρωμής --</option>
-                        <option value="Μετρητά">💵 Πληρωμή: Μετρητά</option>
-                        <option value="Κάρτα (POS)">💳 Πληρωμή: Κάρτα (POS)</option>
+                        <option value="Μετρητά">💵 Πληρωμή: Μετρητά στον Διανομέα</option>
+                        <option value="Online (Viva Wallet)">💳 Πληρωμή Online (Κάρτα / Apple Pay)</option>
                     </select>
                 </div>
             </div>
@@ -170,7 +164,6 @@
                 <ul>
                     <li>📞 Τηλέφωνο: <a href="tel:+306934021792">6934021792</a></li>
                     <li>✉️ Email: <a href="mailto:2fastdelivery1@gmail.com">2fastdelivery1@gmail.com</a></li>
-                    <li>🕒 Ωράριο: Κάθε μέρα, 08:00 - 24:00</li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -179,12 +172,12 @@
                     <li>❓ <a href="faq.html">Συχνές Ερωτήσεις (FAQ)</a></li>
                     <li>📄 <a href="terms.html">Όροι & Προϋποθέσεις</a></li>
                     <li>🔒 <a href="privacy.html">Πολιτική Απορρήτου</a></li>
-                    <li>🍪 <a href="cookies.html">Πολιτική Cookies</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">&copy; 2026 2Fast Delivery. Με την επιφύλαξη παντός δικαιώματος.</div>
     </footer>
+
     <script type="text/javascript">
         window.$crisp=[];
         window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";
@@ -193,7 +186,7 @@
         (function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
     </script>
 
-   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
     <script>
@@ -230,7 +223,7 @@
         // SCRIPT 1: ΓΙΑ ΤΟ SHIPDAY (ΠΑΛΙΟ)
         const SHIPDAY_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
         
-        // SCRIPT 2: ΓΙΑ ΤΗ VIVA WALLET (ΝΕΟ)
+        // SCRIPT 2: ΓΙΑ ΤΗ VIVA WALLET (ΝΕΟ) ---> ΠΡΟΣΟΧΗ ΒΑΛΕ ΤΟ LINK ΣΟΥ ΕΔΩ:
         const VIVA_URL = "https://script.google.com/macros/s/AKfycbxj6Wf8Dk686D2B-1GfO6MrMtfl80JQHNo_unD1NPpgcHvYrSiizeTATlq4C3_7hpIr/exec";
 
         function initMap() {
