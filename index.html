@@ -223,8 +223,9 @@
         // SCRIPT 1: ΓΙΑ ΤΟ SHIPDAY (ΠΑΛΙΟ)
         const SHIPDAY_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
         
-        // SCRIPT 2: ΓΙΑ ΤΗ VIVA WALLET (ΝΕΟ) ---> ΠΡΟΣΟΧΗ ΒΑΛΕ ΤΟ LINK ΣΟΥ ΕΔΩ:
-        const VIVA_URL ="https://script.google.com/macros/s/AKfycbxj6Wf8Dk686D2B-1GfO6MrMtfl80JQHNo_unD1NPpgcHvYrSiizeTATlq4C3_7hpIr/exec";
+        // SCRIPT 2: ΓΙΑ ΤΗ VIVA WALLET (ΝΕΟ) 
+        // 👇👇👇 ΠΡΟΣΟΧΗ: ΒΑΛΕ ΤΟ ΔΙΚΟ ΣΟΥ LINK ΑΝΑΜΕΣΑ ΣΤΑ ΑΥΤΑΚΙΑ: 👇👇👇
+        const VIVA_URL = "https://script.google.com/macros/s/AKfycbxj6Wf8Dk686D2B-1GfO6MrMtfl80JQHNo_unD1NPpgcHvYrSiizeTATlq4C3_7hpIr/exec";
 
         function initMap() {
             try {
@@ -373,18 +374,28 @@
             saveOrderToFirebase(payload);
 
             if (payment === "Online (Viva Wallet)") {
-                fetch(VIVA_URL, { method: 'POST', body: JSON.stringify(payload) })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.checkoutUrl) {
-                        fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) });
-                        window.location.href = data.checkoutUrl;
-                    } else {
-                        alert("Υπήρξε πρόβλημα με την τράπεζα. Δοκιμάστε ξανά.");
+                fetch(VIVA_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload) 
+                })
+                .then(res => res.text()) 
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success && data.checkoutUrl) {
+                            fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) });
+                            window.location.href = data.checkoutUrl;
+                        } else {
+                            alert("Σφάλμα Viva: " + (data.error || "Άγνωστο Πρόβλημα"));
+                            window.location.reload();
+                        }
+                    } catch (e) {
+                        alert("Σφάλμα! Μήπως ξεχάσατε να βάλετε το σωστό VIVA_URL στον κώδικα;");
                         window.location.reload();
                     }
                 }).catch(err => {
-                    alert("Σφάλμα σύνδεσης. Δοκιμάστε ξανά.");
+                    alert("Αποτυχία σύνδεσης με τον Server. Δοκιμάστε ξανά.");
                     window.location.reload();
                 });
             } else {
