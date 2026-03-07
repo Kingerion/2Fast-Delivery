@@ -341,71 +341,45 @@
 
             if (!isValid) { alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία!"); return; }
 
-            // Κλειδώνουμε το κουμπί
             const btn = document.getElementById('sendBtn');
-            btn.innerText = "Επεξεργασία... ⏳";
+            btn.innerText = "Παρακαλώ περιμένετε... ⏳";
             btn.disabled = true;
 
-            // Λειτουργία Ξεκλειδώματος (αν κάτι πάει στραβά δεν κολλάει!)
-            function resetBtn() {
-                btn.innerText = "Ολοκληρωση Παραγγελιας";
-                btn.disabled = false;
-            }
-
             const payment = paymentEl.value;
-            const originalNotes = document.getElementById('deliveryNote').value.trim();
             
-            let combinedNotes = "";
-            if (productValue > 0) {
-                combinedNotes = `[ΑΞΙΑ ΠΡΟΪΟΝΤΩΝ: ${productValue.toFixed(2)}€ | ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ: ${calculatedDeliveryPrice.toFixed(2)}€ | ΣΥΝΟΛΟ: ${totalPrice.toFixed(2)}€] | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${originalNotes}`;
-            } else {
-                combinedNotes = `[ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ: ${calculatedDeliveryPrice.toFixed(2)}€] | ΠΛΗΡΩΜΗ: ${payment} | ΣΧΟΛΙΑ: ${originalNotes}`;
-            }
-
+            // Μαζεύουμε τα δεδομένα της παραγγελίας
             const payload = {
                 startAddr: document.getElementById('start').value,
                 endAddr: document.getElementById('end').value,
                 price: totalPrice.toFixed(2), 
+                productValue: productValue,
+                deliveryPrice: calculatedDeliveryPrice,
                 pickupName: document.getElementById('pickupName').value,
                 pickupPhone: document.getElementById('pickupPhone').value,
                 pickupDate: document.getElementById('pickupDate').value || '',
                 pickupTime: document.getElementById('pickupTime').value || '',
                 deliveryName: document.getElementById('deliveryName').value,
                 deliveryPhone: document.getElementById('deliveryPhone').value,
-                deliveryDate: document.getElementById('deliveryDate').value || '',
-                deliveryTime: document.getElementById('deliveryTime').value || '',
-                notes: combinedNotes,
+                originalNotes: document.getElementById('deliveryNote').value.trim(),
                 paymentMethod: payment 
             };
 
-            saveOrderToFirebase(payload);
-
             if (payment === "Online (Viva Wallet)") {
-                fetch(VIVA_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload) 
-                })
-                .then(res => res.text()) 
-                .then(text => {
-                    try {
-                        const data = JSON.parse(text);
-                        if (data.success && data.checkoutUrl) {
-                            fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) });
-                            window.location.href = data.checkoutUrl;
-                        } else {
-                            alert("Σφάλμα από Viva Wallet: " + JSON.stringify(data.error));
-                            resetBtn();
-                        }
-                    } catch (e) {
-                        alert("Λάθος στο Link! Βεβαιώσου ότι έβαλες το σωστό VIVA_URL στον κώδικα.");
-                        resetBtn();
-                    }
-                }).catch(err => {
-                    alert("Δεν έγινε σύνδεση με τον Server. Δοκίμασε ξανά.");
-                    resetBtn();
-                });
-            } else {
+                // ΕΔΩ ΕΙΝΑΙ ΤΟ ΝΕΟ ΣΟΥ LINK ΠΟΥ ΜΟΛΙΣ ΜΟΥ ΕΣΤΕΙΛΕΣ:
+                const VIVA_URL = "https://script.google.com/macros/s/AKfycbyb3QPk-8HGICkczWW2FEJ2wolG7DAg7TGQGSt-WtuRGWIKYkNAVQEc3BFK1M1oyvw/exec";
+                
+                // Αποθηκεύουμε την παραγγελία στο κινητό του πελάτη
+                localStorage.setItem('pendingOrder', JSON.stringify(payload));
+                
+                // Και τον στέλνουμε κατευθείαν στο ταμείο!
+                const paymentUrl = VIVA_URL + "?amount=" + totalPrice.toFixed(2) + "&name=" + encodeURIComponent(payload.deliveryName) + "&phone=" + encodeURIComponent(payload.deliveryPhone);
+                window.location.href = paymentUrl;
+            } 
+            else {
+                // Πληρωμή με ΜΕΤΡΗΤΑ - Το στέλνουμε κανονικά στο Shipday
+                payload.notes = `[ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ (Μετρητά): ${calculatedDeliveryPrice.toFixed(2)}€] | ΣΧΟΛΙΑ: ${payload.originalNotes}`;
+                
+                saveOrderToFirebase(payload);
                 fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) })
                 .then(() => {
                     alert("✅ Η παραγγελία στάλθηκε με επιτυχία στον οδηγό!");
