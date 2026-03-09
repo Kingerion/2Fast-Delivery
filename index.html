@@ -253,29 +253,15 @@
             }
         }
 
-        function submitOrder() {
-            function checkField(id, errorMsg) {
+              function submitOrder() {
+            function checkField(id) {
                 const el = document.getElementById(id);
-                if (!el.value.trim()) {
-                    el.style.borderColor = "red";
-                    el.placeholder = errorMsg || "Υποχρεωτικό πεδίο!";
-                    return false;
-                }
-                el.style.borderColor = "#E2E8F0"; 
-                return true;
+                if (!el.value.trim()) { el.style.borderColor = "red"; return false; }
+                el.style.borderColor = "#E2E8F0"; return true;
             }
 
             let isValid = true;
-            
-            if (calculatedPrice == 0) { 
-                alert("📍 Παρακαλώ επιλέξτε διευθύνσεις διαδρομής!"); 
-                document.getElementById('start').style.borderColor = "red";
-                document.getElementById('end').style.borderColor = "red";
-                return; 
-            } else {
-                document.getElementById('start').style.borderColor = "#E2E8F0";
-                document.getElementById('end').style.borderColor = "#E2E8F0";
-            }
+            if (calculatedDeliveryPrice === 0) { alert("📍 Παρακαλώ επιλέξτε διευθύνσεις διαδρομής!"); return; } 
 
             isValid = checkField('pickupName') && isValid;
             isValid = checkField('pickupPhone') && isValid;
@@ -284,54 +270,60 @@
             isValid = checkField('deliveryNote') && isValid;
             
             const paymentEl = document.getElementById('paymentMethod');
-            if (!paymentEl.value) {
-                paymentEl.style.borderColor = "red";
-                isValid = false;
-            } else {
-                paymentEl.style.borderColor = "#E2E8F0";
-            }
+            if (!paymentEl.value) { paymentEl.style.borderColor = "red"; isValid = false; } else { paymentEl.style.borderColor = "#E2E8F0"; }
 
-            if (!isValid) {
-                alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία (με κόκκινο περίγραμμα)!");
-                return;
-            }
+            if (!isValid) { alert("⚠️ Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία!"); return; }
 
             const btn = document.getElementById('sendBtn');
-            btn.innerText = "Αποστολή... ⏳";
+            btn.innerText = "Παρακαλώ περιμένετε... ⏳";
             btn.disabled = true;
 
             const payment = paymentEl.value;
-            const combinedNotes = "ΠΛΗΡΩΜΗ: " + payment + " | ΣΧΟΛΙΑ: " + document.getElementById('deliveryNote').value.trim();
-
+            
+            // Μαζεύουμε τα δεδομένα της παραγγελίας
             const payload = {
                 startAddr: document.getElementById('start').value,
                 endAddr: document.getElementById('end').value,
-                price: calculatedPrice,
+                price: totalPrice.toFixed(2), 
+                productValue: productValue,
+                deliveryPrice: calculatedDeliveryPrice,
                 pickupName: document.getElementById('pickupName').value,
                 pickupPhone: document.getElementById('pickupPhone').value,
-                pickupDate: document.getElementById('pickupDate').value,
-                pickupTime: document.getElementById('pickupTime').value,
+                pickupDate: document.getElementById('pickupDate').value || '',
+                pickupTime: document.getElementById('pickupTime').value || '',
                 deliveryName: document.getElementById('deliveryName').value,
                 deliveryPhone: document.getElementById('deliveryPhone').value,
-                deliveryDate: document.getElementById('deliveryDate').value,
-                deliveryTime: document.getElementById('deliveryTime').value,
-                notes: combinedNotes
+                originalNotes: document.getElementById('deliveryNote').value.trim(),
+                paymentMethod: payment 
             };
 
-            fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            })
-            .then(response => response.text())
-            .then(data => { 
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
-            })
-            .catch(error => { 
-                alert("✅ Η παραγγελία στάλθηκε με επιτυχία!"); 
-                window.location.reload(); 
-            });
+            if (payment === "Online (Viva Wallet)") {
+                // ΒΑΛΕ ΕΔΩ ΤΟ ΝΕΟ VIVA LINK ΠΟΥ ΠΗΡΕΣ ΑΠΟ ΤΟ GOOGLE SCRIPT (ΒΗΜΑ 1)
+                const VIVA_URL = "ΒΑΛΕ_ΤΟ_LINK_ΕΔΩ";
+                
+                // Αποθηκεύουμε την παραγγελία στο κινητό του πελάτη
+                localStorage.setItem('pendingOrder', JSON.stringify(payload));
+                
+                // Και τον στέλνουμε κατευθείαν στο ταμείο!
+                const paymentUrl = VIVA_URL + "?amount=" + totalPrice.toFixed(2) + "&name=" + encodeURIComponent(payload.deliveryName) + "&phone=" + encodeURIComponent(payload.deliveryPhone);
+                window.location.href = paymentUrl;
+            } 
+            else {
+                // Πληρωμή με ΜΕΤΡΗΤΑ - Το στέλνουμε κανονικά στο Shipday
+                payload.notes = `[ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ (Μετρητά): ${calculatedDeliveryPrice.toFixed(2)}€] | ΣΧΟΛΙΑ: ${payload.originalNotes}`;
+                
+                saveOrderToFirebase(payload);
+                fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) })
+                .then(() => {
+                    alert("✅ Η παραγγελία στάλθηκε με επιτυχία στον οδηγό!");
+                    window.location.reload();
+                }).catch(() => {
+                    alert("✅ Η παραγγελία στάλθηκε!");
+                    window.location.reload();
+                });
+            }
         }
+
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
 </body>
