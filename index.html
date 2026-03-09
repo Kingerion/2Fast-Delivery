@@ -163,7 +163,7 @@
                 <h4>ΕΠΙΚΟΙΝΩΝΙΑ & ΩΡΑΡΙΟ</h4>
                 <ul>
                     <li>📞 Τηλέφωνο: <a href="tel:+306934021792">6934021792</a></li>
-                    <li>✉️ Email: <a href="mailto:2fastdelivery1@gmail.com">2fastdelivery1@gmail.com</a></li>
+                    <li>✉️ Email: <a href="/cdn-cgi/l/email-protection#21134740525545444d48574453581061464c40484d0f424e4c"><span class="__cf_email__" data-cfemail="83b1e5e2f0f7e7e6efeaf5e6f1fab2c3e4eee2eaefade0ecee">[email&#160;protected]</span></a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -178,7 +178,7 @@
         <div class="footer-bottom">&copy; 2026 2Fast Delivery. Με την επιφύλαξη παντός δικαιώματος.</div>
     </footer>
 
-    <script type="text/javascript">
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/javascript">
         window.$crisp=[];
         window.CRISP_WEBSITE_ID="67431364-9c28-4ce0-8c7b-7c0df05f0313";
         $crisp.push(["config", "hide:on:mobile", true]);
@@ -377,7 +377,12 @@
             } 
             else {
                 // Πληρωμή με ΜΕΤΡΗΤΑ - Το στέλνουμε κανονικά στο Shipday
-                payload.notes = `[ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ (Μετρητά): ${calculatedDeliveryPrice.toFixed(2)}€] | ΣΧΟΛΙΑ: ${payload.originalNotes}`;
+                let cashNotes = `💵 ΜΕΤΡΗΤΑ | ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΗΣ: ${totalPrice.toFixed(2)}€ | ΚΕΡΔΟΣ ΔΙΑΝΟΜΕΑ: ${calculatedDeliveryPrice.toFixed(2)}€`;
+                if (productValue > 0) {
+                    cashNotes += ` | ΑΞΙΑ ΠΡΟΪΟΝΤΩΝ (Αγορά από διανομέα): ${productValue.toFixed(2)}€`;
+                }
+                cashNotes += ` | ΣΧΟΛΙΑ ΠΕΛΑΤΗ: ${payload.originalNotes}`;
+                payload.notes = cashNotes;
                 
                 saveOrderToFirebase(payload);
                 fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) })
@@ -386,11 +391,4 @@
                     window.location.reload();
                 }).catch(() => {
                     alert("✅ Η παραγγελία στάλθηκε!");
-                    window.location.reload();
-                });
-            }
-        }
-    </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdeWVPf1-3ZObret2Onsjb6_DldLgaQCw&libraries=places&callback=initMap" async defer></script>
-</body>
-</html>
+                    windo
