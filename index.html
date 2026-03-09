@@ -143,7 +143,7 @@
                     <div class="title required" style="font-size: 11px; margin-bottom: 5px; border:none; padding:0;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
                     <select id="paymentMethod">
                         <option value="" disabled selected>-- Επιλέξτε Τρόπο Πληρωμής --</option>
-                        <option value="Μετρητά">💵 Πληρωμή: Μετρητά στον Διανομέα</option>
+                        <!-- <option value="Μετρητά">💵 Πληρωμή: Μετρητά στον Διανομέα</option> -->
                         <option value="Online (Viva Wallet)">💳 Πληρωμή Online (Κάρτα / Apple Pay)</option>
                     </select>
                 </div>
@@ -163,7 +163,7 @@
                 <h4>ΕΠΙΚΟΙΝΩΝΙΑ & ΩΡΑΡΙΟ</h4>
                 <ul>
                     <li>📞 Τηλέφωνο: <a href="tel:+306934021792">6934021792</a></li>
-                    <li>✉️ Email: <a href="/cdn-cgi/l/email-protection#21134740525545444d48574453581061464c40484d0f424e4c"><span class="__cf_email__" data-cfemail="83b1e5e2f0f7e7e6efeaf5e6f1fab2c3e4eee2eaefade0ecee">[email&#160;protected]</span></a></li>
+                    <li>✉️ Email: <a href="/cdn-cgi/l/email-protection#30025651434454555c59465542490170575d51595c1e535f5d"><span class="__cf_email__" data-cfemail="62500403111606070e0b1407101b5322050f030b0e4c010d0f">[email&#160;protected]</span></a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -378,9 +378,7 @@
             else {
                 // Πληρωμή με ΜΕΤΡΗΤΑ - Το στέλνουμε κανονικά στο Shipday
                 let cashNotes = `💵 ΜΕΤΡΗΤΑ | ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΗΣ: ${totalPrice.toFixed(2)}€ | ΚΕΡΔΟΣ ΔΙΑΝΟΜΕΑ: ${calculatedDeliveryPrice.toFixed(2)}€`;
-                if (productValue > 0) {
-                    cashNotes += ` | ΑΞΙΑ ΠΡΟΪΟΝΤΩΝ (Αγορά από διανομέα): ${productValue.toFixed(2)}€`;
-                }
+                if (productValue > 0) { cashNotes += ` | ΑΞΙΑ ΠΡΟΪΟΝΤΩΝ (Αγορά από διανομέα): ${productValue.toFixed(2)}€`; }
                 cashNotes += ` | ΣΧΟΛΙΑ ΠΕΛΑΤΗ: ${payload.originalNotes}`;
                 payload.notes = cashNotes;
                 
@@ -391,4 +389,22 @@
                     window.location.reload();
                 }).catch(() => {
                     alert("✅ Η παραγγελία στάλθηκε!");
-                    windo
+                    window.location.reload();
+                });
+            }
+        }
+
+        function closeInstallBanner() {
+            document.getElementById('installBanner').style.display = 'none';
+            localStorage.setItem('installBannerClosed', 'true');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('installBannerClosed') && !window.matchMedia('(display-mode: standalone)').matches) {
+                document.getElementById('installBanner').style.display = 'flex';
+            }
+        });
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w&libraries=places&callback=initMap" async defer></script>
+</body>
+</html>
