@@ -62,14 +62,13 @@
         <div class="section-title" style="margin-top: 15px; color: #ef4444;">💳 ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ *</div>
         <select id="paymentMethod" class="input-field" style="font-weight: bold;">
             <option value="" disabled selected>Επιλέξτε τρόπο πληρωμής</option>
-            <!-- <option value="Μετρητά">💵 Πληρωμή με Μετρητά</option> -->
+            <option value="Μετρητά">💵 Πληρωμή με Μετρητά</option>
             <option value="Online (Viva Wallet)">💳 Πληρωμή Online (Κάρτα / Apple Pay)</option>
         </select>
     </div>
 
     <button id="sendBtn" class="btn-primary" onclick="submitOrder()">ΣΥΜΠΛΗΡΩΣΤΕ ΔΙΕΥΘΥΝΣΕΙΣ...</button>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
@@ -96,7 +95,7 @@
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 37.9429, lng: 23.6439},
+            center: {lat: 37.9429, lng: 23.6439}, // Πειραιάς
             zoom: 13,
             disableDefaultUI: true
         });
@@ -125,9 +124,9 @@
                 const distanceKm = response.routes[0].legs[0].distance.value / 1000;
                 const durationTxt = response.routes[0].legs[0].duration.text;
                 
-                let basePrice = 3.50;
+                let basePrice = 3.50; // Ελάχιστη χρέωση 3.50€ μέχρι 3.5 χλμ
                 if (distanceKm > 3.5) {
-                    basePrice += (distanceKm - 3.5) * 0.90;
+                    basePrice += (distanceKm - 3.5) * 0.90; // +0.90€ για κάθε έξτρα χλμ
                 }
                 
                 calculatedDeliveryPrice = Math.max(3.50, parseFloat(basePrice.toFixed(2)));
@@ -160,7 +159,6 @@
         
         document.getElementById('totalPriceDisplay').innerText = totalPrice.toFixed(2) + ' €';
     }
-
     function saveOrderToFirebase(payload) {
         const orderData = {
             customerPhone: payload.deliveryPhone,
@@ -176,7 +174,7 @@
         localStorage.setItem('orderHistory', JSON.stringify(history));
     }
 
-    // 4. ΑΠΟΣΤΟΛΗ ΠΑΡΑΓΓΕΛΙΑΣ
+    // 4. ΑΠΟΣΤΟΛΗ ΠΑΡΑΓΓΕΛΙΑΣ (Το νέο σύστημα)
     const SHIPDAY_URL = "https://script.google.com/macros/s/AKfycbyWoTtkdD_krJ20SutUK0Yp9WlRIuUwFGE3D88lSuG97j_6WP1DqvYbYcMvsL8ZYrLMcg/exec";
 
     function submitOrder() {
@@ -209,7 +207,7 @@
         const payload = {
             startAddr: document.getElementById('start').value,
             endAddr: document.getElementById('end').value,
-            price: calculatedDeliveryPrice.toFixed(2),
+            price: totalPrice.toFixed(2), 
             productValue: productValue,
             deliveryPrice: calculatedDeliveryPrice,
             pickupName: document.getElementById('pickupName').value,
@@ -223,19 +221,19 @@
         };
 
         if (payment === "Online (Viva Wallet)") {
+            // Το σωστό link της Viva
             const VIVA_URL = "https://script.google.com/macros/s/AKfycbwv_LVSd-4DCSfQ8h2bB8mlKiJWMyb8NhmC1MDoIMztnpLjb9r4mpqyXbNuGzZQmUDj/exec";
             
+            // Αποθηκεύουμε την παραγγελία κρυφά
             localStorage.setItem('pendingOrder', JSON.stringify(payload));
             
+            // Ανακατεύθυνση στη Viva Wallet
             const paymentUrl = VIVA_URL + "?amount=" + totalPrice.toFixed(2) + "&name=" + encodeURIComponent(payload.deliveryName) + "&phone=" + encodeURIComponent(payload.deliveryPhone);
             window.location.href = paymentUrl;
         } 
         else {
-            // Πληρωμή με Μετρητά - αναλυτικά σχόλια για τον διανομέα
-            let cashNotes = `💵 ΜΕΤΡΗΤΑ | ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΗΣ: ${totalPrice.toFixed(2)}€ | ΚΕΡΔΟΣ ΔΙΑΝΟΜΕΑ: ${calculatedDeliveryPrice.toFixed(2)}€`;
-            if (productValue > 0) { cashNotes += ` | ΑΞΙΑ ΠΡΟΪΟΝΤΩΝ (Αγορά από διανομέα): ${productValue.toFixed(2)}€`; }
-            cashNotes += ` | ΣΧΟΛΙΑ ΠΕΛΑΤΗ: ${payload.originalNotes}`;
-            payload.notes = cashNotes;
+            // Πληρωμή με Μετρητά
+            payload.notes = `[ΚΟΣΤΟΣ ΜΕΤΑΦΟΡΑΣ (Μετρητά): ${calculatedDeliveryPrice.toFixed(2)}€] | ΣΧΟΛΙΑ: ${payload.originalNotes}`;
             
             saveOrderToFirebase(payload);
             fetch(SHIPDAY_URL, { method: 'POST', body: JSON.stringify(payload) })
@@ -250,7 +248,7 @@
     }
 </script>
 
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDHmXVo-2kFvCFN3Q8U_MvJl_By_b6hs2w&libraries=places&callback=initMap"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=ΤΟ_ΔΙΚΟ_ΣΟΥ_KΛEΙΔI_API&libraries=places&callback=initMap"></script>
 
 </body>
 </html>
