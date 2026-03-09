@@ -65,14 +65,17 @@
             driverNotes += ` | ΣΧΟΛΙΑ ΠΕΛΑΤΗ: ${payload.originalNotes}`;
 
             payload.notes = driverNotes;
+            
+            // ΣΗΜΑΝΤΙΚΟ: Στο Shipday στέλνουμε ΜΟΝΟ το κόστος μεταφοράς (κέρδος διανομέα)
+            payload.price = delivVal.toFixed(2);
 
-            // 1. Αποθήκευση στο Firebase Ιστορικό
+            // 1. Αποθήκευση στο Firebase Ιστορικό (εδώ κρατάμε το ΣΥΝΟΛΟ για λογιστικούς λόγους)
             const orderData = {
                 customerPhone: payload.deliveryPhone,
                 date: new Date().toISOString(),
                 displayDate: new Date().toLocaleDateString('el-GR') + ' - ' + new Date().toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'}),
                 address: payload.endAddr,
-                price: payload.price, 
+                price: total.toFixed(2), 
                 status: "Νέα Παραγγελία (Πληρώθηκε Online)"
             };
 
