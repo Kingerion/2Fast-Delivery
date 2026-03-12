@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Πελάτης - 2 Fast Delivery</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f9; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        textarea { width: 100%; height: 80px; margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #3b82f6; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px; }
+        button:hover { background: #2563eb; }
+        .file-upload { margin-bottom: 10px; padding: 15px; border: 2px dashed #ccc; border-radius: 8px; background: #fafafa; text-align: center; }
+        #loadingMsg { display: none; margin-top: 15px; font-weight: bold; text-align: center; color: #f59e0b; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h3 style="color: #1e293b;">👤 Πελάτης: Τι χρειάζεστε;</h3>
+        <textarea id="customerMessage" placeholder="Γράψτε τι θέλετε (ή αφήστε το κενό αν ανεβάσετε φωτογραφία)..."></textarea>
+        
+        <div class="file-upload">
+            <label for="imageUpload" style="cursor:pointer; font-weight:bold; color:#3b82f6; font-size: 18px;">📷 Ανέβασε Φωτογραφία (π.χ. συνταγή/προϊόν)</label>
+            <input type="file" id="imageUpload" accept="image/*" style="display:block; margin: 15px auto 0;">
+        </div>
+
+        <button onclick="processOrderWithGemini()">Αποστολή στο Κατάστημα</button>
+        <p id="loadingMsg">Το AI αναλύει την παραγγελία...</p>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. ΡΥΘΜΙΣΕΙΣ FIREBASE (Βάλε τα δικά σου εδώ!)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "ΒΑΛΕ_ΤΟ_FIREBASE_API_KEY_ΣΟΥ",
+            authDomain: "ΒΑΛΕ_ΤΟ_AUTH_DOMAIN_ΣΟΥ",
+            projectId: "ΒΑΛΕ_ΤΟ_PROJECT_ID_ΣΟΥ",
+            storageBucket: "ΒΑΛΕ_ΤΟ_STORAGE_BUCKET_ΣΟΥ",
+            messagingSenderId: "ΒΑΛΕ_ΤΟ_SENDER_ID_ΣΟΥ",
+            appId: "ΒΑΛΕ_ΤΟ_APP_ID_ΣΟΥ"
+        };
+        // Αρχικοποίηση Firebase
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.firestore();
+
+        // ==========================================
+        // 2. ΡΥΘΜΙΣΕΙΣ GEMINI AI
+        // ==========================================
+        const GEMINI_API_KEY = "AIzaSyD7HYgeLm9hHlENSjAfj_lIt9lB91ZV6eA"; 
+
+        async function fileToGenerativePart(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    resolve({
+                        inlineData: { data: reader.result.split(',')[1], mimeType: file.type }
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function processOrderWithGemini() {
+            const message = document.getElementById('customerMessage').value;
+            const fileInput = document.getElementById('imageUpload');
+            
+            if (!message && fileInput.files.length === 0) {
+                alert("Παρακαλώ γράψε μια παραγγελία ή ανέβασε μια φωτογραφία!");
+                return;
+            }
+
+            const loadingText = document.getElementById('loadingMsg');
+            loadingText.style.display = 'block';
+            loadingText.innerText = "Το AI διαβάζει τα δεδομένα και την εικόνα... 🤖";
+
+            const prompt = `
+                Ο πελάτης μιας εφαρμογής delivery έστειλε το εξής μήνυμα: "${message}". 
+                Επίσης, ίσως έχει επισυνάψει μια φωτογραφία (π.χ. χειρόγραφη συνταγή γιατρού).
+                Διάβασε προσεκτικά την εικόνα (αν υπάρχει) και το κείμενο.
+                Βγάλε τα προϊόντα που ζητάει και την ποσότητά τους. Αν βλέπεις φάρμακα στην εικόνα, γράψε το όνομά τους.
+                Επίστρεψε ΑΥΣΤΗΡΑ ΚΑΙ ΜΟΝΟ ένα JSON array της μορφής:
+                [{"item": "Ονομασία Προϊόντος", "qty": "Ποσότητα"}]
+                Μην γράψεις κανένα άλλο κείμενο. Αν δεν αναφέρεται ποσότητα, βάλε "1".
+            `;
+
+            const parts = [{ text: prompt }];
+            if (fileInput.files.length > 0) {
+                const imagePart = await fileToGenerativePart(fileInput.files[0]);
+                parts.push(imagePart);
+            }
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error ? errorData.error.message : "Σφάλμα API");
+                }
+
+                const data = await response.json();
+                let aiText = data.candidates[0].content.parts[0].text;
+                aiText = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
+                const itemsList = JSON.parse(aiText);
+                
+                // Αντί να τα δείξουμε εδώ, τα στέλνουμε στο Firebase!
+                sendOrderToFirebase(itemsList);
+
+            } catch (error) {
+                console.error("Σφάλμα:", error);
+                alert("Σφάλμα AI: " + error.message);
+                loadingText.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // 3. ΕΠΙΚΟΙΝΩΝΙΑ ΜΕ FIREBASE
+        // ==========================================
+        function sendOrderToFirebase(items) {
+            const loadingText = document.getElementById('loadingMsg');
+            loadingText.innerText = "Αποστολή στο κατάστημα... 📡";
+
+            db.collection("live_orders").add({
+                status: "pending", 
+                items: items,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then((docRef) => {
+                loadingText.innerHTML = "✅ Η παραγγελία στάλθηκε!<br>⏳ Αναμονή για απάντηση από το κατάστημα...";
+                listenForStoreReply(docRef.id);
+            }).catch((error) => {
+                alert("Σφάλμα βάσης δεδομένων: " + error);
+                loadingText.style.display = 'none';
+            });
+        }
+
+        function listenForStoreReply(orderId) {
+            db.collection("live_orders").doc(orderId).onSnapshot((doc) => {
+                const data = doc.data();
+                if (data && data.status === "offered") {
+                    document.getElementById('loadingMsg').style.display = 'none';
+                    alert(`🎉 Το κατάστημα απάντησε!\nΒρήκαν τα προϊόντα.\nΚόστος προϊόντων: ${data.totalPrice}€\n\n(Εδώ θα μπει η πληρωμή!)`);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
