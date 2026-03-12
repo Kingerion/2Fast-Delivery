@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Κατάστημα - 2 Fast Delivery</title>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #e2e8f0; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        .order-card { border: 2px solid #3b82f6; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #f8fafc; }
+        .shop-item { display: flex; align-items: center; margin-bottom: 10px; background: white; padding: 10px; border-radius: 5px; border: 1px solid #cbd5e1; }
+        .shop-item input[type="number"] { margin-left: auto; width: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; }
+        button.reply-btn { background: #10b981; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        button.reply-btn:hover { background: #059669; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h2 style="color: #1e293b; margin-top: 0;">🏪 Ζωντανές Παραγγελίες</h2>
+        <p style="color: #64748b; font-size: 14px;">Εδώ εμφανίζονται αυτόματα τα αιτήματα των πελατών.</p>
+        
+        <div id="liveOrdersContainer">
+            <p style="text-align: center; color: gray; font-style: italic;">Αναμονή για νέες παραγγελίες... 📡</p>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. ΡΥΘΜΙΣΕΙΣ FIREBASE (Βάλε τα ΙΔΙΑ στοιχεία με τον πελάτη!)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "ΒΑΛΕ_ΤΟ_FIREBASE_API_KEY_ΣΟΥ",
+            authDomain: "ΒΑΛΕ_ΤΟ_AUTH_DOMAIN_ΣΟΥ",
+            projectId: "ΒΑΛΕ_ΤΟ_PROJECT_ID_ΣΟΥ",
+            storageBucket: "ΒΑΛΕ_ΤΟ_STORAGE_BUCKET_ΣΟΥ",
+            messagingSenderId: "ΒΑΛΕ_ΤΟ_SENDER_ID_ΣΟΥ",
+            appId: "ΒΑΛΕ_ΤΟ_APP_ID_ΣΟΥ"
+        };
+        // Αρχικοποίηση Firebase
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.firestore();
+
+        // ==========================================
+        // 2. ΠΑΡΑΚΟΛΟΥΘΗΣΗ ΖΩΝΤΑΝΩΝ ΠΑΡΑΓΓΕΛΙΩΝ
+        // ==========================================
+        db.collection("live_orders").where("status", "==", "pending")
+          .onSnapshot((snapshot) => {
+              const container = document.getElementById('liveOrdersContainer');
+              container.innerHTML = ''; 
+              
+              if (snapshot.empty) {
+                  container.innerHTML = '<p style="text-align: center; color: gray; font-style: italic;">Αναμονή για νέες παραγγελίες... 📡</p>';
+                  return;
+              }
+
+              snapshot.forEach((doc) => {
+                  displayOrderInPanel(doc.id, doc.data().items);
+              });
+          });
+
+        function displayOrderInPanel(orderId, items) {
+            const container = document.getElementById('liveOrdersContainer');
+            const div = document.createElement('div');
+            div.className = "order-card";
+            div.id = `order_${orderId}`;
+            
+            let html = `<h4 style="margin-top:0; color: #3b82f6;">Νέα Παραγγελία! (ID: ${orderId.substring(0,5)})</h4>`;
+            
+            items.forEach((product, index) => {
+                html += `
+                    <div class="shop-item">
+                        <input type="checkbox" id="check_${orderId}_${index}" checked style="transform: scale(1.5); margin-right: 15px;">
+                        <label for="check_${orderId}_${index}" style="flex-grow: 1; font-size: 16px;">
+                            <strong>${product.qty}x</strong> ${product.item}
+                        </label>
+                        <input type="number" step="0.10" placeholder="Τιμή" id="price_${orderId}_${index}">
+                        <span style="margin-left: 5px; font-weight: bold;">€</span>
+                    </div>
+                `;
+            });
+            
+            html += `<button class="reply-btn" onclick="replyToOrder('${orderId}', ${items.length})">Αποστολή Προσφοράς στον Πελάτη</button>`;
+            
+            div.innerHTML = html;
+            container.appendChild(div);
+        }
+
+        function replyToOrder(orderId, itemsCount) {
+            let total = 0;
+            let productsFound = 0;
+
+            for (let i = 0; i < itemsCount; i++) {
+                const isChecked = document.getElementById(`check_${orderId}_${i}`).checked;
+                const priceInput = document.getElementById(`price_${orderId}_${i}`).value;
+                const priceVal = parseFloat(priceInput);
+                
+                if (isChecked) {
+                    if (isNaN(priceVal) || priceVal <= 0) {
+                        alert("Παρακαλώ βάλε έγκυρη τιμή στα επιλεγμένα προϊόντα!");
+                        return;
+                    }
+                    total += priceVal;
+                    productsFound++;
+                }
+            }
+
+            if (productsFound === 0) {
+                alert("Πρέπει να επιλέξεις τουλάχιστον ένα προϊόν!");
+                return;
+            }
+
+            // Αποστολή απάντησης στο Firebase!
+            db.collection("live_orders").doc(orderId).update({
+                status: "offered",
+                totalPrice: total.toFixed(2)
+            }).then(() => {
+                // Η παραγγελία φεύγει από την οθόνη αυτόματα χάρη στο onSnapshot!
+            }).catch((error) => {
+                alert("Σφάλμα: " + error);
+            });
+        }
+    </script>
+</body>
+</html>
